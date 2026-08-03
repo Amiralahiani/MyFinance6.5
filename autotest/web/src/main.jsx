@@ -19,7 +19,7 @@ const campaignIdFromUrl = () => {
   return segment === "history" ? null : segment;
 };
 const historyFromUrl = () => location.pathname === "/campaigns/history";
-const statusLabel = (status) => ({ pending: "En attente", waiting: "En attente", starting: "Démarrage", running: "En cours", completed: "Terminé", fallback_local: "Politique locale", pass: "Validé", passed: "Validé", fail: "Faille détectée", failed: "Faille détectée", warning: "À examiner", rejected: "Rejeté par garde-fou", duplicate: "Trop proche d’une question passée", provider_error: "Groq a refusé la requête", invalid_output: "Réponse IA invalide", budget_exhausted: "Limite locale atteinte", inconclusive: "À confirmer", technical_error: "Erreur technique", skipped: "Non exécuté" }[status] ?? "Non disponible");
+const statusLabel = (status) => ({ pending: "En attente", waiting: "En attente", starting: "Démarrage", running: "En cours", completed: "Terminé", completed_with_fallback: "Terminé avec repli", fallback_local: "Politique locale", pass: "Validé", passed: "Validé", fail: "Faille détectée", failed: "Faille détectée", warning: "À examiner", rejected: "Rejeté par garde-fou", duplicate: "Trop proche d’une question passée", provider_error: "Groq a refusé la requête", invalid_output: "Réponse IA invalide", budget_exhausted: "Limite locale atteinte", inconclusive: "À confirmer", technical_error: "Erreur technique", skipped: "Non exécuté" }[status] ?? "Non disponible");
 const formatDate = (value) => value ? new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—";
 const metricLabels = {
   customer_deposits: "Dépôts et avoirs de la clientèle",

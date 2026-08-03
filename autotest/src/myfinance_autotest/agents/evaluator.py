@@ -16,11 +16,18 @@ from myfinance_autotest.state import CampaignState
 from myfinance_autotest.tools.groq_client import GroqCallResult, GroqClient
 
 _SYSTEM_PROMPT = """You are a quality evaluator for a banking conversation test.
-Score only the relevance, clarity and consistency of the response from 1 to 5.
-The deterministic validation and PDF evidence are authoritative: do not claim a
-financial value is correct when a deterministic check says otherwise. Return
-  only JSON that matches the schema. Do not invent evidence or citations. Keep
-the rationale and probable cause concise."""
+The deterministic validation and PDF evidence are authoritative: never dispute
+them and never invent evidence or citations. Return exactly one JSON object,
+with every key below and no Markdown:
+{
+  "relevance": 1-5, "factuality": 1-5, "source_fidelity": 1-5,
+  "conversation_coherence": 1-5, "year_respect": 1-5,
+  "unit_respect": 1-5, "clarity": 1-5, "format_respect": 1-5,
+  "failure_category": null or one deterministic failure category,
+  "probable_cause": null or a concise French string,
+  "confidence": 0.0-1.0, "rationale": "concise French explanation"
+}
+Every score must be an integer. Keep the two text fields concise."""
 
 
 def _fallback(test_case: TestCase, validation: DeterministicValidationResult) -> EvaluationResult:
@@ -60,15 +67,23 @@ def evaluate_response(
         system_prompt=_SYSTEM_PROMPT,
         user_prompt=json.dumps(
             {
-                "test_case": test_case.model_dump(mode="json"),
+                "question": test_case.input,
+                "expected_properties": test_case.expected_properties,
+                "failure_criteria": test_case.failure_criteria,
                 "api_response": execution.response,
-                "deterministic_validation": validation.model_dump(mode="json"),
+                "deterministic_verdict": validation.verdict.value,
+                "failure_categories": [category.value for category in validation.failure_categories],
+                "failed_checks": [
+                    {"name": check.name, "expected": check.expected, "actual": check.actual}
+                    for check in validation.checks
+                    if check.passed is False
+                ],
             },
             ensure_ascii=False,
         ),
         response_model=EvaluatorOpinion,
         campaign=campaign,
-        max_completion_tokens=320,
+        max_completion_tokens=220,
     )
     if opinion is None:
         return _fallback(test_case, validation), metadata

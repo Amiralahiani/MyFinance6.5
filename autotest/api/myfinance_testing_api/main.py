@@ -591,6 +591,10 @@ def _run_catalog_campaign(campaign_id: str) -> None:
         primary_counts = {verdict.value: 0 for verdict in models.Verdict}
         confirmation_counts = {verdict.value: 0 for verdict in models.Verdict}
         confirmation_requests: list[tuple[models.TestCase, str]] = []
+        quality_fallbacks = {
+            "initial": {"evaluator": 0, "critic": 0},
+            "confirmation": {"evaluator": 0, "critic": 0},
+        }
 
         def record_execution(passage: str):
             """Publish the Chat response before any slower Groq quality review."""
@@ -627,6 +631,12 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                     "completed": index, "total": total, "passage": passage,
                 })
                 critic = execution.get("critic") or {}
+                evaluator_provider = (execution.get("evaluator") or {}).get("provider") or {}
+                critic_provider = critic.get("provider") or {}
+                if evaluator_provider.get("status") == "failed":
+                    quality_fallbacks[passage]["evaluator"] += 1
+                if critic_provider.get("status") == "failed":
+                    quality_fallbacks[passage]["critic"] += 1
                 follow_up = critic.get("follow_up_question")
                 if passage == "initial" and critic.get("next_action_required") and isinstance(follow_up, str):
                     confirmation_requests.append((scenario, follow_up))
@@ -672,20 +682,26 @@ def _run_catalog_campaign(campaign_id: str) -> None:
         finally:
             api_executor.close()
         reports = [primary_report]
+        evaluator_fallbacks = quality_fallbacks["initial"]["evaluator"]
+        critic_fallbacks = quality_fallbacks["initial"]["critic"]
         _campaign_event(campaign_id, "stage_update", {
             "stage": "executor", "status": "completed", "title": "Passage initial terminé",
             "completed": len(primary_report.tests), "total": len(primary_selected), "counts": primary_counts,
         })
         _campaign_event(campaign_id, "stage_update", {
-            "stage": "evaluator", "status": "completed", "title": "Évaluation du passage initial terminée",
+            "stage": "evaluator", "status": "completed_with_fallback" if evaluator_fallbacks else "completed",
+            "title": "Évaluation terminée avec repli déterministe" if evaluator_fallbacks else "Évaluation du passage initial terminée",
             "completed": len(primary_report.tests), "total": len(primary_selected), "counts": primary_counts,
+            "quality_fallbacks": evaluator_fallbacks,
             "rule": "Un score SLM éventuel ne peut jamais modifier le verdict déterministe.",
         })
 
         if configuration["scenario_profile"] == "exploration" and groq_enabled:
             _campaign_event(campaign_id, "stage_update", {
-                "stage": "critic", "status": "completed", "title": "Revue Critic du passage initial terminée",
+                "stage": "critic", "status": "completed_with_fallback" if critic_fallbacks else "completed",
+                "title": "Revue Critic terminée avec repli déterministe" if critic_fallbacks else "Revue Critic du passage initial terminée",
                 "reviewed_scenarios": len(primary_report.tests), "confirmation_requested": len(confirmation_requests),
+                "quality_fallbacks": critic_fallbacks,
                 "policy": "Toute contre-vérification démarre un second passage Planner → Executor → Evaluator.",
             })
             if confirmation_requests:

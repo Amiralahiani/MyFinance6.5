@@ -17,11 +17,17 @@ from myfinance_autotest.state import CampaignState
 from myfinance_autotest.tools.groq_client import GroqCallResult, GroqClient
 
 _SYSTEM_PROMPT = """You are a critic reviewing a banking conversation evaluation.
-When a response is unsafe, unclear or insufficiently evidenced, propose at most
-one short French follow-up question that can confirm the problem. Set
-next_action_required only when that follow-up is useful. Never dispute
-deterministic checks and do not create regressions yourself. Return only JSON
-  matching the schema. Keep the reason and follow-up concise."""
+Never dispute deterministic checks and do not create regressions yourself. A
+follow-up is useful only for an unresolved, non-passing result. Return exactly
+one JSON object and no Markdown:
+{
+  "next_action_required": true or false,
+  "reason": "concise French explanation",
+  "next_objective": null,
+  "follow_up_question": null or "one concise French question"
+}
+When next_action_required is false, both next_objective and
+follow_up_question must be null."""
 
 
 def _is_confirmed_business_defect(validation: DeterministicValidationResult) -> bool:
@@ -60,15 +66,21 @@ def critique_evaluation(
         system_prompt=_SYSTEM_PROMPT,
         user_prompt=json.dumps(
             {
-                "test_case": test_case.model_dump(mode="json"),
-                "evaluation": evaluation.model_dump(mode="json"),
-                "deterministic_validation": validation.model_dump(mode="json"),
+                "question": test_case.input,
+                "deterministic_verdict": validation.verdict.value,
+                "failure_categories": [category.value for category in validation.failure_categories],
+                "failed_checks": [check.name for check in validation.checks if check.passed is False],
+                "evaluation": {
+                    "verdict": evaluation.verdict.value,
+                    "rationale": evaluation.rationale,
+                    "probable_cause": evaluation.probable_cause,
+                },
             },
             ensure_ascii=False,
         ),
         response_model=CriticOpinion,
         campaign=campaign,
-        max_completion_tokens=400,
+        max_completion_tokens=220,
     )
     confirmed_defect = _is_confirmed_business_defect(validation)
     if opinion is None:
