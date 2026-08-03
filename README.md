@@ -17,18 +17,16 @@ Le périmètre actuel couvre les états financiers individuels 2021–2025 d’A
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    U[Utilisateur] --> W[Chat React]
-    W --> A[API Chat FastAPI]
-    A --> F[Faits auto-validés]
-    A --> C[Corpus PDF sourcé]
-    F --> P[PDF officiels]
-    C --> P
-    T[Testing React] --> TA[API Testing]
-    TA --> A
-    TA --> G[Groq : génération et évaluation]
-    TA --> R[Rapports et contrôles Playwright]
+```text
+Utilisateur
+  → Chat React → API Chat FastAPI
+                    ├─ Faits auto-validés → PDF officiels
+                    └─ Corpus PDF sourcé → PDF officiels
+
+Testing React → API Testing
+                  ├─ API Chat
+                  ├─ Groq : génération et évaluation
+                  └─ Rapports et contrôles Playwright
 ```
 
 La frontière est volontairement nette : `chat/` sert l’utilisateur, `autotest/` le vérifie, `shared/` porte les contrats et `data/` conserve les preuves.

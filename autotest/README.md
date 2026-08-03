@@ -4,17 +4,14 @@ La plateforme Testing vérifie le Chat à travers de vraies requêtes API et des
 
 ## Cycle d’une campagne
 
-```mermaid
-flowchart LR
-    G[Generator] --> P[Planner]
-    P --> E[Executor]
-    E --> V[Evaluator]
-    V --> C[Critic]
-    C -->|contre-vérification requise| P2[Planner complémentaire]
-    P2 --> E2[Executor complémentaire]
-    E2 --> V2[Evaluator complémentaire]
-    C -->|sinon| R[Reporter]
-    V2 --> R
+```text
+Generator → Planner → Executor → Evaluator → Critic
+                                            ├─ sans contre-vérification → Reporter
+                                            └─ contre-vérification requise
+                                               → Planner complémentaire
+                                               → Executor complémentaire
+                                               → Evaluator complémentaire
+                                               → Reporter
 ```
 
 Le Critic ne déclenche les étapes complémentaires que lorsqu’une incertitude justifie réellement une contre-vérification.
