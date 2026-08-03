@@ -1,0 +1,3156 @@
+{
+  "catalog_version": "3.0",
+  "catalog_scope": {
+    "bank_ids": [
+      "amen_bank",
+      "attijari_bank",
+      "biat",
+      "bt",
+      "zitouna"
+    ],
+    "bank_names": {
+      "amen_bank": "Amen Bank",
+      "attijari_bank": "Attijari Bank",
+      "biat": "BIAT",
+      "bt": "Banque de Tunisie",
+      "zitouna": "Banque Zitouna"
+    },
+    "reporting_years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "financial_statement_scope": "individual",
+    "source_unit": {
+      "currency": "TND",
+      "unit_scale": "thousand",
+      "display_unit": "mDT"
+    }
+  },
+  "common_extraction_profile": {
+    "version": "1.0",
+    "scope": "Noyau de métriques comparables dans les états financiers individuels des cinq banques.",
+    "metric_ids": [
+      "total_assets",
+      "total_liabilities",
+      "total_equity",
+      "net_income",
+      "customer_loans_net",
+      "customer_deposits",
+      "net_banking_income"
+    ],
+    "statement_label_aliases": {
+      "total_assets": [
+        "total des actifs",
+        "total actifs",
+        "total actif",
+        "total de l'actif"
+      ],
+      "total_liabilities": [
+        "total des passifs",
+        "total passifs",
+        "total passif",
+        "total du passif",
+        "sous total des passifs",
+        "sous total passifs"
+      ],
+      "total_equity": [
+        "total des capitaux propres",
+        "total capitaux propres",
+        "sous total capitaux propres"
+      ],
+      "net_income": [
+        "résultat net de l'exercice",
+        "résultat de l'exercice",
+        "résultat net de la période",
+        "résultat net du période",
+        "bénéfice de l'exercice"
+      ],
+      "customer_loans_net": [
+        "créances sur la clientèle"
+      ],
+      "customer_deposits": [
+        "dépôts et avoirs de la clientèle",
+        "dépôts de la clientèle"
+      ],
+      "net_banking_income": [
+        "produit net bancaire"
+      ]
+    },
+    "validation_rules": [
+      "une seule ligne par métrique et par document",
+      "libellé accepté dans l'état financier principal",
+      "montant de la première colonne annuelle et unité TND explicite",
+      "périmètre individuel explicite",
+      "hash du PDF, page et extrait source concordants",
+      "équation bilan : actifs = passifs + capitaux propres lorsque les trois lignes existent"
+    ]
+  },
+  "metric_definition_schema": [
+    "metric_id",
+    "label_fr",
+    "category",
+    "metric_type",
+    "period_type",
+    "source_section",
+    "query_aliases",
+    "accepted_statement_labels",
+    "unit",
+    "validation_rules",
+    "lifecycle_status"
+  ],
+  "metrics": [
+    {
+      "metric_id": "total_assets",
+      "label_fr": "Total des actifs",
+      "category": "balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "total des actifs",
+        "total actifs",
+        "total actif",
+        "total bilan",
+        "total assets"
+      ],
+      "accepted_statement_labels": [
+        "total des actifs",
+        "total actifs",
+        "total actif"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "supported",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne du bilan",
+        "année, unité et périmètre explicitement relevés",
+        "ne jamais utiliser une phrase du rapport d'audit"
+      ]
+    },
+    {
+      "metric_id": "cash_and_central_bank",
+      "label_fr": "Caisse et avoirs auprès de la BCT, CCP et TGT",
+      "category": "balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "caisse et avoirs auprès de la bct",
+        "caisse et avoirs"
+      ],
+      "accepted_statement_labels": [
+        "caisse et avoirs auprès de la bct, ccp et tgt"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne du bilan",
+        "année et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "interbank_receivables",
+      "label_fr": "Créances sur les établissements bancaires et financiers",
+      "category": "balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "créances sur les établissements bancaires",
+        "créances interbancaires"
+      ],
+      "accepted_statement_labels": [
+        "créances sur les établissements bancaires et financiers"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne du bilan",
+        "année et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "customer_loans_net",
+      "label_fr": "Créances nettes sur la clientèle",
+      "category": "credit",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "créances sur la clientèle",
+        "crédits à la clientèle",
+        "crédits nets",
+        "customer loans"
+      ],
+      "accepted_statement_labels": [
+        "créances sur la clientèle"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "supported",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne du bilan, pas une ventilation de note",
+        "valeur nette telle que publiée",
+        "année, unité et périmètre relevés"
+      ]
+    },
+    {
+      "metric_id": "trading_securities",
+      "label_fr": "Portefeuille-titres commercial",
+      "category": "balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "portefeuille-titres commercial",
+        "portefeuille commercial"
+      ],
+      "accepted_statement_labels": [
+        "portefeuille-titres commercial"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne du bilan",
+        "année et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "investment_securities",
+      "label_fr": "Portefeuille d'investissement net",
+      "category": "balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "portefeuille d'investissement"
+      ],
+      "accepted_statement_labels": [
+        "portefeuille d'investissement"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne du bilan",
+        "valeur nette ou brute explicitement distinguée"
+      ]
+    },
+    {
+      "metric_id": "fixed_assets",
+      "label_fr": "Valeurs immobilisées",
+      "category": "balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "valeurs immobilisées",
+        "immobilisations"
+      ],
+      "accepted_statement_labels": [
+        "valeurs immobilisées"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne du bilan",
+        "année et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "other_assets",
+      "label_fr": "Autres actifs",
+      "category": "balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "autres actifs"
+      ],
+      "accepted_statement_labels": [
+        "autres actifs"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne du bilan",
+        "année et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "customer_deposits",
+      "label_fr": "Dépôts et avoirs de la clientèle",
+      "category": "deposits",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "dépôts de la clientèle",
+        "dépôts et avoirs de la clientèle",
+        "customer deposits"
+      ],
+      "accepted_statement_labels": [
+        "dépôts et avoirs de la clientèle",
+        "dépôts de la clientèle"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "supported",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne du bilan, jamais un flux de trésorerie",
+        "année, unité et périmètre relevés"
+      ]
+    },
+    {
+      "metric_id": "interbank_deposits",
+      "label_fr": "Dépôts et avoirs des établissements bancaires et financiers",
+      "category": "funding",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "dépôts interbancaires",
+        "dépôts et avoirs des établissements bancaires"
+      ],
+      "accepted_statement_labels": [
+        "dépôts et avoirs des établissements bancaires et financiers"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne du bilan",
+        "année et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "borrowings_special_resources",
+      "label_fr": "Emprunts et ressources spéciales",
+      "category": "funding",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "emprunts et ressources spéciales",
+        "emprunts"
+      ],
+      "accepted_statement_labels": [
+        "emprunts et ressources spéciales"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne du bilan",
+        "année et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "total_liabilities",
+      "label_fr": "Total des passifs",
+      "category": "balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "total des passifs",
+        "total passifs"
+      ],
+      "accepted_statement_labels": [
+        "total passifs",
+        "total des passifs"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne du bilan",
+        "année et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "share_capital",
+      "label_fr": "Capital social",
+      "category": "equity",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "capital social",
+        "capital"
+      ],
+      "accepted_statement_labels": [
+        "capital"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "rubrique de capitaux propres au bilan",
+        "année et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "reserves",
+      "label_fr": "Réserves",
+      "category": "equity",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "réserves",
+        "reserves"
+      ],
+      "accepted_statement_labels": [
+        "réserves"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "rubrique de capitaux propres au bilan",
+        "année et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "retained_earnings",
+      "label_fr": "Résultats reportés",
+      "category": "equity",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "résultats reportés",
+        "report à nouveau"
+      ],
+      "accepted_statement_labels": [
+        "résultats reportés"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "rubrique de capitaux propres au bilan",
+        "année et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "total_equity",
+      "label_fr": "Total des capitaux propres",
+      "category": "equity",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "query_aliases": [
+        "capitaux propres",
+        "total des capitaux propres",
+        "fonds propres",
+        "equity"
+      ],
+      "accepted_statement_labels": [
+        "total des capitaux propres",
+        "total capitaux propres"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "supported",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "exclure total capitaux propres et passifs",
+        "année, unité et périmètre relevés"
+      ]
+    },
+    {
+      "metric_id": "interest_income",
+      "label_fr": "Intérêts et revenus assimilés",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "query_aliases": [
+        "intérêts et revenus assimilés",
+        "produits d'intérêts"
+      ],
+      "accepted_statement_labels": [
+        "intérêts et revenus assimilés"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne de l'état de résultat annuel",
+        "période de début et de fin relevée"
+      ]
+    },
+    {
+      "metric_id": "fee_income",
+      "label_fr": "Commissions en produits",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "query_aliases": [
+        "commissions en produits",
+        "commissions reçues"
+      ],
+      "accepted_statement_labels": [
+        "commissions en produits"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne de l'état de résultat annuel",
+        "période et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "interest_expense",
+      "label_fr": "Intérêts encourus et charges assimilées",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "query_aliases": [
+        "intérêts encourus",
+        "charges assimilées"
+      ],
+      "accepted_statement_labels": [
+        "intérêts encourus et charges assimilées"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "accounting_sign": "expense",
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "conserver le signe publié",
+        "ligne de l'état de résultat annuel"
+      ]
+    },
+    {
+      "metric_id": "net_banking_income",
+      "label_fr": "Produit net bancaire",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "query_aliases": [
+        "produit net bancaire",
+        "pnb",
+        "net banking income"
+      ],
+      "accepted_statement_labels": [
+        "produit net bancaire"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "supported",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne de l'état de résultat annuel",
+        "période, unité et périmètre relevés"
+      ]
+    },
+    {
+      "metric_id": "personnel_expense",
+      "label_fr": "Frais de personnel",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "query_aliases": [
+        "frais de personnel"
+      ],
+      "accepted_statement_labels": [
+        "frais de personnel"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "accounting_sign": "expense",
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "conserver le signe publié",
+        "ligne de l'état de résultat annuel"
+      ]
+    },
+    {
+      "metric_id": "general_operating_expense",
+      "label_fr": "Charges générales d'exploitation",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "query_aliases": [
+        "charges générales d'exploitation"
+      ],
+      "accepted_statement_labels": [
+        "charges générales d'exploitation"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "accounting_sign": "expense",
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "conserver le signe publié",
+        "ligne de l'état de résultat annuel"
+      ]
+    },
+    {
+      "metric_id": "depreciation_expense",
+      "label_fr": "Dotations aux amortissements et provisions sur immobilisations",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "query_aliases": [
+        "dotations aux amortissements",
+        "provisions sur immobilisations"
+      ],
+      "accepted_statement_labels": [
+        "dotations aux amortissements et aux provisions sur immobilisations"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "accounting_sign": "expense",
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "conserver le signe publié",
+        "ligne de l'état de résultat annuel"
+      ]
+    },
+    {
+      "metric_id": "operating_profit",
+      "label_fr": "Résultat d'exploitation",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "query_aliases": [
+        "résultat d'exploitation"
+      ],
+      "accepted_statement_labels": [
+        "résultat d'exploitation"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne de l'état de résultat annuel",
+        "période et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "income_tax",
+      "label_fr": "Impôt sur les bénéfices",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "query_aliases": [
+        "impôt sur les bénéfices",
+        "impôt"
+      ],
+      "accepted_statement_labels": [
+        "impôt sur les bénéfices"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "accounting_sign": "expense",
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "conserver le signe publié",
+        "ligne de l'état de résultat annuel"
+      ]
+    },
+    {
+      "metric_id": "net_income",
+      "label_fr": "Résultat net annuel",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "query_aliases": [
+        "résultat net",
+        "résultat de l'exercice",
+        "bénéfice net",
+        "net income"
+      ],
+      "accepted_statement_labels": [
+        "résultat net de l'exercice",
+        "résultat de l'exercice",
+        "résultat net des modifications comptables"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "supported",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "préciser le traitement des modifications comptables",
+        "ne jamais prendre le résultat d'une filiale ou d'une note",
+        "période, unité et périmètre relevés"
+      ]
+    },
+    {
+      "metric_id": "guarantees_given",
+      "label_fr": "Cautions, avals et autres garanties données",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "query_aliases": [
+        "garanties données",
+        "cautions",
+        "avals"
+      ],
+      "accepted_statement_labels": [
+        "cautions, avals et autres garanties données"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne de l'état hors bilan",
+        "année et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "documentary_credits",
+      "label_fr": "Crédits documentaires",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "query_aliases": [
+        "crédits documentaires"
+      ],
+      "accepted_statement_labels": [
+        "crédits documentaires"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne de l'état hors bilan",
+        "année et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "commitments_given_total",
+      "label_fr": "Total des engagements donnés",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "query_aliases": [
+        "total des engagements donnés"
+      ],
+      "accepted_statement_labels": [
+        "total engagements donnés",
+        "total des engagements donnés"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne de l'état hors bilan",
+        "année et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "operating_cash_flow",
+      "label_fr": "Flux net provenant des activités d'exploitation",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "query_aliases": [
+        "flux d'exploitation",
+        "flux net provenant des activités d'exploitation",
+        "flux de trésorerie d'exploitation",
+        "flux de trésorerie provenant des activités d'exploitation",
+        "flux trésorerie exploitation"
+      ],
+      "accepted_statement_labels": [
+        "flux de trésorerie net provenant des activités d'exploitation"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne de l'état des flux",
+        "période et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "net_cash_change",
+      "label_fr": "Variation nette des liquidités et équivalents",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "query_aliases": [
+        "variation nette des liquidités",
+        "variation nette de trésorerie"
+      ],
+      "accepted_statement_labels": [
+        "variation nette des liquidités et équivalents de liquidités au cours de la période"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "ligne de l'état des flux",
+        "période et unité relevées"
+      ]
+    },
+    {
+      "metric_id": "solvency_ratio",
+      "label_fr": "Ratio de solvabilité réglementaire",
+      "category": "regulatory",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "regulatory_or_note_disclosure",
+      "query_aliases": [
+        "ratio de solvabilité",
+        "solvency ratio"
+      ],
+      "user_intent_status": "unsupported",
+      "lifecycle_status": "deferred",
+      "reason_deferred": "Les états financiers BIAT étudiés ne donnent pas les composantes prudentielles complètes nécessaires à une comparaison fiable.",
+      "validation_rules": [
+        "RWA, numérateur réglementaire et date explicitement publiés"
+      ]
+    },
+    {
+      "metric_id": "npl_ratio",
+      "label_fr": "Ratio de créances classées",
+      "category": "risk",
+      "metric_type": "calculated",
+      "period_type": "stock",
+      "source_kind": "derived_from_verified_facts",
+      "query_aliases": [
+        "npl",
+        "créances classées",
+        "créances douteuses"
+      ],
+      "user_intent_status": "unsupported",
+      "lifecycle_status": "deferred",
+      "reason_deferred": "Les créances douteuses et le dénominateur doivent être normalisés à partir des notes avant tout calcul.",
+      "validation_rules": [
+        "numérateur et dénominateur vérifiés"
+      ]
+    },
+    {
+      "metric_id": "current_customer_loans",
+      "label_fr": "Créances courantes sur la clientèle",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "III-3",
+      "query_aliases": [
+        "créances courantes sur la clientèle"
+      ],
+      "accepted_statement_labels": [
+        "créances courantes sur la clientèle"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "customer_loans_gross",
+      "label_fr": "Créances brutes sur la clientèle",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "III-3",
+      "query_aliases": [
+        "créances brutes sur la clientèle",
+        "crédits bruts",
+        "credits bruts",
+        "encours de crédits bruts"
+      ],
+      "accepted_statement_labels": [
+        "créances brutes sur la clientèle"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "npl_balance_gross",
+      "label_fr": "Créances douteuses brutes au bilan",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "III-3",
+      "query_aliases": [
+        "créances douteuses brutes au bilan"
+      ],
+      "accepted_statement_labels": [
+        "créances douteuses brutes au bilan"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "npl_off_balance_gross",
+      "label_fr": "Engagements par signature douteux hors bilan",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "III-3",
+      "query_aliases": [
+        "engagements par signature douteux hors bilan"
+      ],
+      "accepted_statement_labels": [
+        "engagements par signature douteux hors bilan"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "provisions_classified_loans",
+      "label_fr": "Provisions sur créances classées du bilan",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "III-3",
+      "query_aliases": [
+        "provisions sur créances classées du bilan"
+      ],
+      "accepted_statement_labels": [
+        "provisions sur créances classées du bilan"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "reserved_interest_classified",
+      "label_fr": "Agios réservés sur créances classées",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "III-3",
+      "query_aliases": [
+        "agios réservés sur créances classées"
+      ],
+      "accepted_statement_labels": [
+        "agios réservés sur créances classées"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "provisions_classified_off_balance",
+      "label_fr": "Provisions sur engagements hors bilan classés",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "III-3",
+      "query_aliases": [
+        "provisions sur engagements hors bilan classés"
+      ],
+      "accepted_statement_labels": [
+        "provisions sur engagements hors bilan classés"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "collective_provisions",
+      "label_fr": "Provision collective sur créances non classées",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "III-3",
+      "query_aliases": [
+        "provision collective sur créances non classées"
+      ],
+      "accepted_statement_labels": [
+        "provision collective sur créances non classées"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "other_nonclassified_provisions",
+      "label_fr": "Autres provisions sur créances non classées",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "III-3",
+      "query_aliases": [
+        "autres provisions sur créances non classées"
+      ],
+      "accepted_statement_labels": [
+        "autres provisions sur créances non classées"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "reserved_interest_nonclassified",
+      "label_fr": "Agios réservés sur créances non classées",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "III-3",
+      "query_aliases": [
+        "agios réservés sur créances non classées"
+      ],
+      "accepted_statement_labels": [
+        "agios réservés sur créances non classées"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "loan_loss_provisions_expense",
+      "label_fr": "Dotations nettes aux provisions sur créances, hors bilan et passifs",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "source_note_family": "VII-3",
+      "query_aliases": [
+        "dotations nettes aux provisions sur créances, hors bilan et passifs"
+      ],
+      "accepted_statement_labels": [
+        "dotations nettes aux provisions sur créances, hors bilan et passifs"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ],
+      "accounting_sign": "expense"
+    },
+    {
+      "metric_id": "investment_provisions_expense",
+      "label_fr": "Dotations nettes sur portefeuille d'investissement",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "source_note_family": "VII-4",
+      "query_aliases": [
+        "dotations nettes sur portefeuille d'investissement"
+      ],
+      "accepted_statement_labels": [
+        "dotations nettes sur portefeuille d'investissement"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ],
+      "accounting_sign": "expense"
+    },
+    {
+      "metric_id": "loan_writeoffs",
+      "label_fr": "Pertes sur créances",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "VII",
+      "query_aliases": [
+        "pertes sur créances"
+      ],
+      "accepted_statement_labels": [
+        "pertes sur créances"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ],
+      "accounting_sign": "expense"
+    },
+    {
+      "metric_id": "provision_recoveries",
+      "label_fr": "Reprises de provisions",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "VII",
+      "query_aliases": [
+        "reprises de provisions"
+      ],
+      "accepted_statement_labels": [
+        "reprises de provisions"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "recovered_written_off_loans",
+      "label_fr": "Récupérations sur créances passées en perte",
+      "category": "credit_risk",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "VII",
+      "query_aliases": [
+        "récupérations sur créances passées en perte"
+      ],
+      "accepted_statement_labels": [
+        "récupérations sur créances passées en perte"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "demand_deposits",
+      "label_fr": "Dépôts à vue",
+      "category": "deposits",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "IV-3",
+      "query_aliases": [
+        "dépôts à vue"
+      ],
+      "accepted_statement_labels": [
+        "dépôts à vue"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "savings_deposits",
+      "label_fr": "Dépôts d'épargne",
+      "category": "deposits",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "IV-3",
+      "query_aliases": [
+        "dépôts d'épargne"
+      ],
+      "accepted_statement_labels": [
+        "dépôts d'épargne"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "term_accounts",
+      "label_fr": "Comptes à échéance",
+      "category": "deposits",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "IV-3",
+      "query_aliases": [
+        "comptes à échéance"
+      ],
+      "accepted_statement_labels": [
+        "comptes à échéance"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "term_bonds",
+      "label_fr": "Bons à échéance",
+      "category": "deposits",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "IV-3",
+      "query_aliases": [
+        "bons à échéance"
+      ],
+      "accepted_statement_labels": [
+        "bons à échéance"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "certificates_of_deposit",
+      "label_fr": "Certificats de dépôts du marché monétaire",
+      "category": "deposits",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "IV-3",
+      "query_aliases": [
+        "certificats de dépôts du marché monétaire"
+      ],
+      "accepted_statement_labels": [
+        "certificats de dépôts du marché monétaire"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "accrued_deposit_liabilities",
+      "label_fr": "Dettes rattachées aux dépôts",
+      "category": "deposits",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "IV-3",
+      "query_aliases": [
+        "dettes rattachées aux dépôts"
+      ],
+      "accepted_statement_labels": [
+        "dettes rattachées aux dépôts"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "other_customer_amounts_due",
+      "label_fr": "Autres sommes dues à la clientèle",
+      "category": "deposits",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "IV-3",
+      "query_aliases": [
+        "autres sommes dues à la clientèle"
+      ],
+      "accepted_statement_labels": [
+        "autres sommes dues à la clientèle"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "trading_income",
+      "label_fr": "Gains sur portefeuille commercial et opérations financières",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "source_note_family": "VII-1-3",
+      "query_aliases": [
+        "gains sur portefeuille commercial et opérations financières"
+      ],
+      "accepted_statement_labels": [
+        "gains sur portefeuille commercial et opérations financières"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "investment_income",
+      "label_fr": "Revenus du portefeuille d'investissement",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "source_note_family": "VII-1-4",
+      "query_aliases": [
+        "revenus du portefeuille d'investissement"
+      ],
+      "accepted_statement_labels": [
+        "revenus du portefeuille d'investissement"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "banking_operating_income",
+      "label_fr": "Total des produits d'exploitation bancaire",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "total des produits d'exploitation bancaire"
+      ],
+      "accepted_statement_labels": [
+        "total des produits d'exploitation bancaire"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "fee_expense",
+      "label_fr": "Commissions encourues",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "source_note_family": "VII-2-2",
+      "query_aliases": [
+        "commissions encourues"
+      ],
+      "accepted_statement_labels": [
+        "commissions encourues"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ],
+      "accounting_sign": "expense"
+    },
+    {
+      "metric_id": "banking_operating_expense",
+      "label_fr": "Total des charges d'exploitation bancaire",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "total des charges d'exploitation bancaire"
+      ],
+      "accepted_statement_labels": [
+        "total des charges d'exploitation bancaire"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ],
+      "accounting_sign": "expense"
+    },
+    {
+      "metric_id": "other_operating_income",
+      "label_fr": "Autres produits d'exploitation",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "source_note_family": "VII-5",
+      "query_aliases": [
+        "autres produits d'exploitation"
+      ],
+      "accepted_statement_labels": [
+        "autres produits d'exploitation"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "ordinary_result",
+      "label_fr": "Résultat des activités ordinaires",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "résultat des activités ordinaires"
+      ],
+      "accepted_statement_labels": [
+        "résultat des activités ordinaires"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "extraordinary_result",
+      "label_fr": "Résultat extraordinaire",
+      "category": "profitability",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "income_statement",
+      "source_note_family": "VII-11",
+      "query_aliases": [
+        "résultat extraordinaire"
+      ],
+      "accepted_statement_labels": [
+        "résultat extraordinaire"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "cash_banking_income_received",
+      "label_fr": "Produits d'exploitation bancaire encaissés",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "produits d'exploitation bancaire encaissés"
+      ],
+      "accepted_statement_labels": [
+        "produits d'exploitation bancaire encaissés"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "cash_banking_expense_paid",
+      "label_fr": "Charges d'exploitation bancaire décaissées",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "charges d'exploitation bancaire décaissées"
+      ],
+      "accepted_statement_labels": [
+        "charges d'exploitation bancaire décaissées"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ],
+      "accounting_sign": "expense"
+    },
+    {
+      "metric_id": "net_interbank_cash_flow",
+      "label_fr": "Dépôts et retraits auprès d'autres établissements",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "dépôts et retraits auprès d'autres établissements"
+      ],
+      "accepted_statement_labels": [
+        "dépôts et retraits auprès d'autres établissements"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "net_customer_lending_cash_flow",
+      "label_fr": "Prêts accordés et remboursements de la clientèle",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "prêts accordés et remboursements de la clientèle"
+      ],
+      "accepted_statement_labels": [
+        "prêts accordés et remboursements de la clientèle"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "net_customer_deposit_cash_flow",
+      "label_fr": "Dépôts et retraits de la clientèle",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "dépôts et retraits de la clientèle"
+      ],
+      "accepted_statement_labels": [
+        "dépôts et retraits de la clientèle"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "personnel_and_creditors_cash_paid",
+      "label_fr": "Sommes versées au personnel et créditeurs",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "sommes versées au personnel et créditeurs"
+      ],
+      "accepted_statement_labels": [
+        "sommes versées au personnel et créditeurs"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ],
+      "accounting_sign": "expense"
+    },
+    {
+      "metric_id": "other_operating_cash_flow",
+      "label_fr": "Autres flux d'exploitation",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "autres flux d'exploitation"
+      ],
+      "accepted_statement_labels": [
+        "autres flux d'exploitation"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "corporate_tax_paid",
+      "label_fr": "Impôts sur les sociétés décaissés",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "impôts sur les sociétés décaissés"
+      ],
+      "accepted_statement_labels": [
+        "impôts sur les sociétés décaissés"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ],
+      "accounting_sign": "expense"
+    },
+    {
+      "metric_id": "investment_income_cash_received",
+      "label_fr": "Intérêts et dividendes encaissés sur portefeuille d'investissement",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "intérêts et dividendes encaissés sur portefeuille d'investissement"
+      ],
+      "accepted_statement_labels": [
+        "intérêts et dividendes encaissés sur portefeuille d'investissement"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "investment_portfolio_cash_flow",
+      "label_fr": "Acquisitions et cessions sur portefeuille d'investissement",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "acquisitions et cessions sur portefeuille d'investissement"
+      ],
+      "accepted_statement_labels": [
+        "acquisitions et cessions sur portefeuille d'investissement"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "fixed_asset_cash_flow",
+      "label_fr": "Acquisitions et cessions d'immobilisations",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "acquisitions et cessions d'immobilisations"
+      ],
+      "accepted_statement_labels": [
+        "acquisitions et cessions d'immobilisations"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "investing_cash_flow",
+      "label_fr": "Flux net affectés aux activités d'investissement",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "flux net affectés aux activités d'investissement"
+      ],
+      "accepted_statement_labels": [
+        "flux net affectés aux activités d'investissement"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "borrowings_cash_flow",
+      "label_fr": "Émission et remboursement d'emprunts",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "émission et remboursement d'emprunts"
+      ],
+      "accepted_statement_labels": [
+        "émission et remboursement d'emprunts"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "special_resources_cash_flow",
+      "label_fr": "Variation des ressources spéciales",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "variation des ressources spéciales"
+      ],
+      "accepted_statement_labels": [
+        "variation des ressources spéciales"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "dividends_paid",
+      "label_fr": "Dividendes versés",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "dividendes versés"
+      ],
+      "accepted_statement_labels": [
+        "dividendes versés"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ],
+      "accounting_sign": "expense"
+    },
+    {
+      "metric_id": "financing_cash_flow",
+      "label_fr": "Flux net affectés aux activités de financement",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "flux net affectés aux activités de financement"
+      ],
+      "accepted_statement_labels": [
+        "flux net affectés aux activités de financement"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "foreign_exchange_cash_effect",
+      "label_fr": "Incidence des variations de change sur la trésorerie",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "flow",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "incidence des variations de change sur la trésorerie"
+      ],
+      "accepted_statement_labels": [
+        "incidence des variations de change sur la trésorerie"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "cash_equivalents_beginning",
+      "label_fr": "Liquidités et équivalents en début d'exercice",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "liquidités et équivalents en début d'exercice"
+      ],
+      "accepted_statement_labels": [
+        "liquidités et équivalents en début d'exercice"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "cash_equivalents_ending",
+      "label_fr": "Liquidités et équivalents en fin d'exercice",
+      "category": "cash_flow",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "cash_flow_statement",
+      "source_note_family": null,
+      "query_aliases": [
+        "liquidités et équivalents en fin d'exercice"
+      ],
+      "accepted_statement_labels": [
+        "liquidités et équivalents en fin d'exercice"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "guarantees_given_financial_institutions",
+      "label_fr": "Garanties données en faveur des établissements bancaires et financiers",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "source_note_family": null,
+      "query_aliases": [
+        "garanties données en faveur des établissements bancaires et financiers"
+      ],
+      "accepted_statement_labels": [
+        "garanties données en faveur des établissements bancaires et financiers"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "guarantees_given_customers",
+      "label_fr": "Garanties données en faveur de la clientèle",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "source_note_family": null,
+      "query_aliases": [
+        "garanties données en faveur de la clientèle"
+      ],
+      "accepted_statement_labels": [
+        "garanties données en faveur de la clientèle"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "documentary_credits_customers",
+      "label_fr": "Crédits documentaires en faveur de la clientèle",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "source_note_family": null,
+      "query_aliases": [
+        "crédits documentaires en faveur de la clientèle"
+      ],
+      "accepted_statement_labels": [
+        "crédits documentaires en faveur de la clientèle"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "documentary_credits_other",
+      "label_fr": "Autres crédits documentaires",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "source_note_family": null,
+      "query_aliases": [
+        "autres crédits documentaires"
+      ],
+      "accepted_statement_labels": [
+        "autres crédits documentaires"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "contingent_liabilities_total",
+      "label_fr": "Total des passifs éventuels",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "source_note_family": null,
+      "query_aliases": [
+        "total des passifs éventuels"
+      ],
+      "accepted_statement_labels": [
+        "total des passifs éventuels"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "financing_commitments_given",
+      "label_fr": "Engagements de financement donnés",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "source_note_family": null,
+      "query_aliases": [
+        "engagements de financement donnés"
+      ],
+      "accepted_statement_labels": [
+        "engagements de financement donnés"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "financing_commitments_financial_institutions",
+      "label_fr": "Engagements de financement envers les établissements financiers",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "source_note_family": null,
+      "query_aliases": [
+        "engagements de financement envers les établissements financiers"
+      ],
+      "accepted_statement_labels": [
+        "engagements de financement envers les établissements financiers"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "financing_commitments_customers",
+      "label_fr": "Engagements de financement en faveur de la clientèle",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "source_note_family": null,
+      "query_aliases": [
+        "engagements de financement en faveur de la clientèle"
+      ],
+      "accepted_statement_labels": [
+        "engagements de financement en faveur de la clientèle"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "securities_commitments",
+      "label_fr": "Engagements sur titres",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "source_note_family": null,
+      "query_aliases": [
+        "engagements sur titres"
+      ],
+      "accepted_statement_labels": [
+        "engagements sur titres"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "unpaid_participations",
+      "label_fr": "Participations non libérées",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "source_note_family": null,
+      "query_aliases": [
+        "participations non libérées"
+      ],
+      "accepted_statement_labels": [
+        "participations non libérées"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "securities_to_receive",
+      "label_fr": "Titres à recevoir",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "source_note_family": null,
+      "query_aliases": [
+        "titres à recevoir"
+      ],
+      "accepted_statement_labels": [
+        "titres à recevoir"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "guarantees_received",
+      "label_fr": "Garanties reçues",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "source_note_family": null,
+      "query_aliases": [
+        "garanties reçues"
+      ],
+      "accepted_statement_labels": [
+        "garanties reçues"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "commitments_received_total",
+      "label_fr": "Total des engagements reçus",
+      "category": "off_balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "off_balance_sheet",
+      "source_note_family": null,
+      "query_aliases": [
+        "total des engagements reçus"
+      ],
+      "accepted_statement_labels": [
+        "total des engagements reçus"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "investment_securities_gross",
+      "label_fr": "Portefeuille d'investissement brut",
+      "category": "balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "III-5",
+      "query_aliases": [
+        "portefeuille d'investissement brut"
+      ],
+      "accepted_statement_labels": [
+        "portefeuille d'investissement brut"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "central_bank_liabilities",
+      "label_fr": "Dettes envers la Banque Centrale et le CCP",
+      "category": "funding",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "source_note_family": "IV-1",
+      "query_aliases": [
+        "dettes envers la banque centrale et le ccp"
+      ],
+      "accepted_statement_labels": [
+        "dettes envers la banque centrale et le ccp"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "other_liabilities",
+      "label_fr": "Autres passifs",
+      "category": "balance_sheet",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "source_note_family": "IV-5",
+      "query_aliases": [
+        "autres passifs"
+      ],
+      "accepted_statement_labels": [
+        "autres passifs"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "other_equity",
+      "label_fr": "Autres capitaux propres",
+      "category": "equity",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "source_note_family": "V",
+      "query_aliases": [
+        "autres capitaux propres"
+      ],
+      "accepted_statement_labels": [
+        "autres capitaux propres"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "current_year_net_income_equity",
+      "label_fr": "Résultat de l'exercice dans les capitaux propres",
+      "category": "equity",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "source_note_family": "V",
+      "query_aliases": [
+        "résultat de l'exercice dans les capitaux propres"
+      ],
+      "accepted_statement_labels": [
+        "résultat de l'exercice dans les capitaux propres"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "customer_deposits_total",
+      "label_fr": "Total des dépôts de la clientèle",
+      "category": "deposits",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "source_note_family": "IV-3",
+      "query_aliases": [
+        "total des dépôts de la clientèle"
+      ],
+      "accepted_statement_labels": [
+        "total des dépôts de la clientèle"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "interbank_funding",
+      "label_fr": "Financement reçu des établissements bancaires et financiers",
+      "category": "funding",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "balance_sheet",
+      "source_note_family": "IV-2",
+      "query_aliases": [
+        "financement reçu des établissements bancaires et financiers"
+      ],
+      "accepted_statement_labels": [
+        "financement reçu des établissements bancaires et financiers"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "special_resources",
+      "label_fr": "Ressources spéciales",
+      "category": "funding",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "IV-4",
+      "query_aliases": [
+        "ressources spéciales"
+      ],
+      "accepted_statement_labels": [
+        "ressources spéciales"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    },
+    {
+      "metric_id": "borrowings",
+      "label_fr": "Emprunts",
+      "category": "funding",
+      "metric_type": "reported",
+      "period_type": "stock",
+      "source_kind": "direct_financial_statement",
+      "source_section": "notes",
+      "source_note_family": "IV-4",
+      "query_aliases": [
+        "emprunts"
+      ],
+      "accepted_statement_labels": [
+        "emprunts"
+      ],
+      "unit": {
+        "currency": "TND",
+        "unit_scale": "thousand"
+      },
+      "user_intent_status": "catalog_only",
+      "lifecycle_status": "approved_for_design",
+      "validation_rules": [
+        "libellé, année, unité et périmètre relevés sur le PDF",
+        "page et note source enregistrées avec le fait"
+      ]
+    }
+  ],
+  "calculated_metrics": [
+    {
+      "metric_id": "asset_growth",
+      "label_fr": "Croissance du total des actifs",
+      "formula": "(total_assets_t / total_assets_t_1) - 1",
+      "unit": "%"
+    },
+    {
+      "metric_id": "net_loans_growth",
+      "label_fr": "Croissance des crédits nets",
+      "formula": "(customer_loans_net_t / customer_loans_net_t_1) - 1",
+      "unit": "%"
+    },
+    {
+      "metric_id": "deposit_growth",
+      "label_fr": "Croissance des dépôts clientèle",
+      "formula": "(customer_deposits_t / customer_deposits_t_1) - 1",
+      "unit": "%"
+    },
+    {
+      "metric_id": "pnb_growth",
+      "label_fr": "Croissance du produit net bancaire",
+      "formula": "(net_banking_income_t / net_banking_income_t_1) - 1",
+      "unit": "%"
+    },
+    {
+      "metric_id": "net_income_growth",
+      "label_fr": "Croissance du résultat net",
+      "formula": "(net_income_t / net_income_t_1) - 1",
+      "unit": "%"
+    },
+    {
+      "metric_id": "net_interest_income",
+      "label_fr": "Marge nette d'intérêts",
+      "formula": "interest_income + interest_expense",
+      "unit": "mDT"
+    },
+    {
+      "metric_id": "cost_to_income",
+      "label_fr": "Coefficient d'exploitation",
+      "formula": "abs(personnel_expense + general_operating_expense + depreciation_expense) / net_banking_income",
+      "unit": "%"
+    },
+    {
+      "metric_id": "operating_margin",
+      "label_fr": "Marge d'exploitation",
+      "formula": "operating_profit / net_banking_income",
+      "unit": "%"
+    },
+    {
+      "metric_id": "net_profit_margin",
+      "label_fr": "Marge nette sur PNB",
+      "formula": "net_income / net_banking_income",
+      "unit": "%"
+    },
+    {
+      "metric_id": "roe_average",
+      "label_fr": "Rentabilité des capitaux propres moyens",
+      "formula": "net_income / average(total_equity_t, total_equity_t_1)",
+      "unit": "%"
+    },
+    {
+      "metric_id": "roa_average",
+      "label_fr": "Rentabilité des actifs moyens",
+      "formula": "net_income / average(total_assets_t, total_assets_t_1)",
+      "unit": "%"
+    },
+    {
+      "metric_id": "net_loan_to_deposit",
+      "label_fr": "Crédits nets sur dépôts",
+      "formula": "customer_loans_net / customer_deposits",
+      "unit": "%"
+    },
+    {
+      "metric_id": "equity_to_assets",
+      "label_fr": "Capitaux propres sur actifs",
+      "formula": "total_equity / total_assets",
+      "unit": "%"
+    },
+    {
+      "metric_id": "financial_leverage",
+      "label_fr": "Levier comptable",
+      "formula": "total_assets / total_equity",
+      "unit": "times"
+    },
+    {
+      "metric_id": "off_balance_commitments_to_assets",
+      "label_fr": "Engagements donnés sur actifs",
+      "formula": "commitments_given_total / total_assets",
+      "unit": "%"
+    },
+    {
+      "metric_id": "operating_cash_flow_to_net_income",
+      "label_fr": "Conversion du résultat net en flux d'exploitation",
+      "formula": "operating_cash_flow / net_income",
+      "unit": "times"
+    },
+    {
+      "metric_id": "gross_loans_growth",
+      "label_fr": "Croissance des crédits bruts",
+      "formula": "(customer_loans_gross_t / customer_loans_gross_t_1) - 1",
+      "unit": "%"
+    },
+    {
+      "metric_id": "equity_growth",
+      "label_fr": "Croissance des capitaux propres",
+      "formula": "(total_equity_t / total_equity_t_1) - 1",
+      "unit": "%"
+    },
+    {
+      "metric_id": "net_fee_income",
+      "label_fr": "Commissions nettes",
+      "formula": "fee_income + fee_expense",
+      "unit": "mDT"
+    },
+    {
+      "metric_id": "cost_to_income_excl_depreciation",
+      "label_fr": "Coefficient d'exploitation hors amortissements",
+      "formula": "abs(personnel_expense + general_operating_expense) / net_banking_income",
+      "unit": "%"
+    },
+    {
+      "metric_id": "roe_end_period",
+      "label_fr": "Rentabilité des capitaux propres de clôture",
+      "formula": "net_income / total_equity",
+      "unit": "%"
+    },
+    {
+      "metric_id": "roa_end_period",
+      "label_fr": "Rentabilité des actifs de clôture",
+      "formula": "net_income / total_assets",
+      "unit": "%"
+    },
+    {
+      "metric_id": "low_cost_deposit_share",
+      "label_fr": "Part des dépôts à faible coût",
+      "formula": "(demand_deposits + savings_deposits) / customer_deposits",
+      "unit": "%"
+    },
+    {
+      "metric_id": "demand_deposit_share",
+      "label_fr": "Part des dépôts à vue",
+      "formula": "demand_deposits / customer_deposits",
+      "unit": "%"
+    },
+    {
+      "metric_id": "savings_deposit_share",
+      "label_fr": "Part des dépôts d'épargne",
+      "formula": "savings_deposits / customer_deposits",
+      "unit": "%"
+    },
+    {
+      "metric_id": "term_deposit_share",
+      "label_fr": "Part des dépôts à terme",
+      "formula": "(term_accounts + term_bonds + certificates_of_deposit) / customer_deposits",
+      "unit": "%"
+    },
+    {
+      "metric_id": "customer_deposits_to_assets",
+      "label_fr": "Dépôts clientèle sur total actif",
+      "formula": "customer_deposits / total_assets",
+      "unit": "%"
+    },
+    {
+      "metric_id": "investment_securities_share",
+      "label_fr": "Poids du portefeuille d'investissement",
+      "formula": "investment_securities / total_assets",
+      "unit": "%"
+    },
+    {
+      "metric_id": "interbank_assets_share",
+      "label_fr": "Poids des créances interbancaires",
+      "formula": "interbank_receivables / total_assets",
+      "unit": "%"
+    },
+    {
+      "metric_id": "liquid_assets_proxy",
+      "label_fr": "Proxy d'actifs liquides",
+      "formula": "(cash_and_central_bank + interbank_receivables + trading_securities) / total_assets",
+      "unit": "%"
+    },
+    {
+      "metric_id": "npl_ratio_balance",
+      "label_fr": "Taux de créances classées au bilan",
+      "formula": "npl_balance_gross / customer_loans_gross",
+      "unit": "%"
+    },
+    {
+      "metric_id": "npl_coverage_balance",
+      "label_fr": "Taux de couverture des créances classées au bilan",
+      "formula": "(provisions_classified_loans + reserved_interest_classified) / npl_balance_gross",
+      "unit": "%"
+    },
+    {
+      "metric_id": "net_npl_ratio",
+      "label_fr": "Taux de créances classées nettes",
+      "formula": "npl_net / customer_loans_gross",
+      "unit": "%"
+    },
+    {
+      "metric_id": "collective_provision_ratio",
+      "label_fr": "Provision collective sur crédits bruts",
+      "formula": "collective_provisions / customer_loans_gross",
+      "unit": "%"
+    },
+    {
+      "metric_id": "cost_of_risk_average_loans",
+      "label_fr": "Coût du risque sur encours moyen",
+      "formula": "abs(loan_loss_provisions_expense) / average(customer_loans_gross_t, customer_loans_gross_t_1)",
+      "unit": "%"
+    },
+    {
+      "metric_id": "cost_of_risk_pnb",
+      "label_fr": "Charge de risque sur PNB",
+      "formula": "abs(loan_loss_provisions_expense) / net_banking_income",
+      "unit": "%"
+    },
+    {
+      "metric_id": "provisioning_burden",
+      "label_fr": "Poids total des dotations dans le PNB",
+      "formula": "abs(loan_loss_provisions_expense + investment_provisions_expense) / net_banking_income",
+      "unit": "%"
+    },
+    {
+      "metric_id": "off_balance_commitments_to_equity",
+      "label_fr": "Engagements donnés sur capitaux propres",
+      "formula": "commitments_given_total / total_equity",
+      "unit": "%"
+    },
+    {
+      "metric_id": "contingent_liabilities_to_equity",
+      "label_fr": "Passifs éventuels sur capitaux propres",
+      "formula": "contingent_liabilities_total / total_equity",
+      "unit": "%"
+    },
+    {
+      "metric_id": "guarantees_received_coverage",
+      "label_fr": "Couverture des engagements donnés par garanties reçues",
+      "formula": "guarantees_received / commitments_given_total",
+      "unit": "times"
+    },
+    {
+      "metric_id": "documentary_credit_share",
+      "label_fr": "Part des crédits documentaires dans les passifs éventuels",
+      "formula": "documentary_credits / contingent_liabilities_total",
+      "unit": "%"
+    },
+    {
+      "metric_id": "customer_guarantees_share",
+      "label_fr": "Part des garanties données à la clientèle",
+      "formula": "guarantees_given_customers / guarantees_given",
+      "unit": "%"
+    },
+    {
+      "metric_id": "operating_cash_flow_to_assets",
+      "label_fr": "Flux d'exploitation sur actifs moyens",
+      "formula": "operating_cash_flow / average(total_assets_t, total_assets_t_1)",
+      "unit": "%"
+    },
+    {
+      "metric_id": "cash_change_rate",
+      "label_fr": "Variation relative de la trésorerie",
+      "formula": "net_cash_change / cash_equivalents_beginning",
+      "unit": "%"
+    },
+    {
+      "metric_id": "ending_cash_to_assets",
+      "label_fr": "Trésorerie de clôture sur total actif",
+      "formula": "cash_equivalents_ending / total_assets",
+      "unit": "%"
+    },
+    {
+      "metric_id": "dividend_payout_cash",
+      "label_fr": "Dividendes décaissés sur résultat net",
+      "formula": "abs(dividends_paid) / net_income",
+      "unit": "%"
+    },
+    {
+      "metric_id": "npl_total_gross",
+      "label_fr": "Total des créances douteuses bilan et hors bilan",
+      "formula": "npl_balance_gross + npl_off_balance_gross",
+      "unit": "mDT"
+    },
+    {
+      "metric_id": "total_credit_exposure_gross",
+      "label_fr": "Exposition de crédit totale brute",
+      "formula": "customer_loans_gross + npl_off_balance_gross",
+      "unit": "mDT"
+    },
+    {
+      "metric_id": "total_classified_provisions",
+      "label_fr": "Total des provisions sur créances classées",
+      "formula": "provisions_classified_loans + reserved_interest_classified + provisions_classified_off_balance",
+      "unit": "mDT"
+    },
+    {
+      "metric_id": "npl_net",
+      "label_fr": "Créances douteuses nettes",
+      "formula": "npl_balance_gross - provisions_classified_loans - reserved_interest_classified",
+      "unit": "mDT"
+    },
+    {
+      "metric_id": "npl_ratio_total",
+      "label_fr": "Taux de créances classées bilan et hors bilan",
+      "formula": "npl_total_gross / total_credit_exposure_gross",
+      "unit": "%"
+    },
+    {
+      "metric_id": "npl_coverage_total",
+      "label_fr": "Couverture des créances classées bilan et hors bilan",
+      "formula": "total_classified_provisions / npl_total_gross",
+      "unit": "%"
+    }
+  ],
+  "calculation_policy": {
+    "only_verified_inputs": true,
+    "store_formula_version": true,
+    "store_input_fact_ids": true,
+    "do_not_calculate_if_input_is_missing_or_denominator_is_zero": true
+  },
+  "completeness": {
+    "reported_metric_scope": "BIAT 2021–2025 metrics directly published in statements and notes",
+    "calculated_metric_scope": "formulas approved for calculation from verified inputs only",
+    "next_step": "Validate BIAT label and note mappings across all five reports before extraction."
+  }
+}

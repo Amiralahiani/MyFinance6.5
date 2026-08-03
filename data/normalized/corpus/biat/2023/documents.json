@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "biat-2023-63e9f82e1808a1e6",
+    "bank_id": "biat",
+    "bank_name": "BIAT",
+    "reporting_year": 2023,
+    "source_path": "data/raw/official-reports/etat financier/biat/biat_efd311223.pdf",
+    "sha256": "63e9f82e1808a1e6c3aeee859dbbdbcca11d62a7c1469cab6f69fa78bee7cc00",
+    "page_count": 84,
+    "document_type": "annual_financial_statement"
+  }
+]

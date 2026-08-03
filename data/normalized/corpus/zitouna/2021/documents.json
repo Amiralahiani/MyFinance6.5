@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "zitouna-2021-362f934deb5c05f9",
+    "bank_id": "zitouna",
+    "bank_name": "Banque Zitouna",
+    "reporting_year": 2021,
+    "source_path": "data/raw/official-reports/etat financier/zitouna/banque_zitouna_efd311221.pdf",
+    "sha256": "362f934deb5c05f944eca205de9001312fc259747e785794dc167426637ac1b6",
+    "page_count": 64,
+    "document_type": "annual_financial_statement"
+  }
+]

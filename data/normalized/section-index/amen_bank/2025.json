@@ -1,0 +1,172 @@
+{
+  "bank_id": "amen_bank",
+  "reporting_year": 2025,
+  "special_audit_report": {
+    "start_page": 66,
+    "conclusion_page": 92
+  },
+  "notes": [
+    {
+      "page_number": 16,
+      "note": "1",
+      "title": "1. Caisse et avoirs auprès de la BCT, CCP et TGT"
+    },
+    {
+      "page_number": 18,
+      "note": "1",
+      "title": "3. Créances sur la clientèle"
+    },
+    {
+      "page_number": 23,
+      "note": "1",
+      "title": "4. Portefeuille titres commercial"
+    },
+    {
+      "page_number": 29,
+      "note": "1",
+      "title": "6.Valeurs immobilisées"
+    },
+    {
+      "page_number": 31,
+      "note": "1",
+      "title": "7.Autres actifs"
+    },
+    {
+      "page_number": 32,
+      "note": "2",
+      "title": "1. Banque Centrale de Tunisie et CCP"
+    },
+    {
+      "page_number": 33,
+      "note": "2",
+      "title": "3. Dépôts et avoirs de la clientèle"
+    },
+    {
+      "page_number": 34,
+      "note": "2",
+      "title": "4.Emprunts et ressources spéciales"
+    },
+    {
+      "page_number": 37,
+      "note": "2",
+      "title": "5. Autres passifs"
+    },
+    {
+      "page_number": 39,
+      "note": "4",
+      "title": "1.Cautions, avals et autres garanties données"
+    },
+    {
+      "page_number": 40,
+      "note": "4",
+      "title": "2.Crédits documentaires"
+    },
+    {
+      "page_number": 41,
+      "note": "4",
+      "title": "4.Engagements donnés"
+    },
+    {
+      "page_number": 42,
+      "note": "4",
+      "title": "6. Garanties Reçues"
+    },
+    {
+      "page_number": 43,
+      "note": "5",
+      "title": "1. Intérêts et revenus assimilés"
+    },
+    {
+      "page_number": 44,
+      "note": "5",
+      "title": "4. Revenus du portefeuille d’investissement"
+    },
+    {
+      "page_number": 45,
+      "note": "5",
+      "title": "5. Intérêts encourus et charges assimilées"
+    },
+    {
+      "page_number": 46,
+      "note": "5",
+      "title": "6. Dotations aux provisions et résultat des corrections de valeur sur créances, hors bilan et"
+    },
+    {
+      "page_number": 47,
+      "note": "5",
+      "title": "7. Dotations aux provisions et résultat des corrections de valeur sur portefeuille"
+    },
+    {
+      "page_number": 47,
+      "note": "5",
+      "title": "9.Solde en gain résultant des autres éléments ordinaires"
+    },
+    {
+      "page_number": 48,
+      "note": "5",
+      "title": "10. Solde en gain résultant des autres éléments extraordinaires"
+    },
+    {
+      "page_number": 49,
+      "note": "6",
+      "title": "1. Flux de trésorerie net provenant des activités d'exploitation"
+    },
+    {
+      "page_number": 49,
+      "note": "6",
+      "title": "2. Flux de trésorerie net affectés aux activités d'investissement"
+    },
+    {
+      "page_number": 50,
+      "note": "6",
+      "title": "3. Flux de trésorerie net affectés aux activités de financement"
+    },
+    {
+      "page_number": 66,
+      "note": "7",
+      "title": "2. Notes sur les politiques de fixation des prix entre les parties liées"
+    },
+    {
+      "page_number": 66,
+      "note": "7",
+      "title": "3. Ratio de liquidité à court terme « LCR »"
+    },
+    {
+      "page_number": 67,
+      "note": "7",
+      "title": "4. Informations relatives aux risques et opportunités liés à la durabilité et au changement"
+    },
+    {
+      "page_number": 74,
+      "note": "7",
+      "title": "6. Évènements postérieurs à la date de clôture"
+    }
+  ],
+  "related_party_notes": [
+    {
+      "page_number": 66,
+      "note": "7",
+      "title": "2. Notes sur les politiques de fixation des prix entre les parties liées"
+    }
+  ],
+  "convention_pages": [
+    66,
+    70,
+    71,
+    77,
+    78,
+    79,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92
+  ]
+}

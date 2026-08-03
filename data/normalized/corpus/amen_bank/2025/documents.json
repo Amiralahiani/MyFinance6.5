@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "amen_bank-2025-4a0867de81cbd829",
+    "bank_id": "amen_bank",
+    "bank_name": "Amen Bank",
+    "reporting_year": 2025,
+    "source_path": "data/raw/official-reports/etat financier/amen_bank/amen_bank_efd311225.pdf",
+    "sha256": "4a0867de81cbd8296acd60a458405a1a67e89a84e872c67dc7dd994090ae42fb",
+    "page_count": 92,
+    "document_type": "annual_financial_statement"
+  }
+]

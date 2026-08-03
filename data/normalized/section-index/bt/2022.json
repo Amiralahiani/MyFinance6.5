@@ -1,0 +1,20 @@
+{
+  "bank_id": "bt",
+  "reporting_year": 2022,
+  "special_audit_report": {
+    "start_page": 49,
+    "conclusion_page": null
+  },
+  "notes": [],
+  "related_party_notes": [],
+  "convention_pages": [
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56
+  ]
+}

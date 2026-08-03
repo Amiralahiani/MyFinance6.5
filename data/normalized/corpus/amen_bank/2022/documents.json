@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "amen_bank-2022-80c558901dd7ce17",
+    "bank_id": "amen_bank",
+    "bank_name": "Amen Bank",
+    "reporting_year": 2022,
+    "source_path": "data/raw/official-reports/etat financier/amen_bank/amen_bank_efd311222.pdf",
+    "sha256": "80c558901dd7ce17b036263a9738d3da923e0d0565ca84883bf36e164d5b87ea",
+    "page_count": 77,
+    "document_type": "annual_financial_statement"
+  }
+]

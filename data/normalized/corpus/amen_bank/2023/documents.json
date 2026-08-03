@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "amen_bank-2023-aa1d7ecce5c61dd1",
+    "bank_id": "amen_bank",
+    "bank_name": "Amen Bank",
+    "reporting_year": 2023,
+    "source_path": "data/raw/official-reports/etat financier/amen_bank/amen_bank_efd311223.pdf",
+    "sha256": "aa1d7ecce5c61dd126c8432b4936cefe60598b6a61826e1a29c52c381635d1ae",
+    "page_count": 82,
+    "document_type": "annual_financial_statement"
+  }
+]

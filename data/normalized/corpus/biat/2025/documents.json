@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "biat-2025-157f24198c53ec31",
+    "bank_id": "biat",
+    "bank_name": "BIAT",
+    "reporting_year": 2025,
+    "source_path": "data/raw/official-reports/etat financier/biat/biat_efd311225.pdf",
+    "sha256": "157f24198c53ec31cb79543708091ada0b16cc4512b27280a66c01be02e1963e",
+    "page_count": 89,
+    "document_type": "annual_financial_statement"
+  }
+]

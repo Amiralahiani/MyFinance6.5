@@ -1,0 +1,675 @@
+{
+  "version": "2.0",
+  "scope": "Automatic extraction and deterministic validation for the common core metrics in individual financial statements of five banks",
+  "source_of_truth": "The official PDF remains the primary proof; only auto_validated facts are answerable values.",
+  "total_reports": 25,
+  "core_metric_slots": 175,
+  "extracted_fact_count": 174,
+  "missing_core_metric_count": 1,
+  "auto_validated_fact_count": 174,
+  "rejected_fact_count": 0,
+  "reports_by_bank": {
+    "amen_bank": 5,
+    "attijari_bank": 5,
+    "biat": 5,
+    "bt": 5,
+    "zitouna": 5
+  },
+  "review_states": {
+    "auto_validated": 24,
+    "auto_validated_with_missing_core_metrics": 1
+  },
+  "items": [
+    {
+      "bank_id": "amen_bank",
+      "bank_name": "Amen Bank",
+      "reporting_year": 2021,
+      "source_path": "data/raw/official-reports/etat financier/amen_bank/amen_bank_efd311221.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 124,
+        "section_index_path": "data/normalized/section-index/amen_bank/2021.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/amen_bank/2021/financial_facts.json",
+      "validation_report_path": "data/validation-runs/amen_bank/2021/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "amen_bank",
+      "bank_name": "Amen Bank",
+      "reporting_year": 2022,
+      "source_path": "data/raw/official-reports/etat financier/amen_bank/amen_bank_efd311222.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 138,
+        "section_index_path": "data/normalized/section-index/amen_bank/2022.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/amen_bank/2022/financial_facts.json",
+      "validation_report_path": "data/validation-runs/amen_bank/2022/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "amen_bank",
+      "bank_name": "Amen Bank",
+      "reporting_year": 2023,
+      "source_path": "data/raw/official-reports/etat financier/amen_bank/amen_bank_efd311223.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 136,
+        "section_index_path": "data/normalized/section-index/amen_bank/2023.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/amen_bank/2023/financial_facts.json",
+      "validation_report_path": "data/validation-runs/amen_bank/2023/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "amen_bank",
+      "bank_name": "Amen Bank",
+      "reporting_year": 2024,
+      "source_path": "data/raw/official-reports/etat financier/amen_bank/amen_bank_efd311224.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 146,
+        "section_index_path": "data/normalized/section-index/amen_bank/2024.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/amen_bank/2024/financial_facts.json",
+      "validation_report_path": "data/validation-runs/amen_bank/2024/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "amen_bank",
+      "bank_name": "Amen Bank",
+      "reporting_year": 2025,
+      "source_path": "data/raw/official-reports/etat financier/amen_bank/amen_bank_efd311225.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 167,
+        "section_index_path": "data/normalized/section-index/amen_bank/2025.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/amen_bank/2025/financial_facts.json",
+      "validation_report_path": "data/validation-runs/amen_bank/2025/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "attijari_bank",
+      "bank_name": "Attijari Bank",
+      "reporting_year": 2021,
+      "source_path": "data/raw/official-reports/etat financier/attijari_bank/efd_2021_attijari_bank.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 125,
+        "section_index_path": "data/normalized/section-index/attijari_bank/2021.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/attijari_bank/2021/financial_facts.json",
+      "validation_report_path": "data/validation-runs/attijari_bank/2021/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "attijari_bank",
+      "bank_name": "Attijari Bank",
+      "reporting_year": 2022,
+      "source_path": "data/raw/official-reports/etat financier/attijari_bank/attijari_bank_efd311222.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 124,
+        "section_index_path": "data/normalized/section-index/attijari_bank/2022.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/attijari_bank/2022/financial_facts.json",
+      "validation_report_path": "data/validation-runs/attijari_bank/2022/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "attijari_bank",
+      "bank_name": "Attijari Bank",
+      "reporting_year": 2023,
+      "source_path": "data/raw/official-reports/etat financier/attijari_bank/attijari_bank_efd311223.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 134,
+        "section_index_path": "data/normalized/section-index/attijari_bank/2023.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/attijari_bank/2023/financial_facts.json",
+      "validation_report_path": "data/validation-runs/attijari_bank/2023/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "attijari_bank",
+      "bank_name": "Attijari Bank",
+      "reporting_year": 2024,
+      "source_path": "data/raw/official-reports/etat financier/attijari_bank/attijari_bank_efd311224.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 127,
+        "section_index_path": "data/normalized/section-index/attijari_bank/2024.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/attijari_bank/2024/financial_facts.json",
+      "validation_report_path": "data/validation-runs/attijari_bank/2024/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "attijari_bank",
+      "bank_name": "Attijari Bank",
+      "reporting_year": 2025,
+      "source_path": "data/raw/official-reports/etat financier/attijari_bank/attijari_bank_efd311225.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 118,
+        "section_index_path": "data/normalized/section-index/attijari_bank/2025.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/attijari_bank/2025/financial_facts.json",
+      "validation_report_path": "data/validation-runs/attijari_bank/2025/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "biat",
+      "bank_name": "BIAT",
+      "reporting_year": 2021,
+      "source_path": "data/raw/official-reports/etat financier/biat/biat_efd311221.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 315,
+        "section_index_path": "data/normalized/section-index/biat/2021.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/biat/2021/financial_facts.json",
+      "validation_report_path": "data/validation-runs/biat/2021/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "biat",
+      "bank_name": "BIAT",
+      "reporting_year": 2022,
+      "source_path": "data/raw/official-reports/etat financier/biat/biat_efd311222.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 168,
+        "section_index_path": "data/normalized/section-index/biat/2022.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/biat/2022/financial_facts.json",
+      "validation_report_path": "data/validation-runs/biat/2022/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "biat",
+      "bank_name": "BIAT",
+      "reporting_year": 2023,
+      "source_path": "data/raw/official-reports/etat financier/biat/biat_efd311223.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 173,
+        "section_index_path": "data/normalized/section-index/biat/2023.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/biat/2023/financial_facts.json",
+      "validation_report_path": "data/validation-runs/biat/2023/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "biat",
+      "bank_name": "BIAT",
+      "reporting_year": 2024,
+      "source_path": "data/raw/official-reports/etat financier/biat/biat_efd311224.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 179,
+        "section_index_path": "data/normalized/section-index/biat/2024.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/biat/2024/financial_facts.json",
+      "validation_report_path": "data/validation-runs/biat/2024/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "biat",
+      "bank_name": "BIAT",
+      "reporting_year": 2025,
+      "source_path": "data/raw/official-reports/etat financier/biat/biat_efd311225.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 183,
+        "section_index_path": "data/normalized/section-index/biat/2025.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/biat/2025/financial_facts.json",
+      "validation_report_path": "data/validation-runs/biat/2025/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "bt",
+      "bank_name": "Banque de Tunisie",
+      "reporting_year": 2021,
+      "source_path": "data/raw/official-reports/etat financier/bt/bt_efd311221.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 118,
+        "section_index_path": "data/normalized/section-index/bt/2021.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/bt/2021/financial_facts.json",
+      "validation_report_path": "data/validation-runs/bt/2021/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "bt",
+      "bank_name": "Banque de Tunisie",
+      "reporting_year": 2022,
+      "source_path": "data/raw/official-reports/etat financier/bt/bt_efd311222.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 104,
+        "section_index_path": "data/normalized/section-index/bt/2022.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/bt/2022/financial_facts.json",
+      "validation_report_path": "data/validation-runs/bt/2022/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "bt",
+      "bank_name": "Banque de Tunisie",
+      "reporting_year": 2023,
+      "source_path": "data/raw/official-reports/etat financier/bt/bt_efd311223.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 114,
+        "section_index_path": "data/normalized/section-index/bt/2023.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/bt/2023/financial_facts.json",
+      "validation_report_path": "data/validation-runs/bt/2023/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "bt",
+      "bank_name": "Banque de Tunisie",
+      "reporting_year": 2024,
+      "source_path": "data/raw/official-reports/etat financier/bt/bt_efd311224.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 120,
+        "section_index_path": "data/normalized/section-index/bt/2024.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/bt/2024/financial_facts.json",
+      "validation_report_path": "data/validation-runs/bt/2024/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "bt",
+      "bank_name": "Banque de Tunisie",
+      "reporting_year": 2025,
+      "source_path": "data/raw/official-reports/etat financier/bt/bt_efd311225.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 138,
+        "section_index_path": "data/normalized/section-index/bt/2025.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/bt/2025/financial_facts.json",
+      "validation_report_path": "data/validation-runs/bt/2025/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "zitouna",
+      "bank_name": "Banque Zitouna",
+      "reporting_year": 2021,
+      "source_path": "data/raw/official-reports/etat financier/zitouna/banque_zitouna_efd311221.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 98,
+        "section_index_path": "data/normalized/section-index/zitouna/2021.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [
+        "net_income"
+      ],
+      "auto_validated_fact_count": 6,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/zitouna/2021/financial_facts.json",
+      "validation_report_path": "data/validation-runs/zitouna/2021/report.json",
+      "review_status": "auto_validated_with_missing_core_metrics"
+    },
+    {
+      "bank_id": "zitouna",
+      "bank_name": "Banque Zitouna",
+      "reporting_year": 2022,
+      "source_path": "data/raw/official-reports/etat financier/zitouna/banque_zitouna_efd311222.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 93,
+        "section_index_path": "data/normalized/section-index/zitouna/2022.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/zitouna/2022/financial_facts.json",
+      "validation_report_path": "data/validation-runs/zitouna/2022/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "zitouna",
+      "bank_name": "Banque Zitouna",
+      "reporting_year": 2023,
+      "source_path": "data/raw/official-reports/etat financier/zitouna/banque_zitouna_efd311223.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 93,
+        "section_index_path": "data/normalized/section-index/zitouna/2023.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/zitouna/2023/financial_facts.json",
+      "validation_report_path": "data/validation-runs/zitouna/2023/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "zitouna",
+      "bank_name": "Banque Zitouna",
+      "reporting_year": 2024,
+      "source_path": "data/raw/official-reports/etat financier/zitouna/banque_zitouna_efd311224.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 95,
+        "section_index_path": "data/normalized/section-index/zitouna/2024.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/zitouna/2024/financial_facts.json",
+      "validation_report_path": "data/validation-runs/zitouna/2024/report.json",
+      "review_status": "auto_validated"
+    },
+    {
+      "bank_id": "zitouna",
+      "bank_name": "Banque Zitouna",
+      "reporting_year": 2025,
+      "source_path": "data/raw/official-reports/etat financier/zitouna/banque_zitouna_efd311225.pdf",
+      "corpus": {
+        "document_count": 1,
+        "chunk_count": 110,
+        "section_index_path": "data/normalized/section-index/zitouna/2025.json"
+      },
+      "extracted_metrics": [
+        "customer_deposits",
+        "customer_loans_net",
+        "net_banking_income",
+        "net_income",
+        "total_assets",
+        "total_equity",
+        "total_liabilities"
+      ],
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
+      "rejected_fact_count": 0,
+      "auto_validated_path": "data/normalized/facts/auto_validated/zitouna/2025/financial_facts.json",
+      "validation_report_path": "data/validation-runs/zitouna/2025/report.json",
+      "review_status": "auto_validated"
+    }
+  ]
+}

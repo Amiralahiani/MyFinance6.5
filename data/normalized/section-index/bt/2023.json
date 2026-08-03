@@ -1,0 +1,23 @@
+{
+  "bank_id": "bt",
+  "reporting_year": 2023,
+  "special_audit_report": {
+    "start_page": 52,
+    "conclusion_page": null
+  },
+  "notes": [],
+  "related_party_notes": [],
+  "convention_pages": [
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    63
+  ]
+}

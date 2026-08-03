@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "biat-2024-e4a2086def5111c3",
+    "bank_id": "biat",
+    "bank_name": "BIAT",
+    "reporting_year": 2024,
+    "source_path": "data/raw/official-reports/etat financier/biat/biat_efd311224.pdf",
+    "sha256": "e4a2086def5111c3216f555cd8edac9c85ffbe45691f0e9900ef56d4b5d694b5",
+    "page_count": 86,
+    "document_type": "annual_financial_statement"
+  }
+]

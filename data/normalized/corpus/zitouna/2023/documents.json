@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "zitouna-2023-efc1d255708c698f",
+    "bank_id": "zitouna",
+    "bank_name": "Banque Zitouna",
+    "reporting_year": 2023,
+    "source_path": "data/raw/official-reports/etat financier/zitouna/banque_zitouna_efd311223.pdf",
+    "sha256": "efc1d255708c698fbc5f407329810428cc1d32f411be3e6d3a50fdf92932005e",
+    "page_count": 69,
+    "document_type": "annual_financial_statement"
+  }
+]

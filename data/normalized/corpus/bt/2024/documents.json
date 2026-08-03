@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "bt-2024-c68c98e9e02336f5",
+    "bank_id": "bt",
+    "bank_name": "Banque de Tunisie",
+    "reporting_year": 2024,
+    "source_path": "data/raw/official-reports/etat financier/bt/bt_efd311224.pdf",
+    "sha256": "c68c98e9e02336f5e65bf3f4f184e5bdcf57b12a2462c3f6bd5e3bbb46388e56",
+    "page_count": 67,
+    "document_type": "annual_financial_statement"
+  }
+]

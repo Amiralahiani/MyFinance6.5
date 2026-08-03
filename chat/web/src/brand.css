@@ -1,0 +1,8 @@
+.brand{font:inherit;letter-spacing:normal}
+.brand-seal{width:35px;height:35px;border:1px solid #5a7674;border-radius:4px;display:grid;place-items:center;background:#163234}
+.brand-seal svg{width:28px;height:28px;stroke:#d6ff63;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.seal-line{stroke:#698682;stroke-width:1}
+.seal-dot{fill:#d6ff63;stroke:none}
+.brand-copy{display:grid;gap:3px}
+.brand-copy strong{font:700 11px "DM Mono";letter-spacing:1.35px}
+.brand-copy small{font:500 8px "DM Mono";letter-spacing:.65px;color:#86a19c}

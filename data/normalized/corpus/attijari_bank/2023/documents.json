@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "attijari_bank-2023-2284bd9c099c088f",
+    "bank_id": "attijari_bank",
+    "bank_name": "Attijari Bank",
+    "reporting_year": 2023,
+    "source_path": "data/raw/official-reports/etat financier/attijari_bank/attijari_bank_efd311223.pdf",
+    "sha256": "2284bd9c099c088f494dc061b2b797f44b70d1c93351e49e5c80f9cf2c91c925",
+    "page_count": 78,
+    "document_type": "annual_financial_statement"
+  }
+]

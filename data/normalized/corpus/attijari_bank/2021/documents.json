@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "attijari_bank-2021-a25213ddfad36b59",
+    "bank_id": "attijari_bank",
+    "bank_name": "Attijari Bank",
+    "reporting_year": 2021,
+    "source_path": "data/raw/official-reports/etat financier/attijari_bank/efd_2021_attijari_bank.pdf",
+    "sha256": "a25213ddfad36b59ca5aa27d57ab8a0644a7bb3afa5602136446b66aa177272b",
+    "page_count": 65,
+    "document_type": "annual_financial_statement"
+  }
+]

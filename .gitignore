@@ -1,0 +1,26 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / Expo
+node_modules/
+dist/
+.expo/
+web-build/
+
+# Local configuration and source documents
+.env
+.env.local
+data/raw/private/
+
+# Generated QA evidence
+qa/runs/
+qa/screens/
+data/autotest/
+test-results/
+playwright-report/
+*.tmp

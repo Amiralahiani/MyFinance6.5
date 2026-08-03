@@ -1,0 +1,32 @@
+{
+  "bank_id": "zitouna",
+  "reporting_year": 2023,
+  "special_audit_report": {
+    "start_page": 56,
+    "conclusion_page": null
+  },
+  "notes": [
+    {
+      "page_number": 43,
+      "note": "4",
+      "title": "15 supra."
+    }
+  ],
+  "related_party_notes": [],
+  "convention_pages": [
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69
+  ]
+}

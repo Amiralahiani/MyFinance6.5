@@ -1,0 +1,92 @@
+{
+  "bank_id": "biat",
+  "reporting_year": 2023,
+  "special_audit_report": {
+    "start_page": 60,
+    "conclusion_page": null
+  },
+  "notes": [
+    {
+      "page_number": 6,
+      "note": "I",
+      "title": "Respect des Normes Comptables Tunisiennes"
+    },
+    {
+      "page_number": 10,
+      "note": "III",
+      "title": "Actifs du bilan"
+    },
+    {
+      "page_number": 20,
+      "note": "IV",
+      "title": "Passif du bilan"
+    },
+    {
+      "page_number": 25,
+      "note": "V",
+      "title": "Etat des capitaux propres"
+    },
+    {
+      "page_number": 26,
+      "note": "VI",
+      "title": "Etat des engagements hors bilan"
+    },
+    {
+      "page_number": 28,
+      "note": "VII",
+      "title": "Etat de résultat"
+    },
+    {
+      "page_number": 31,
+      "note": "VIII",
+      "title": "Portefeuille d’encaissement"
+    },
+    {
+      "page_number": 31,
+      "note": "IX",
+      "title": "Etat de flux de trésorerie"
+    },
+    {
+      "page_number": 33,
+      "note": "X",
+      "title": "Transactions avec les parties liées"
+    },
+    {
+      "page_number": 52,
+      "note": "XI",
+      "title": "Evènements postérieurs à la date de clôture"
+    }
+  ],
+  "related_party_notes": [
+    {
+      "page_number": 33,
+      "note": "X",
+      "title": "Transactions avec les parties liées"
+    }
+  ],
+  "convention_pages": [
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84
+  ]
+}

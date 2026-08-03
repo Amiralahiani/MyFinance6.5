@@ -1,0 +1,31 @@
+limits:
+  max_agent_steps: 8
+  max_llm_calls_per_test: 5
+  global_test_timeout_seconds: 120
+  max_repeated_actions: 2
+  min_evidence_confidence: 0.8
+
+endpoints:
+  api_base_url: http://127.0.0.1:8000
+  web_base_url: http://127.0.0.1:3000
+
+groq:
+  api_key_environment: GROQ_API_KEY
+  timeout_seconds: 30
+  max_retries: 2
+  models:
+    generator:
+      environment: GROQ_MODEL_GENERATOR
+      default: openai/gpt-oss-20b
+    planner:
+      environment: GROQ_MODEL_PLANNER
+      default: openai/gpt-oss-20b
+    evaluator:
+      environment: GROQ_MODEL_EVALUATOR
+      default: openai/gpt-oss-20b
+    critic:
+      environment: GROQ_MODEL_CRITIC
+      default: openai/gpt-oss-20b
+    reporter:
+      environment: GROQ_MODEL_REPORTER
+      default: openai/gpt-oss-20b

@@ -1,0 +1,30 @@
+[tool.uv.workspace]
+members = [
+    "shared/contracts",
+    "chat/api",
+    "chat/knowledge",
+    "chat/market",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["chat/tests", "autotest/tests"]
+pythonpath = [
+    "shared/contracts/src",
+    "chat/knowledge/src",
+    "chat/market/src",
+    "chat/api/src",
+    "autotest/src",
+    "autotest/api",
+    "autotest/tests",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.27",
+    "pytest>=8",
+    "ruff>=0.12",
+]

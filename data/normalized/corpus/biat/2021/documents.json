@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "biat-2021-53f2d174f59e9e09",
+    "bank_id": "biat",
+    "bank_name": "BIAT",
+    "reporting_year": 2021,
+    "source_path": "data/raw/official-reports/etat financier/biat/biat_efd311221.pdf",
+    "sha256": "53f2d174f59e9e09ecd2c8acf038e2259e6eec5f4f0a3d7e7a313aa6e76977bf",
+    "page_count": 117,
+    "document_type": "annual_financial_statement"
+  }
+]

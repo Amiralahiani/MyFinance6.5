@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "answer_types": {
+    "reported_value": {
+      "requires": ["verified_financial_fact"],
+      "must_include": ["value", "currency", "unit_scale", "reporting_year", "page", "source_document"]
+    },
+    "document_explanation": {
+      "requires": ["source_preserving_corpus_chunk"],
+      "must_include": ["summary", "page", "source_document"]
+    },
+    "comparison": {
+      "requires": ["two_or_more_verified_financial_facts"],
+      "may_include": ["source_preserving_corpus_chunk"]
+    },
+    "calculated_analysis": {
+      "requires": ["verified_input_facts", "versioned_formula"],
+      "must_include": ["formula", "input_fact_ids", "unit"]
+    }
+  },
+  "prohibitions": [
+    "do_not_return_candidate_facts",
+    "do_not_calculate_from_unverified_facts",
+    "do_not_present_accounting_ratios_as_regulatory_ratios",
+    "do_not_estimate_missing_values"
+  ]
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "amen_bank-2021-fd0fabd5f8ac3b98",
+    "bank_id": "amen_bank",
+    "bank_name": "Amen Bank",
+    "reporting_year": 2021,
+    "source_path": "data/raw/official-reports/etat financier/amen_bank/amen_bank_efd311221.pdf",
+    "sha256": "fd0fabd5f8ac3b98c4163e1448295987ef5069ecf8df23a5b821f99eec7e19be",
+    "page_count": 60,
+    "document_type": "annual_financial_statement"
+  }
+]

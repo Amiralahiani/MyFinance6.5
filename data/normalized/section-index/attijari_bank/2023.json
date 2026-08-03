@@ -1,0 +1,107 @@
+{
+  "bank_id": "attijari_bank",
+  "reporting_year": 2023,
+  "special_audit_report": {
+    "start_page": null,
+    "conclusion_page": null
+  },
+  "notes": [
+    {
+      "page_number": 16,
+      "note": "1",
+      "title": "1 : Caisse et avoirs auprès de la BCT, CCP et TGT"
+    },
+    {
+      "page_number": 17,
+      "note": "1",
+      "title": "2 : Créances sur les établissements bancaires et financiers"
+    },
+    {
+      "page_number": 19,
+      "note": "1",
+      "title": "3 : Créances sur la clientèle"
+    },
+    {
+      "page_number": 22,
+      "note": "1",
+      "title": "4 : Portefeuille titres commercial"
+    },
+    {
+      "page_number": 23,
+      "note": "1",
+      "title": "5 : Portefeuille d'investissement"
+    },
+    {
+      "page_number": 25,
+      "note": "1",
+      "title": "6 : Valeurs immobilisées"
+    },
+    {
+      "page_number": 27,
+      "note": "1",
+      "title": "7 : Autres actifs"
+    },
+    {
+      "page_number": 28,
+      "note": "2",
+      "title": "1 : Banque Centrale et CCP"
+    },
+    {
+      "page_number": 29,
+      "note": "2",
+      "title": "3 : Dépôts et avoirs de la clientèle"
+    },
+    {
+      "page_number": 30,
+      "note": "2",
+      "title": "4 : Emprunts et ressources spéciales"
+    },
+    {
+      "page_number": 32,
+      "note": "2",
+      "title": "5 : Autres passifs"
+    },
+    {
+      "page_number": 34,
+      "note": "4",
+      "title": "1 : PASSIFS EVENTUELS"
+    },
+    {
+      "page_number": 35,
+      "note": "4",
+      "title": "2 : ENGAGEMENTS DONNES"
+    },
+    {
+      "page_number": 36,
+      "note": "5",
+      "title": "1 : Intérêts et revenus assimilés"
+    },
+    {
+      "page_number": 37,
+      "note": "5",
+      "title": "2 : Commissions en produits"
+    },
+    {
+      "page_number": 38,
+      "note": "5",
+      "title": "4 : Revenus du portefeuille d’investissement"
+    },
+    {
+      "page_number": 39,
+      "note": "5",
+      "title": "5 : Intérêts encourus et charges assimilées"
+    },
+    {
+      "page_number": 40,
+      "note": "5",
+      "title": "7 : Frais de personnel"
+    },
+    {
+      "page_number": 41,
+      "note": "5",
+      "title": "10 : Solde en gain \\ perte provenant des éléments extraordinaires"
+    }
+  ],
+  "related_party_notes": [],
+  "convention_pages": []
+}

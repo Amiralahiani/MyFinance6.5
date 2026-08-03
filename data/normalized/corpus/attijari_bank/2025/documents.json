@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "attijari_bank-2025-68a2e0be5a12034c",
+    "bank_id": "attijari_bank",
+    "bank_name": "Attijari Bank",
+    "reporting_year": 2025,
+    "source_path": "data/raw/official-reports/etat financier/attijari_bank/attijari_bank_efd311225.pdf",
+    "sha256": "68a2e0be5a12034c78993e51e99eb87947d78ce68fbd5ab6f62a5b48313d0857",
+    "page_count": 64,
+    "document_type": "annual_financial_statement"
+  }
+]

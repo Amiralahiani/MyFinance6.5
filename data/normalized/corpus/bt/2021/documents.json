@@ -1,0 +1,12 @@
+[
+  {
+    "document_id": "bt-2021-77fd9c5489df5ac3",
+    "bank_id": "bt",
+    "bank_name": "Banque de Tunisie",
+    "reporting_year": 2021,
+    "source_path": "data/raw/official-reports/etat financier/bt/bt_efd311221.pdf",
+    "sha256": "77fd9c5489df5ac39170db26286bbe306ab5a006456f4b13a5ee41cf24f576ef",
+    "page_count": 56,
+    "document_type": "annual_financial_statement"
+  }
+]
