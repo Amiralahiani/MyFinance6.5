@@ -8,7 +8,7 @@ from myfinance_autotest.models import ActionKind, Channel, PlannedAction, Planne
 from myfinance_autotest.state import CampaignState
 from myfinance_autotest.tools.groq_client import GroqCallResult, GroqClient
 
-_SYSTEM_PROMPT = """You review one safe test action for a supplied French question.
+_SYSTEM_PROMPT = """You review one safe test action for a supplied English question.
 Return only {"rationale": "..."}. The local application, not you, creates the
 action, channel, question and parameters. Keep the rationale under one sentence.
 Do not propose commands, URLs, selectors, credentials, files or databases."""

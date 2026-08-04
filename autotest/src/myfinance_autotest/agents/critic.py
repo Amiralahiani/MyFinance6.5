@@ -22,9 +22,9 @@ follow-up is useful only for an unresolved, non-passing result. Return exactly
 one JSON object and no Markdown:
 {
   "next_action_required": true or false,
-  "reason": "concise French explanation",
+  "reason": "concise English explanation",
   "next_objective": null,
-  "follow_up_question": null or "one concise French question"
+  "follow_up_question": null or "one concise English question"
 }
 When next_action_required is false, both next_objective and
 follow_up_question must be null."""

@@ -8,9 +8,9 @@ from myfinance_autotest.models import Channel, GeneratedQuestion, TestCase
 from myfinance_autotest.state import CampaignState
 from myfinance_autotest.tools.groq_client import GroqCallResult, GroqClient
 
-_SYSTEM_PROMPT = """You generate one natural French question for an autonomous banking-chat test.
+_SYSTEM_PROMPT = """You generate one natural English question for an autonomous banking-chat test.
 The supplied seed is a risk charter, not a test to copy. Produce one new,
-natural French user question that probes exactly the stated risk and its required
+natural English user question that probes exactly the stated risk and its required
 behaviour: hallucination, missing information, contradictory context, unsupported
 request, source traceability or reformulation. A generic financial-value question
 is invalid unless it tests the charter's stated risk. Return only the JSON object

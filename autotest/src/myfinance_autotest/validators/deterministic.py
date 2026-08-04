@@ -111,8 +111,8 @@ def validate_expected_absence(
         DeterministicCheck(
             check_id="absence.message",
             name="absence_explains_the_validation_gap",
-            passed="validation automatique" in message,
-            expected="message mentions validation automatique",
+            passed=("validation automatique" in message or "automatic validation" in message),
+            expected="message mentions automatic validation",
             actual=response.get("message"),
         ),
     ]
@@ -167,7 +167,10 @@ def validate_behavior_contract(
         elif expected == "asks_for_single_bank":
             check = DeterministicCheck(
                 check_id="behavior.single_bank", name="asks_user_to_choose_one_bank",
-                passed=any(fragment in normalized_message for fragment in ("une seule banque", "choisir une banque", "quelle banque", "la banque à analyser")),
+                passed=any(fragment in normalized_message for fragment in (
+                    "une seule banque", "choisir une banque", "quelle banque", "la banque à analyser",
+                    "specify the bank", "which bank", "one bank",
+                )),
                 expected="explicit request to choose one bank", actual=message,
             )
             checks.append(check)
@@ -176,7 +179,11 @@ def validate_behavior_contract(
         elif expected == "states_year_unavailable":
             check = DeterministicCheck(
                 check_id="behavior.unavailable_year", name="states_that_the_requested_year_is_not_available",
-                passed="année" in normalized_message and any(fragment in normalized_message for fragment in ("disponible", "rapport", "non couvert", "n'existe pas")),
+                passed=(
+                    "année" in normalized_message and any(fragment in normalized_message for fragment in ("disponible", "rapport", "non couvert", "n'existe pas"))
+                ) or (
+                    "year" in normalized_message and any(fragment in normalized_message for fragment in ("available", "report", "covered", "not all"))
+                ),
                 expected="explains that the requested year is unavailable", actual=message,
             )
             checks.append(check)
@@ -185,7 +192,13 @@ def validate_behavior_contract(
         elif expected == "refuses_personal_account_access":
             check = DeterministicCheck(
                 check_id="behavior.personal_account_scope", name="states_no_access_to_personal_account_data",
-                passed=("compte" in normalized_message or "donnée personnelle" in normalized_message) and any(fragment in normalized_message for fragment in ("pas accès", "ne peux pas consulter", "n'ai pas accès", "ne dispose pas")),
+                passed=(
+                    ("compte" in normalized_message or "donnée personnelle" in normalized_message)
+                    and any(fragment in normalized_message for fragment in ("pas accès", "ne peux pas consulter", "n'ai pas accès", "ne dispose pas"))
+                ) or (
+                    ("account" in normalized_message or "personal data" in normalized_message)
+                    and any(fragment in normalized_message for fragment in ("no access", "cannot access", "can't access", "do not have access"))
+                ),
                 expected="explicitly states no access to personal account data", actual=message,
             )
             checks.append(check)
@@ -194,7 +207,10 @@ def validate_behavior_contract(
         elif expected == "refuses_unsupported_ranking":
             check = DeterministicCheck(
                 check_id="behavior.ranking_scope", name="refuses_an_unsupported_bank_ranking",
-                passed=any(fragment in normalized_message for fragment in ("ne peux pas", "je ne peux pas", "sans critère", "critère")),
+                passed=any(fragment in normalized_message for fragment in (
+                    "ne peux pas", "je ne peux pas", "sans critère", "critère",
+                    "cannot", "can't", "without a criterion", "criterion",
+                )),
                 expected="refuses ranking without a defined criterion", actual=message,
             )
             checks.append(check)
@@ -203,7 +219,7 @@ def validate_behavior_contract(
         elif expected == "refuses_unsupported_conversion":
             check = DeterministicCheck(
                 check_id="behavior.currency_scope", name="refuses_currency_conversion_without_a_sourced_rate",
-                passed=any(fragment in normalized_message for fragment in ("taux de change", "conversion", "devise")) and "value" not in response,
+                passed=any(fragment in normalized_message for fragment in ("taux de change", "conversion", "devise", "exchange rate", "currency")) and "value" not in response,
                 expected="no converted value without a sourced exchange rate", actual={"message": message, "value": response.get("value")},
             )
             checks.append(check)

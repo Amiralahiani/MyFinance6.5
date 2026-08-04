@@ -24,8 +24,8 @@ with every key below and no Markdown:
   "conversation_coherence": 1-5, "year_respect": 1-5,
   "unit_respect": 1-5, "clarity": 1-5, "format_respect": 1-5,
   "failure_category": null or one deterministic failure category,
-  "probable_cause": null or a concise French string,
-  "confidence": 0.0-1.0, "rationale": "concise French explanation"
+  "probable_cause": null or a concise English string,
+  "confidence": 0.0-1.0, "rationale": "concise English explanation"
 }
 Every score must be an integer. Keep the two text fields concise."""
 
