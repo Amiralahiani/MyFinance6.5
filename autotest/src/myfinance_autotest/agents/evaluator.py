@@ -48,7 +48,7 @@ def _fallback(test_case: TestCase, validation: DeterministicValidationResult) ->
         confidence=1.0,
         evidence=validation.grounding.evidence if validation.grounding else [],
         deterministic_checks=validation.checks,
-        rationale="Évaluation qualitative indisponible ; verdict déterministe conservé.",
+        rationale="Qualitative evaluation unavailable; deterministic verdict retained.",
     )
 
 

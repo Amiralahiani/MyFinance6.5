@@ -124,7 +124,7 @@ def test_request_with_only_a_missing_year_explains_how_to_complete_it() -> None:
     body = response.json()
     assert body["decision"] == "clarify"
     assert body["missing_information"] == ["annee ou periode"]
-    assert "indiquez l’année" in body["reason"]
+    assert "provide the relevant year" in body["reason"]
 
 
 def test_missing_report_must_not_be_invented() -> None:
@@ -164,7 +164,7 @@ def test_conversation_engine_keeps_the_documentary_dossier_for_a_short_follow_up
     assert follow_up.json()["type"] == "document"
     assert follow_up.json()["context"]["bank_id"] == "biat"
     assert follow_up.json()["context"]["reporting_year"] == 2021
-    assert "à propos de Transactions avec les parties liées" in received_queries[-1]
+    assert "about Transactions avec les parties liées" in received_queries[-1]
 
 
 def test_conversation_engine_uses_the_catalog_only_for_a_confirmed_metric() -> None:
@@ -192,12 +192,12 @@ def test_documentary_follow_up_expands_to_other_related_conventions(monkeypatch)
     assert response.status_code == 200
     assert response.json()["type"] == "document"
     assert any(item["page_number"] == 117 for item in response.json()["evidence"])
-    assert response.json()["answer"].startswith("Oui.")
+    assert response.json()["answer"].startswith("Yes.")
     analysis = response.json()["analysis"]
     assert analysis["intent"] == "scope_expansion"
-    assert analysis["scope_label"] == "Rapport spécial des commissaires aux comptes"
-    assert "ne sont pas interchangeables" in analysis["scope_explanation"]
-    assert any(item["title"] == "Limite de l’affirmation" and item["pages"] == [117] for item in analysis["findings"])
+    assert analysis["scope_label"] == "Auditors’ special report"
+    assert "are not interchangeable" in analysis["scope_explanation"]
+    assert any(item["title"] == "Scope of the statement" and item["pages"] == [117] for item in analysis["findings"])
 
 
 def test_related_convention_analysis_uses_only_the_retrieved_context() -> None:

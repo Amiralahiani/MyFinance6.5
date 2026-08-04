@@ -18,9 +18,9 @@ from myfinance_contracts import ConversationContext, ReportedValueAnswer
 from myfinance_orchestrator.assessment import assess_request
 from myfinance_orchestrator.ollama import answer_from_evidence
 
-DOCUMENTARY_INTENT = re.compile(r"\b(pourquoi|comment|explique|analyse|que dit|qu'est ce|c'est quoi|que signifie|risque|provision|portefeuille|encaissement|transactions?|parties? liees?|conventions?)\b")
-EXPANSION_FOLLOW_UP = re.compile(r"\b(autres?|d'autre|y a[- ]t[- ]il|existe|encore|liste)\b")
-REFERENCE_FOLLOW_UP = re.compile(r"\b(ce contrat|cette convention|ce point|cela|ca|en pratique|pourquoi)\b")
+DOCUMENTARY_INTENT = re.compile(r"\b(pourquoi|comment|explique|analyse|que dit|qu'est ce|c'est quoi|que signifie|risque|provision|portefeuille|encaissement|transactions?|parties? liees?|conventions?|why|how|explain|analysis|what does|what is|what are|risk|provision|portfolio|collection|related parties?)\b")
+EXPANSION_FOLLOW_UP = re.compile(r"\b(autres?|d'autre|y a[- ]t[- ]il|existe|encore|liste|other|another|any more|more|list)\b")
+REFERENCE_FOLLOW_UP = re.compile(r"\b(ce contrat|cette convention|ce point|cela|ca|en pratique|pourquoi|this contract|this agreement|this point|in practice|why)\b")
 
 
 def _topic(message: str) -> str:
@@ -68,7 +68,7 @@ def _document_clarification(context: ConversationContext) -> dict[str, Any]:
         "mode": "document",
         "context": context.model_dump(),
         "missing_information": missing,
-        "message": "Pour poursuivre cette analyse documentaire, indiquez " + ("la banque et l’année" if len(missing) == 2 else "l’élément manquant") + ".",
+        "message": "To continue this documentary analysis, please provide " + ("the bank and year" if len(missing) == 2 else "the missing detail") + ".",
     }
 
 
@@ -92,39 +92,39 @@ def _related_conventions_analysis(evidence: list[Any], *, anchor: str | None = N
         None,
     )
     citations = " ".join(f"[p. {chunk.page_number}]" for chunk in evidence)
-    starting_point = anchor or "la transaction initialement examinée"
+    starting_point = anchor or "the transaction initially reviewed"
     findings = [
         {
-            "title": f"Point de départ : {starting_point}",
-            "text": "Le premier extrait est celui retenu pour établir le dossier documentaire initial.",
+            "title": f"Starting point: {starting_point}",
+            "text": "The first excerpt is the one retained to establish the initial documentary record.",
             "pages": [primary.page_number],
         },
         {
-            "title": "Autres conventions présentées",
-            "text": "Les extraits du rapport spécial présentent les conventions ou opérations examinées dans son périmètre légal.",
+            "title": "Other agreements presented",
+            "text": "The special-report excerpts present the agreements or transactions examined within its legal scope.",
             "pages": special_report_pages,
         },
     ]
     if completion is not None:
         findings.append(
             {
-                "title": "Limite de l’affirmation",
-                "text": "Le rapport spécial précise la portée de ses travaux pour les conventions et opérations qu’il examine.",
+                "title": "Scope of the statement",
+                "text": "The special report specifies the scope of its work for the agreements and transactions it examines.",
                 "pages": [completion.page_number],
             }
         )
     return {
         "intent": "scope_expansion",
-        "scope_label": "Rapport spécial des commissaires aux comptes",
+        "scope_label": "Auditors’ special report",
         "scope_explanation": (
-            "L’extrait initial décrit une transaction avec une partie liée ; le rapport spécial "
-            "recense les conventions et opérations examinées dans le cadre légal. Les deux "
-            "périmètres se recoupent, mais ne sont pas interchangeables."
+            "The initial excerpt describes a related-party transaction; the special report "
+            "lists the agreements and transactions examined within the legal framework. The two "
+            "scopes overlap, but are not interchangeable."
         ),
         "direct_answer": (
-            "Oui. Au-delà de l’extrait initial, le rapport spécial présente d’autres "
-            "conventions ou opérations examinées par les commissaires aux comptes. Il ne faut pas "
-            "pour autant qualifier automatiquement chacune d’elles de transaction avec une partie liée. "
+            "Yes. Beyond the initial excerpt, the special report presents other agreements or "
+            "transactions examined by the auditors. Each one should not automatically be labelled "
+            "as a related-party transaction. "
             f"{citations}"
         ),
         "findings": findings,
@@ -182,7 +182,7 @@ def _document_turn(message: str, context: ConversationContext, bank_id: str | No
             "mode": "document",
             "context": updated.model_dump(),
             "missing_information": [],
-            "message": "Le rapport officiel correspondant n’est pas encore disponible dans le corpus.",
+            "message": "The corresponding official report is not yet available in the corpus.",
         }
 
     updated, anchor_evidence, missing_anchor = _resolve_document_anchor(updated, context)
@@ -192,7 +192,7 @@ def _document_turn(message: str, context: ConversationContext, bank_id: str | No
             "mode": "document",
             "context": updated.model_dump(),
             "missing_information": [],
-            "message": f"Je ne retrouve pas l’entité « {missing_anchor} » dans ce rapport. Je préfère ne pas lui associer des pages seulement proches par les mots.",
+            "message": f"I cannot find the entity “{missing_anchor}” in this report. I will not associate it with pages that are merely close by wording.",
         }
 
     # “Les autres conventions après GSM” is already an expansion request even
@@ -204,7 +204,7 @@ def _document_turn(message: str, context: ConversationContext, bank_id: str | No
 
     suffix = f"de {updated.bank_name} en {updated.reporting_year}"
     if continuation and topic:
-        suffix += f" à propos de {topic}"
+        suffix += f" about {topic}"
     search_query = f"{message.strip()} {suffix}".strip()
     if expand_scope:
         # Keep the original note alongside the expanded legal-report scope. It lets
@@ -234,12 +234,12 @@ def _document_turn(message: str, context: ConversationContext, bank_id: str | No
             "mode": "document",
             "context": updated.model_dump(),
             "missing_information": [],
-            "message": "Je n’ai pas trouvé de passage assez pertinent dans ce rapport. Reformulez le détail recherché ou élargissez le périmètre.",
+            "message": "I could not find a sufficiently relevant excerpt in this report. Rephrase the requested detail or widen the scope.",
         }
     analysis = _related_conventions_analysis(evidence, anchor=updated.document_anchor) if expand_scope else {
         "intent": "explanation",
-        "scope_label": "Passages les plus pertinents du rapport officiel",
-        "scope_explanation": "La réponse est limitée aux passages retenus pour cette question.",
+        "scope_label": "Most relevant excerpts from the official report",
+        "scope_explanation": "The answer is limited to the excerpts selected for this question.",
         "direct_answer": answer_from_evidence(search_query, evidence),
         "findings": [],
     }
@@ -275,7 +275,7 @@ def _metric_turn(message: str, context: ConversationContext, bank_id: str | None
             "mode": "metric",
             "context": _context(bank_id, year, mode="metric", metric_id=metric_id).model_dump(),
             "missing_information": [],
-            "message": "Le rapport officiel correspondant n’est pas encore disponible dans le corpus.",
+            "message": "The corresponding official report is not yet available in the corpus.",
         }
     fact = auto_validated_fact(bank_id, year, metric_id)
     if fact is None:
@@ -284,7 +284,7 @@ def _metric_turn(message: str, context: ConversationContext, bank_id: str | None
             "mode": "metric",
             "context": _context(bank_id, year, mode="metric", metric_id=metric_id).model_dump(),
             "missing_information": [],
-            "message": "Cette métrique n’a pas encore passé la validation automatique pour ce rapport ; aucune valeur n’est inventée.",
+            "message": "This metric has not yet passed automatic validation for this report; no value is invented.",
         }
     answer = ReportedValueAnswer(
         metric_id=fact.metric_id,

@@ -90,7 +90,7 @@ def critique_evaluation(
                 verdict_confirmed=validation.verdict in {Verdict.PASS, Verdict.FAIL},
                 next_action_required=False,
                 create_regression_test=confirmed_defect,
-                reason="Critique Groq indisponible ; décision déterministe conservée.",
+                reason="Groq Critic unavailable; deterministic decision retained.",
                 confidence=1.0,
             ),
             metadata,

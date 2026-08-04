@@ -189,8 +189,8 @@ def test_source_reading_explains_related_party_note_without_copying_its_figures(
 
     reading = _source_reading("Explique les transactions avec les parties liées de BIAT en 2021", evidence)
 
-    assert "relation avec GSM" in reading
-    assert "location d’un parcours de golf" in reading
+    assert "relationship with GSM" in reading
+    assert "lease of a golf course" in reading
     assert "200.000" not in reading
     assert reading.endswith("[p. 38]")
 
@@ -202,8 +202,8 @@ def test_source_reading_explains_the_portfolio_collection_mechanism() -> None:
 
     reading = _source_reading("Explique le portefeuille d’encaissement de BIAT en 2021", evidence)
 
-    assert "compte de tiers" in reading
-    assert "présentées au bilan" in reading
+    assert "on behalf of third parties" in reading
+    assert "presented on the balance sheet" in reading
     assert reading.endswith("[p. 36]")
 
 
@@ -214,8 +214,8 @@ def test_source_reading_explains_cash_flow_note_content() -> None:
 
     reading = _source_reading("Que dit BIAT de l’état de flux de trésorerie en 2021 ?", evidence)
 
-    assert "variations de change" in reading
-    assert "composantes de sa trésorerie" in reading
+    assert "exchange-rate movements" in reading
+    assert "cash and cash equivalents" in reading
     assert reading.endswith("[p. 37]")
 
 

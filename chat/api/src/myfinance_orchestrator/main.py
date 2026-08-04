@@ -80,7 +80,7 @@ async def answer_reported_value(body: UserRequest) -> ReportedValueAnswer:
     if fact is None:
         raise HTTPException(
             status_code=404,
-            detail="La métrique n'a pas encore passé la validation automatique pour ce rapport; aucune valeur n'est inventée.",
+            detail="This metric has not yet passed automatic validation for this report; no value is invented.",
         )
     return ReportedValueAnswer(
         metric_id=fact.metric_id,
@@ -105,7 +105,7 @@ async def search_documents(body: UserRequest) -> dict:
     if not evidence:
         raise HTTPException(
             status_code=404,
-            detail="Aucun passage suffisamment pertinent n'a été trouvé dans ce rapport.",
+            detail="No sufficiently relevant excerpt was found in this report.",
         )
     return {
         "mode": "documentary_evidence",
@@ -124,7 +124,7 @@ async def answer_from_documents(body: UserRequest) -> dict:
     bank_id, year = assessment.detected_banks[0], assessment.detected_years[0]
     evidence = retrieve_evidence(bank_id, year, body.message, limit=2, include_neighbour_pages=True)
     if not evidence:
-        raise HTTPException(status_code=404, detail="Aucun passage suffisamment pertinent n'a été trouvé dans ce rapport.")
+        raise HTTPException(status_code=404, detail="No sufficiently relevant excerpt was found in this report.")
     try:
         answer = answer_from_evidence(body.message, evidence)
     except RuntimeError as error:

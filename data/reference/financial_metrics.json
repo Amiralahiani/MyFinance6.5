@@ -1375,7 +1375,8 @@
       "source_section": "notes",
       "source_note_family": "IV-3",
       "query_aliases": [
-        "dépôts à vue"
+        "dépôts à vue",
+        "demand deposits"
       ],
       "accepted_statement_labels": [
         "dépôts à vue"

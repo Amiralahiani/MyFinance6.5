@@ -43,14 +43,14 @@ def _clarification_reason(missing: list[str]) -> str:
     """Explain the one missing element in language suitable for the user."""
     if missing == ["annee ou periode"]:
         return (
-            "Pour vous répondre avec précision, indiquez l’année concernée "
-            "(par exemple : « Quel est le PNB de BIAT en 2025 ? »)."
+            "To answer precisely, please provide the relevant year "
+            "(for example: “What was BIAT's net banking income in 2025?”)."
         )
     if missing == ["banque a analyser"]:
-        return "Pour vous répondre avec rigueur, indiquez la banque à analyser afin que je vérifie le bon rapport officiel."
+        return "To answer reliably, please specify the bank so that I can check the correct official report."
     if missing == ["indicateur financier a analyser"]:
-        return "Pour vous répondre avec rigueur, indiquez l’indicateur financier à analyser (par exemple PNB, résultat net ou dépôts)."
-    return "Pour préparer une analyse fiable, j’ai besoin de la banque, de l’année et de l’indicateur financier à analyser."
+        return "To answer reliably, please specify the financial metric to analyse (for example, net banking income, net income or deposits)."
+    return "To prepare a reliable analysis, I need the bank, year and financial metric to analyse."
 
 
 def assess_request(message: str) -> RequestAssessment:
@@ -58,7 +58,7 @@ def assess_request(message: str) -> RequestAssessment:
     if not message.strip():
         return RequestAssessment(
             decision="clarify",
-            reason="La demande est vide.",
+            reason="The request is empty.",
             missing_information=["banque", "periode", "indicateur financier"],
         )
 
@@ -88,8 +88,8 @@ def assess_request(message: str) -> RequestAssessment:
         return RequestAssessment(
             decision="abstain",
             reason=(
-                "Les rapports officiels requis ne sont pas tous disponibles pour les banques "
-                "et annees demandees."
+                "The required official reports are not all available for the requested banks "
+                "and years."
             ),
             sources=available_reports,
             detected_banks=banks,
@@ -100,8 +100,8 @@ def assess_request(message: str) -> RequestAssessment:
     return RequestAssessment(
         decision="answer",
         reason=(
-            "La banque, la periode et l'indicateur sont identifies; les rapports officiels "
-            "requis sont disponibles pour extraction et verification."
+            "The bank, period and metric have been identified; the required official reports "
+            "are available for extraction and verification."
         ),
         sources=available_reports,
         detected_banks=banks,

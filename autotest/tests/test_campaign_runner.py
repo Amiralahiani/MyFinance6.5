@@ -60,7 +60,7 @@ def test_campaign_runner_passes_a_fact_and_an_expected_absence(tmp_path) -> None
     assert all(path.exists() for path in paths)
     summary_markdown = next(path for path in paths if path.name == "summary.md").read_text(encoding="utf-8")
     audit_markdown = next(path for path in paths if path.name == "audit.md").read_text(encoding="utf-8")
-    assert "## Décision rapide" in summary_markdown
+    assert "## Quick decision" in summary_markdown
     assert "## TEST-catalog_auto_validated_fact" in audit_markdown
 
 

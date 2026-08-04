@@ -6,12 +6,12 @@ const API = import.meta.env.VITE_TESTING_API_URL ?? "http://localhost:8001";
 const CHAT_WEB = import.meta.env.VITE_CHAT_WEB_URL ?? "http://localhost:3000";
 const campaignEventTypes = ["campaign_created", "stage_update", "agent_output", "execution_completed", "scenario_completed", "campaign_completed", "technical_error"];
 const stages = [
-  ["generator", "Générateur", "Construit le catalogue à partir des rapports et faits validés."],
-  ["planner", "Planificateur", "Applique la politique de canaux et sélectionne les scénarios."],
-  ["executor", "Executor", "Interroge l’API et, pour les cas concernés, l’interface Web."],
-  ["evaluator", "Evaluator", "Compare les réponses aux faits et preuves PDF auto-validés."],
-  ["critic", "Critic", "Revoit les résultats avec Groq quand la clé est disponible."],
-  ["reporter", "Reporter", "Produit les rapports JSON, Markdown et HTML."],
+  ["generator", "Generator", "Builds the catalogue from validated reports and facts."],
+  ["planner", "Planner", "Applies channel policy and selects scenarios."],
+  ["executor", "Executor", "Queries the API and, where relevant, the Web interface."],
+  ["evaluator", "Evaluator", "Compares responses with automatically validated facts and PDF evidence."],
+  ["critic", "Critic", "Reviews results with Groq when the key is available."],
+  ["reporter", "Reporter", "Produces JSON, Markdown and HTML reports."],
 ];
 
 const campaignIdFromUrl = () => {
@@ -19,20 +19,20 @@ const campaignIdFromUrl = () => {
   return segment === "history" ? null : segment;
 };
 const historyFromUrl = () => location.pathname === "/campaigns/history";
-const statusLabel = (status) => ({ pending: "En attente", waiting: "En attente", starting: "Démarrage", running: "En cours", completed: "Terminé", completed_with_fallback: "Terminé avec repli", fallback_local: "Politique locale", pass: "Validé", passed: "Validé", fail: "Faille détectée", failed: "Faille détectée", warning: "À examiner", rejected: "Rejeté par garde-fou", duplicate: "Trop proche d’une question passée", provider_error: "Groq a refusé la requête", invalid_output: "Réponse IA invalide", budget_exhausted: "Limite locale atteinte", inconclusive: "À confirmer", technical_error: "Erreur technique", skipped: "Non exécuté" }[status] ?? "Non disponible");
-const formatDate = (value) => value ? new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—";
+const statusLabel = (status) => ({ pending: "Pending", waiting: "Waiting", starting: "Starting", running: "Running", completed: "Completed", completed_with_fallback: "Completed with fallback", fallback_local: "Local policy", pass: "Passed", passed: "Passed", fail: "Issue detected", failed: "Issue detected", warning: "Review needed", rejected: "Rejected by guardrails", duplicate: "Too close to a previous question", provider_error: "Groq rejected the request", invalid_output: "Invalid AI response", budget_exhausted: "Local limit reached", inconclusive: "To confirm", technical_error: "Technical error", skipped: "Not run" }[status] ?? "Unavailable");
+const formatDate = (value) => value ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—";
 const metricLabels = {
-  customer_deposits: "Dépôts et avoirs de la clientèle",
-  customer_loans_net: "Créances sur la clientèle",
-  net_banking_income: "Produit net bancaire (PNB)",
-  net_income: "Résultat net",
-  total_assets: "Total des actifs",
-  total_liabilities: "Total des passifs",
-  total_equity: "Capitaux propres",
+  customer_deposits: "Customer deposits and balances",
+  customer_loans_net: "Customer loans",
+  net_banking_income: "Net banking income (NBI)",
+  net_income: "Net income",
+  total_assets: "Total assets",
+  total_liabilities: "Total liabilities",
+  total_equity: "Equity",
 };
 
-const formatValue = (value) => value === undefined || value === null || value === "" ? "—" : new Intl.NumberFormat("fr-FR").format(Number(value));
-const formatScale = (scale, currency) => scale === "thousand" ? `en milliers de ${currency ?? "TND"}` : currency ?? "—";
+const formatValue = (value) => value === undefined || value === null || value === "" ? "—" : new Intl.NumberFormat("en-US").format(Number(value));
+const formatScale = (scale, currency) => scale === "thousand" ? `thousand ${currency ?? "TND"}` : currency ?? "—";
 
 function Status({ value }) { return <span className={`status ${value ?? "pending"}`}>{statusLabel(value)}</span>; }
 
@@ -57,7 +57,7 @@ function App() {
       if (coverageResponse.ok) setWebCoverage(await coverageResponse.json());
       if (visualCheckResponse.ok) setVisualCheck((await visualCheckResponse.json()).visual_check ?? null);
       setError("");
-    } catch { setError("Le service Testing est indisponible. Démarrez l’API sur le port 8001."); }
+    } catch { setError("The Testing service is unavailable. Start the API on port 8001."); }
   };
   const refreshCurrent = async () => {
     if (!currentId) return;
@@ -112,9 +112,9 @@ function App() {
     try {
       const response = await fetch(`${API}/api/campaigns/catalog`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ include_web: profile !== "exploration", with_groq: true, scenario_profile: profile }) });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.detail ?? "Impossible de démarrer la campagne.");
+      if (!response.ok) throw new Error(payload.detail ?? "Unable to start the campaign.");
       await load(); go(payload.id);
-    } catch (reason) { setError(reason.message ?? "Impossible de démarrer la campagne."); }
+    } catch (reason) { setError(reason.message ?? "Unable to start the campaign."); }
     finally { setStarting(false); }
   }
 
@@ -124,9 +124,9 @@ function App() {
     try {
       const response = await fetch(`${API}/api/visual-checks`, { method: "POST" });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.detail ?? "Impossible de démarrer le contrôle visuel.");
+      if (!response.ok) throw new Error(payload.detail ?? "Unable to start the visual check.");
       await load();
-    } catch (reason) { setError(reason.message ?? "Impossible de démarrer le contrôle visuel."); }
+    } catch (reason) { setError(reason.message ?? "Unable to start the visual check."); }
   }
 
   const latestCompleted = campaigns.find((campaign) => campaign.status === "completed");
@@ -145,15 +145,15 @@ function App() {
     <aside className="sidebar">
       <a className="brand" href="/campaigns" onClick={(event) => { event.preventDefault(); go(); }}><span>MF</span><b>AUTONOMOUS<br />TESTING</b></a>
       <p className="product-label">MYFINANCE · TEST LAB</p>
-      <nav aria-label="Navigation Testing">
-        <button className={!currentId && !showHistory ? "selected" : ""} onClick={() => go()}><i>▦</i> Campagnes</button>
-        <button className={showHistory ? "selected" : ""} onClick={() => go(null, "history")}><i>◫</i> Historique <em>{campaigns.length}</em></button>
+      <nav aria-label="Testing navigation">
+        <button className={!currentId && !showHistory ? "selected" : ""} onClick={() => go()}><i>▦</i> Campaigns</button>
+        <button className={showHistory ? "selected" : ""} onClick={() => go(null, "history")}><i>◫</i> History <em>{campaigns.length}</em></button>
       </nav>
-      <div className="sidebar-footer"><span><b /> CHAT API</span><small>127.0.0.1:8000</small><a href={CHAT_WEB}>← Retour au Chat</a></div>
+      <div className="sidebar-footer"><span><b /> CHAT API</span><small>127.0.0.1:8000</small><a href={CHAT_WEB}>← Back to Chat</a></div>
     </aside>
     <section className="workspace">
-      <header className="topbar"><div><span>VALIDATION AUTONOME</span><strong>{currentId ? "Détail de la campagne" : showHistory ? "Historique des campagnes" : "Campagnes reproductibles"}</strong></div><div className="live"><i /> SERVICE {error ? "À VÉRIFIER" : "PRÊT"}</div></header>
-      {error && <div className="notice"><b>Connexion requise.</b> {error}</div>}
+      <header className="topbar"><div><span>AUTONOMOUS VALIDATION</span><strong>{currentId ? "Campaign detail" : showHistory ? "Campaign history" : "Reproducible campaigns"}</strong></div><div className="live"><i /> SERVICE {error ? "CHECK REQUIRED" : "READY"}</div></header>
+      {error && <div className="notice"><b>Connection required.</b> {error}</div>}
       {currentId ? <CampaignDetail campaign={current} selectedStage={selectedStage} selectStage={setSelectedStage} onBack={() => go(null, "history")} /> : showHistory ? <CampaignHistory campaigns={campaigns} open={go} /> : <Dashboard coverage={webCoverage} visualCheck={visualCheck} metrics={metrics} runningCampaign={runningCampaign} starting={starting} startCampaign={startCampaign} startVisualCheck={startVisualCheck} open={go} />}
     </section>
   </main>;
@@ -166,24 +166,24 @@ function Dashboard({ coverage, visualCheck, metrics, runningCampaign, starting, 
   const visualLogs = (visualCheck?.events ?? []).filter((event) => event.type === "visual_output").slice(-12);
   const visibleCoverage = visualCheck?.result?.coverage ?? coverage;
   const visibleSummary = visibleCoverage?.summary;
-  return <div className="page"><section className="intro"><p className="eyebrow">EXPLORATION IA DES FAILLES</p><h1>Ne pas confirmer.<br /><em>Chercher ce qui casse.</em></h1><p>Cette campagne demande à Groq de créer de nouvelles questions visant les hallucinations, ambiguïtés, contournements et pertes de contexte.</p></section>
-    <section className="metrics"><Metric label="Intentions de risque" value="12" /><Metric label="Derniers scénarios IA" value={metrics.total || "—"} /><Metric label="Failles détectées" value={metrics.issues || "—"} kind={metrics.issues ? "issue" : ""} /><Metric label="Cas à investiguer" value={metrics.inconclusive || "—"} /></section>
-    {runningCampaign && <section className="running-campaign"><div><span>EXÉCUTION EN COURS</span><h2>La vérification automatique tourne.</h2><p>Cette campagne teste les questions préparées. Le résultat final apparaîtra lorsqu’elle sera terminée.</p></div><button className="catalog-link" onClick={() => open(runningCampaign.id)}>Voir l’avancement</button></section>}
-    <section className="campaign-launch"><div><span className="step-number">CAMPAGNE EXPLORATOIRE</span><h2>Générer puis attaquer le Chat</h2><p>Groq formule 12 nouvelles questions à partir de nos intentions de risque. Le système les exécute contre la vraie API, vérifie les règles de sûreté et conserve chaque anomalie trouvée.</p><small>Cette campagne nécessite une clé Groq configurée dans le service Testing.</small></div><div className="launch-actions"><button className="primary launch" disabled={starting} onClick={() => startCampaign("exploration")}>{starting ? "Génération…" : "Lancer l’exploration IA"} <b>↗</b></button></div></section>
-    <section className={`web-campaign ${!visualRunning && visibleCoverage?.available && visibleSummary.failed === 0 ? "pass" : ""}`}><div><span>CONTRÔLE VISUEL DU CHAT · PLAYWRIGHT</span><h2>{visualRunning ? `Contrôle visuel en cours — ${visualProgress.completed ?? 0} / ${visualProgress.total ?? "?"}` : visibleCoverage?.available ? `${visibleSummary.passed} / ${visibleSummary.total} parcours de l’interface Chat réussis` : "Aucun contrôle visuel disponible"}</h2><p>{visualRunning ? "Le navigateur automatisé vérifie réellement le Chat. Le journal et les compteurs se mettent à jour ici." : visibleCoverage?.available ? `Dernière exécution : ${formatDate(visibleCoverage.generated_at)}. Ce test reste séparé d’une campagne Groq.` : "Lancez le premier contrôle visuel depuis cette page."}</p>{visualRunning && <><div className="visual-progress"><i style={{ width: `${visualProgress.total ? Math.round((visualProgress.completed ?? 0) / visualProgress.total * 100) : 8}%` }} /></div><details className="visual-log" open><summary>Journal en direct</summary><pre>{visualLogs.map((event) => event.line).join("\n") || "Démarrage de Playwright…"}</pre></details></>}</div><div className="web-campaign-mark"><b>{visualRunning ? "EN COURS" : visualCheck?.status === "failed" || visualCheck?.status === "technical_error" ? "ÉCHEC" : visibleCoverage?.available && visibleSummary.failed === 0 ? "PASS" : "EN ATTENTE"}</b><small>Test d’interface</small><button className="primary visual-launch" disabled={visualRunning} onClick={startVisualCheck}>{visualRunning ? "Exécution…" : "Lancer le contrôle"}</button></div></section>
+  return <div className="page"><section className="intro"><p className="eyebrow">AI ISSUE EXPLORATION</p><h1>Do not confirm.<br /><em>Find what breaks.</em></h1><p>This campaign asks Groq to create new questions targeting hallucinations, ambiguity, bypass attempts and loss of context.</p></section>
+    <section className="metrics"><Metric label="Risk intents" value="12" /><Metric label="Latest AI scenarios" value={metrics.total || "—"} /><Metric label="Issues detected" value={metrics.issues || "—"} kind={metrics.issues ? "issue" : ""} /><Metric label="Cases to investigate" value={metrics.inconclusive || "—"} /></section>
+    {runningCampaign && <section className="running-campaign"><div><span>RUNNING</span><h2>Automated validation is running.</h2><p>This campaign is testing the prepared questions. The final result will appear when it is complete.</p></div><button className="catalog-link" onClick={() => open(runningCampaign.id)}>View progress</button></section>}
+    <section className="campaign-launch"><div><span className="step-number">EXPLORATORY CAMPAIGN</span><h2>Generate, then challenge the Chat</h2><p>Groq formulates 12 new questions from our risk intents. The system runs them against the real API, checks safety rules and retains every anomaly found.</p><small>This campaign requires a Groq key configured in the Testing service.</small></div><div className="launch-actions"><button className="primary launch" disabled={starting} onClick={() => startCampaign("exploration")}>{starting ? "Generating…" : "Start AI exploration"} <b>↗</b></button></div></section>
+    <section className={`web-campaign ${!visualRunning && visibleCoverage?.available && visibleSummary.failed === 0 ? "pass" : ""}`}><div><span>CHAT VISUAL CHECK · PLAYWRIGHT</span><h2>{visualRunning ? `Visual check in progress — ${visualProgress.completed ?? 0} / ${visualProgress.total ?? "?"}` : visibleCoverage?.available ? `${visibleSummary.passed} / ${visibleSummary.total} Chat interface journeys passed` : "No visual check available"}</h2><p>{visualRunning ? "The automated browser is checking the Chat live. Logs and counters update here." : visibleCoverage?.available ? `Last run: ${formatDate(visibleCoverage.generated_at)}. This test remains separate from a Groq campaign.` : "Start the first visual check from this page."}</p>{visualRunning && <><div className="visual-progress"><i style={{ width: `${visualProgress.total ? Math.round((visualProgress.completed ?? 0) / visualProgress.total * 100) : 8}%` }} /></div><details className="visual-log" open><summary>Live log</summary><pre>{visualLogs.map((event) => event.line).join("\n") || "Starting Playwright…"}</pre></details></>}</div><div className="web-campaign-mark"><b>{visualRunning ? "RUNNING" : visualCheck?.status === "failed" || visualCheck?.status === "technical_error" ? "FAILED" : visibleCoverage?.available && visibleSummary.failed === 0 ? "PASS" : "PENDING"}</b><small>Interface test</small><button className="primary visual-launch" disabled={visualRunning} onClick={startVisualCheck}>{visualRunning ? "Running…" : "Start check"}</button></div></section>
   </div>;
 }
 
-function Metric({ label, value, kind = "" }) { const details = { "Intentions de risque": "contrats de sûreté locaux", "Derniers scénarios IA": "générés, pas écrits à la main", "Failles détectées": "échecs ou alertes", "Cas à investiguer": "preuve insuffisante" }; return <article className={`metric ${kind}`}><span>{label}</span><strong>{value}</strong><small>{details[label] ?? "—"}</small></article>; }
+function Metric({ label, value, kind = "" }) { const details = { "Risk intents": "local safety contracts", "Latest AI scenarios": "generated, not handwritten", "Issues detected": "failures or warnings", "Cases to investigate": "insufficient evidence" }; return <article className={`metric ${kind}`}><span>{label}</span><strong>{value}</strong><small>{details[label] ?? "—"}</small></article>; }
 
 function CampaignList({ campaigns, open }) {
-  if (!campaigns.length) return <div className="empty-state">Aucune campagne n’a encore été lancée. L’exploration IA est prête dès que Groq est configuré.</div>;
-  const labelFor = (campaign) => campaign.configuration?.scenario_profile === "exploration" ? "Exploration IA des failles" : campaign.configuration?.scenario_profile === "behavior" ? "Comportements conversationnels" : campaign.configuration?.trigger === "diagnostic" ? "Diagnostic technique" : "Catalogue de référence";
-  return <div className="scenario-table"><div className="table-head"><span>CAMPAGNE</span><span>SCÉNARIOS</span><span>API + WEB</span><span>STATUT</span><span>LANCÉE LE</span></div>{campaigns.map((campaign) => <button className="scenario-row" key={campaign.id} onClick={() => open(campaign.id)}><div><b>{campaign.id}</b><small>{labelFor(campaign)}</small></div><span>{campaign.result?.summary?.total ?? "—"}</span><span>{campaign.configuration?.include_web ? "Oui" : "API"}</span><Status value={campaign.status} /><time>{formatDate(campaign.created_at)}</time></button>)}</div>;
+  if (!campaigns.length) return <div className="empty-state">No campaign has been started yet. AI exploration is ready once Groq is configured.</div>;
+  const labelFor = (campaign) => campaign.configuration?.scenario_profile === "exploration" ? "AI issue exploration" : campaign.configuration?.scenario_profile === "behavior" ? "Conversational behaviour" : campaign.configuration?.trigger === "diagnostic" ? "Technical diagnostic" : "Reference catalogue";
+  return <div className="scenario-table"><div className="table-head"><span>CAMPAIGN</span><span>SCENARIOS</span><span>API + WEB</span><span>STATUS</span><span>STARTED</span></div>{campaigns.map((campaign) => <button className="scenario-row" key={campaign.id} onClick={() => open(campaign.id)}><div><b>{campaign.id}</b><small>{labelFor(campaign)}</small></div><span>{campaign.result?.summary?.total ?? "—"}</span><span>{campaign.configuration?.include_web ? "Yes" : "API"}</span><Status value={campaign.status} /><time>{formatDate(campaign.created_at)}</time></button>)}</div>;
 }
 
 function CampaignHistory({ campaigns, open }) {
-  return <div className="page"><section className="intro"><p className="eyebrow">HISTORIQUE DES CAMPAGNES</p><h1>Revoir.<br /><em>Comprendre.</em></h1><p>Choisissez une campagne pour consulter ses scénarios, décisions et rapports.</p></section><CampaignList campaigns={campaigns} open={open} /></div>;
+  return <div className="page"><section className="intro"><p className="eyebrow">CAMPAIGN HISTORY</p><h1>Review.<br /><em>Understand.</em></h1><p>Select a campaign to view its scenarios, decisions and reports.</p></section><CampaignList campaigns={campaigns} open={open} /></div>;
 }
 
 function CampaignDetail({ campaign, selectedStage, selectStage, onBack }) {
@@ -197,16 +197,16 @@ function CampaignDetail({ campaign, selectedStage, selectStage, onBack }) {
     || scenarioEvents.some((event) => event.critic?.next_action_required),
   );
   const primaryStages = [
-    ["generator", "Generator IA", "Crée de nouvelles questions à partir des intentions de risque."],
-    ["planner", "Planner IA", "N’autorise qu’un message sûr vers l’API locale du Chat."],
-    ["executor", "Executor · passage initial", "Interroge le Chat avec les seules questions retenues par le Planner."],
-    ["evaluator", "Evaluator · passage initial", "Compare les réponses aux contrats de sûreté et aux preuves disponibles."],
-    ["critic", "Critic IA", "Décide si une contre-vérification est réellement nécessaire."],
+    ["generator", "AI Generator", "Creates new questions from the risk intents."],
+    ["planner", "AI Planner", "Only authorises a safe message to the local Chat API."],
+    ["executor", "Executor · initial pass", "Queries the Chat with only the questions accepted by the Planner."],
+    ["evaluator", "Evaluator · initial pass", "Compares responses with the safety contracts and available evidence."],
+    ["critic", "AI Critic", "Decides whether a confirmation pass is genuinely needed."],
   ];
   const confirmationStages = [
-    ["planner_confirmation", "Planner IA · contre-vérification", "Autorise les questions complémentaires demandées par le Critic."],
-    ["executor_confirmation", "Executor · contre-vérification", "Interroge le Chat uniquement sur les points à confirmer."],
-    ["evaluator_confirmation", "Evaluator · contre-vérification", "Évalue les réponses complémentaires."],
+    ["planner_confirmation", "AI Planner · confirmation", "Authorises the additional questions requested by the Critic."],
+    ["executor_confirmation", "Executor · confirmation", "Queries the Chat only on points to confirm."],
+    ["evaluator_confirmation", "Evaluator · confirmation", "Evaluates the additional responses."],
   ];
   const explorationStages = [
     ...primaryStages,
@@ -225,9 +225,9 @@ function CampaignDetail({ campaign, selectedStage, selectStage, onBack }) {
   };
   const stageScenarios = scenariosForStage(resolvedSelectedStage);
   const terminal = ["completed", "technical_error"].includes(campaign?.status);
-  return <div className="page detail-page"><button className="back" onClick={onBack}>← Retour aux campagnes</button><div className="detail-head"><div><p className="eyebrow">{campaign?.id ?? "Campagne"}</p><h1>La boucle de validation</h1><p>{campaign?.configuration?.include_web ? "API et interface Web sont prévues dans cette campagne." : "Cette campagne est limitée à l’API."}</p></div><Status value={campaign?.status} /></div>
-    <section className="flow interactive-flow"><div className="flow-title"><span>ÉTAPES EXÉCUTABLES ET CONSULTABLES</span><small>La contre-vérification apparaît seulement si le Critic la demande.</small></div>{activeStages.map(([key, name, description], index) => { const event = stageEvent(key); const hasLiveResult = (key === "evaluator" || key === "evaluator_confirmation") && scenariosForStage(key).length > 0; const status = event?.status ?? (hasLiveResult ? "running" : campaign?.status === "pending" ? "pending" : "waiting"); const progress = event?.completed !== undefined && event?.total ? ` · ${event.completed} / ${event.total}` : ""; return <button type="button" className={`flow-step ${event || hasLiveResult ? "done" : ""} ${resolvedSelectedStage === key ? "active" : ""}`} onClick={() => selectStage(key)} key={key}><b>{String(index + 1).padStart(2, "0")}</b><strong>{name}</strong><small>{description}{progress}</small><Status value={status} /></button>; })}</section>
-    <section className="stage-panel"><div className="stage-panel-heading"><div><span>AGENT · {selected[1].toUpperCase()}</span><h2>Rôle : {selected[2]}</h2></div><Status value={data?.status ?? (terminal ? "skipped" : "pending")} /></div><StageEvidence stage={resolvedSelectedStage} data={data} scenarios={stageScenarios} campaign={campaign} /></section>
+  return <div className="page detail-page"><button className="back" onClick={onBack}>← Back to campaigns</button><div className="detail-head"><div><p className="eyebrow">{campaign?.id ?? "Campaign"}</p><h1>The validation loop</h1><p>{campaign?.configuration?.include_web ? "API and Web interface are included in this campaign." : "This campaign is limited to the API."}</p></div><Status value={campaign?.status} /></div>
+    <section className="flow interactive-flow"><div className="flow-title"><span>RUNNABLE AND REVIEWABLE STAGES</span><small>The confirmation pass appears only when requested by the Critic.</small></div>{activeStages.map(([key, name, description], index) => { const event = stageEvent(key); const hasLiveResult = (key === "evaluator" || key === "evaluator_confirmation") && scenariosForStage(key).length > 0; const status = event?.status ?? (hasLiveResult ? "running" : campaign?.status === "pending" ? "pending" : "waiting"); const progress = event?.completed !== undefined && event?.total ? ` · ${event.completed} / ${event.total}` : ""; return <button type="button" className={`flow-step ${event || hasLiveResult ? "done" : ""} ${resolvedSelectedStage === key ? "active" : ""}`} onClick={() => selectStage(key)} key={key}><b>{String(index + 1).padStart(2, "0")}</b><strong>{name}</strong><small>{description}{progress}</small><Status value={status} /></button>; })}</section>
+    <section className="stage-panel"><div className="stage-panel-heading"><div><span>AGENT · {selected[1].toUpperCase()}</span><h2>Role: {selected[2]}</h2></div><Status value={data?.status ?? (terminal ? "skipped" : "pending")} /></div><StageEvidence stage={resolvedSelectedStage} data={data} scenarios={stageScenarios} campaign={campaign} /></section>
   </div>;
 }
 
@@ -236,9 +236,9 @@ function ObservedResponse({ execution }) {
   const web = execution?.web;
   const response = api?.response;
   if (response?.type === "numeric") return <div className="observed-result">
-    <span className="observed-label">RÉPONSE OBTENUE</span>
+    <span className="observed-label">RESPONSE RECEIVED</span>
     <strong className="observed-value">{formatValue(response.value)}</strong>
-    <span className="observed-unit">{metricLabels[response.metric_id] ?? response.metric_id} · {formatScale(response.unit_scale, response.currency)} · exercice {response.reporting_year}</span>
+    <span className="observed-unit">{metricLabels[response.metric_id] ?? response.metric_id} · {formatScale(response.unit_scale, response.currency)} · financial year {response.reporting_year}</span>
     <dl className="observed-metadata">
       <div><dt>Source</dt><dd>{response.source_document?.split("/").pop() ?? "—"}</dd></div>
       <div><dt>Page</dt><dd>{response.page_number ?? "—"}</dd></div>
@@ -246,30 +246,30 @@ function ObservedResponse({ execution }) {
     {response.source_excerpt && <blockquote>{response.source_excerpt}</blockquote>}
   </div>;
   if (response?.type === "document") return <div className="observed-result">
-    <span className="observed-label">RÉPONSE DOCUMENTAIRE OBTENUE</span>
-    <p>{response.analysis?.direct_answer ?? response.answer ?? response.message ?? "Réponse documentaire reçue."}</p>
-    {response.evidence?.length > 0 && <ul>{response.evidence.slice(0, 3).map((item, index) => <li key={index}>{item.source_document?.split("/").pop() ?? "Rapport officiel"}{item.page_number ? ` · p. ${item.page_number}` : ""}</li>)}</ul>}
+    <span className="observed-label">DOCUMENTARY RESPONSE RECEIVED</span>
+    <p>{response.analysis?.direct_answer ?? response.answer ?? response.message ?? "Documentary response received."}</p>
+    {response.evidence?.length > 0 && <ul>{response.evidence.slice(0, 3).map((item, index) => <li key={index}>{item.source_document?.split("/").pop() ?? "Official report"}{item.page_number ? ` · p. ${item.page_number}` : ""}</li>)}</ul>}
   </div>;
   if (response) return <div className="observed-result">
-    <span className="observed-label">RÉPONSE OBTENUE</span>
-    <p>{response.message ?? response.answer ?? "Réponse reçue."}</p>
+    <span className="observed-label">RESPONSE RECEIVED</span>
+    <p>{response.message ?? response.answer ?? "Response received."}</p>
   </div>;
-  if (web) return <div className="observed-result"><span className="observed-label">RÉPONSE VISIBLE DANS LE WEB</span><p>{web.visible_text ?? "Réponse Web reçue."}</p></div>;
-  return <p>La réponse n’a pas été conservée pour cette ancienne campagne.</p>;
+  if (web) return <div className="observed-result"><span className="observed-label">RESPONSE VISIBLE ON THE WEB</span><p>{web.visible_text ?? "Web response received."}</p></div>;
+  return <p>The response was not retained for this older campaign.</p>;
 }
 
 function ValidationExplanation({ scenario }) {
-  if (scenario.category === "cross_channel") return <p className="validation-explanation"><b>Validation :</b> la même question est posée à l’API et à l’interface Web ; type, valeur, année et source doivent être identiques.</p>;
-  if (scenario.category === "conversation" || scenario.scenario_id?.startsWith("BEHAVIOR")) return <p className="validation-explanation"><b>Validation :</b> le contrat de comportement est vérifié : bonne catégorie de réponse, aucune valeur inventée et message ou preuve attendus.</p>;
-  if (scenario.scenario_id?.startsWith("MISSING")) return <p className="validation-explanation"><b>Validation :</b> aucune donnée chiffrée ne doit être inventée lorsqu’aucun fait auto-validé n’existe.</p>;
-  return <p className="validation-explanation"><b>Validation :</b> comparaison stricte avec le fait auto-validé : banque, métrique, exercice, valeur, unité, document, page et extrait PDF.</p>;
+  if (scenario.category === "cross_channel") return <p className="validation-explanation"><b>Validation:</b> the same question is sent to the API and Web interface; type, value, year and source must be identical.</p>;
+  if (scenario.category === "conversation" || scenario.scenario_id?.startsWith("BEHAVIOR")) return <p className="validation-explanation"><b>Validation:</b> the behavioural contract is checked: correct response category, no invented value, and the expected message or evidence.</p>;
+  if (scenario.scenario_id?.startsWith("MISSING")) return <p className="validation-explanation"><b>Validation:</b> no numerical data may be invented when no automatically validated fact exists.</p>;
+  return <p className="validation-explanation"><b>Validation:</b> strict comparison with the automatically validated fact: bank, metric, financial year, value, unit, document, page and PDF excerpt.</p>;
 }
 
 function EvaluatorDetails({ scenario }) {
   const detail = scenario.evaluator;
   const failedChecks = detail?.deterministic_checks?.filter((check) => check.passed === false) ?? [];
   const provider = detail?.provider;
-  return <><ValidationExplanation scenario={scenario} /><p><b>Scores de contrôle :</b> pertinence {scenario.scores?.relevance}/5 · exactitude {scenario.scores?.factuality}/5 · source {scenario.scores?.source_fidelity}/5 · cohérence {scenario.scores?.coherence}/5</p>{detail?.rationale && <p><b>Conclusion de l’Evaluator :</b> {detail.rationale}</p>}{provider?.status === "failed" && <p><b>Évaluation Groq indisponible :</b> {provider.error ?? "erreur non détaillée"}</p>}{detail?.probable_cause && <p><b>Cause probable :</b> {detail.probable_cause}</p>}{failedChecks.length > 0 && <p><b>Règles en échec :</b> {failedChecks.map((check) => check.name).join(" · ")}</p>}</>;
+  return <><ValidationExplanation scenario={scenario} /><p><b>Control scores:</b> relevance {scenario.scores?.relevance}/5 · factuality {scenario.scores?.factuality}/5 · source fidelity {scenario.scores?.source_fidelity}/5 · coherence {scenario.scores?.coherence}/5</p>{detail?.rationale && <p><b>Evaluator conclusion:</b> {detail.rationale}</p>}{provider?.status === "failed" && <p><b>Groq evaluation unavailable:</b> {provider.error ?? "unspecified error"}</p>}{detail?.probable_cause && <p><b>Probable cause:</b> {detail.probable_cause}</p>}{failedChecks.length > 0 && <p><b>Failed rules:</b> {failedChecks.map((check) => check.name).join(" · ")}</p>}</>;
 }
 
 function StageEvidence({ stage, data, scenarios, campaign }) {
@@ -290,23 +290,23 @@ function StageEvidence({ stage, data, scenarios, campaign }) {
     };
     const providerErrors = outputs.filter((output) => outputStatus(output) === "provider_error").length;
     const invalidOutputs = outputs.filter((output) => outputStatus(output) === "invalid_output").length;
-    if (outputs.length) return <>{data?.reason && <p className="stage-copy"><b>Cause de l’arrêt :</b> {data.reason}</p>}<p className="stage-copy">{stage === "generator" ? providerErrors ? `${outputs.length} tentative(s) Groq pour ${targetCount ?? "—"} objectif(s) : ${accepted} question(s) générée(s), puis campagne interrompue par Groq. Ce n’est pas un rejet par les garde-fous.` : invalidOutputs ? `${outputs.length} tentative(s) pour ${targetCount ?? "—"} objectif(s) : ${invalidOutputs} réponse(s) IA invalide(s), rejetée(s) par le validateur local avant toute exécution.` : targetReached ? `${outputs.length} tentative(s), dont ${replacementAttempts} remplacement(s), pour atteindre l’objectif de ${targetCount} scénarios sûrs : ${accepted} question(s) nouvelles et ${rejected} écartée(s) par les garde-fous.` : `${outputs.length} tentative(s), dont ${replacementAttempts} remplacement(s), pour l’objectif de ${targetCount ?? "—"} scénarios : ${accepted} question(s) nouvelles et ${rejected} écartée(s) par les garde-fous. L’objectif n’a pas encore été atteint.` : `${outputs.length} action(s) examinée(s) : ${accepted} autorisée(s), ${rejected} rejetée(s). Le Planner ne peut autoriser qu’un message vers l’API locale du Chat.`}</p><div className="evaluation-list">{outputs.map((output) => <article key={output.id}><div><b>{output.question ?? output.charter ?? output.scenario_id}</b><small>{output.scenario_id ?? output.charter ?? "—"} · modèle {output.provider?.model ?? "—"}</small></div><Status value={outputStatus(output)} /><span>{output.provider?.status === "success" ? "JSON conforme" : output.provider?.error ?? "—"}</span></article>)}</div></>;
+    if (outputs.length) return <>{data?.reason && <p className="stage-copy"><b>Stop reason:</b> {data.reason}</p>}<p className="stage-copy">{stage === "generator" ? providerErrors ? `${outputs.length} Groq attempt(s) for ${targetCount ?? "—"} target(s): ${accepted} question(s) generated, then the campaign was interrupted by Groq. This is not a guardrail rejection.` : invalidOutputs ? `${outputs.length} attempt(s) for ${targetCount ?? "—"} target(s): ${invalidOutputs} invalid AI response(s) rejected by the local validator before any execution.` : targetReached ? `${outputs.length} attempt(s), including ${replacementAttempts} replacement(s), to reach the target of ${targetCount} safe scenarios: ${accepted} new question(s) and ${rejected} rejected by guardrails.` : `${outputs.length} attempt(s), including ${replacementAttempts} replacement(s), for the target of ${targetCount ?? "—"} scenarios: ${accepted} new question(s) and ${rejected} rejected by guardrails. The target has not yet been reached.` : `${outputs.length} action(s) reviewed: ${accepted} authorised, ${rejected} rejected. The Planner may authorise only a message to the local Chat API.`}</p><div className="evaluation-list">{outputs.map((output) => <article key={output.id}><div><b>{output.question ?? output.charter ?? output.scenario_id}</b><small>{output.scenario_id ?? output.charter ?? "—"} · model {output.provider?.model ?? "—"}</small></div><Status value={outputStatus(output)} /><span>{output.provider?.status === "success" ? "Valid JSON" : output.provider?.error ?? "—"}</span></article>)}</div></>;
   }
   if (stage === "critic") {
     const reviewed = scenarios.filter((scenario) => scenario.critic);
-    if (reviewed.length) return <><p className="stage-copy">Le Critic relit les anomalies. Il peut demander une question de confirmation et créer un test de régression lorsqu’une faille est confirmée.</p><div className="evaluation-list">{reviewed.map((scenario) => <article key={scenario.id}><div><b>{scenario.question ?? scenario.title}</b><small>{scenario.scenario_id} · confiance {Math.round((scenario.critic?.confidence ?? 0) * 100)} %</small><details className="observed-answer"><summary>Voir la décision du Critic</summary><p><b>Décision :</b> {scenario.critic?.reason ?? "—"}</p>{scenario.critic?.provider?.status === "failed" && <p><b>Critic Groq indisponible :</b> {scenario.critic.provider.error ?? "erreur non détaillée"}</p>}{scenario.critic?.follow_up_question && <p><b>Question de confirmation :</b> {scenario.critic.follow_up_question}</p>}{scenario.regression && <p><b>Régression :</b> {scenario.regression.created ? "créée" : "déjà connue"} · {scenario.regression.regression_id}</p>}</details></div><Status value={scenario.verdict} /><span>{scenario.critic?.create_regression_test ? "régression candidate" : scenario.critic?.next_action_required ? "confirmation demandée" : "aucune action"}</span></article>)}</div></>;
+    if (reviewed.length) return <><p className="stage-copy">The Critic rereads anomalies. It can request a confirmation question and create a regression test when an issue is confirmed.</p><div className="evaluation-list">{reviewed.map((scenario) => <article key={scenario.id}><div><b>{scenario.question ?? scenario.title}</b><small>{scenario.scenario_id} · confidence {Math.round((scenario.critic?.confidence ?? 0) * 100)} %</small><details className="observed-answer"><summary>View the Critic’s decision</summary><p><b>Decision:</b> {scenario.critic?.reason ?? "—"}</p>{scenario.critic?.provider?.status === "failed" && <p><b>Groq Critic unavailable:</b> {scenario.critic.provider.error ?? "unspecified error"}</p>}{scenario.critic?.follow_up_question && <p><b>Confirmation question:</b> {scenario.critic.follow_up_question}</p>}{scenario.regression && <p><b>Regression:</b> {scenario.regression.created ? "created" : "already known"} · {scenario.regression.regression_id}</p>}</details></div><Status value={scenario.verdict} /><span>{scenario.critic?.create_regression_test ? "regression candidate" : scenario.critic?.next_action_required ? "confirmation requested" : "no action"}</span></article>)}</div></>;
   }
-  if (["evaluator", "executor", "evaluator_confirmation", "executor_confirmation"].includes(stage)) { const isExecutor = stage.startsWith("executor"); return <><p className="stage-copy">{scenarios.length ? (isExecutor ? `${scenarios.length} réponse(s) du Chat reçue(s) immédiatement. L’évaluation de qualité continue séparément.` : `${scenarios.length} verdict(s) métier reçus. Ouvrez une ligne pour voir les règles, la cause et la conclusion.`) : "Les résultats apparaîtront ici pendant l’exécution."}</p>{scenarios.length > 0 && <div className="evaluation-list">{scenarios.map((scenario) => <article key={scenario.id}><div><b>{scenario.index} / {scenario.total} · {scenario.question ?? scenario.title}</b><small>{scenario.scenario_id} · {isExecutor ? `API HTTP ${scenario.execution?.api?.http_status ?? "—"} · ${scenario.execution?.api?.latency_ms ?? "—"} ms${scenario.execution?.web ? ` · Web ${scenario.execution.web.latency_ms} ms` : ""}` : scenario.channels?.join(" + ")}</small><details className="observed-answer"><summary>{isExecutor ? "Voir la réponse observée et sa preuve" : "Voir le détail de la validation"}</summary><p><b>Question :</b> {scenario.question ?? scenario.title}</p>{isExecutor ? <ObservedResponse execution={scenario.execution} /> : <EvaluatorDetails scenario={scenario} />}</details></div><Status value={isExecutor ? (scenario.execution?.api?.errors?.length ? "failed" : "completed") : scenario.verdict} /><span>{isExecutor ? scenario.execution?.api?.response_type ?? scenario.execution?.web?.response_type ?? "réponse non disponible" : scenario.failure_category ?? "contrôles réussis"}</span></article>)}</div>}</>; }
+  if (["evaluator", "executor", "evaluator_confirmation", "executor_confirmation"].includes(stage)) { const isExecutor = stage.startsWith("executor"); return <><p className="stage-copy">{scenarios.length ? (isExecutor ? `${scenarios.length} Chat response(s) received immediately. Quality evaluation continues separately.` : `${scenarios.length} business verdict(s) received. Open a row to see the rules, cause and conclusion.`) : "Results will appear here while the stage is running."}</p>{scenarios.length > 0 && <div className="evaluation-list">{scenarios.map((scenario) => <article key={scenario.id}><div><b>{scenario.index} / {scenario.total} · {scenario.question ?? scenario.title}</b><small>{scenario.scenario_id} · {isExecutor ? `API HTTP ${scenario.execution?.api?.http_status ?? "—"} · ${scenario.execution?.api?.latency_ms ?? "—"} ms${scenario.execution?.web ? ` · Web ${scenario.execution.web.latency_ms} ms` : ""}` : scenario.channels?.join(" + ")}</small><details className="observed-answer"><summary>{isExecutor ? "View observed response and evidence" : "View validation details"}</summary><p><b>Question:</b> {scenario.question ?? scenario.title}</p>{isExecutor ? <ObservedResponse execution={scenario.execution} /> : <EvaluatorDetails scenario={scenario} />}</details></div><Status value={isExecutor ? (scenario.execution?.api?.errors?.length ? "failed" : "completed") : scenario.verdict} /><span>{isExecutor ? scenario.execution?.api?.response_type ?? scenario.execution?.web?.response_type ?? "response unavailable" : scenario.failure_category ?? "checks passed"}</span></article>)}</div>}</>; }
   if (stage === "reporter" && campaign?.result?.report_paths) {
     const summary = campaign.result.summary ?? {};
     const labels = {
-      summary_html: "Ouvrir la synthèse",
-      audit_html: "Ouvrir l’audit détaillé",
+      summary_html: "Open summary",
+      audit_html: "Open detailed audit",
     };
     const availableFormats = Object.keys(labels).filter((format) => campaign.result.report_paths[format] || campaign.result.report_paths.json);
-    return <><p className="stage-copy">Choisissez la synthèse pour une vue rapide ou l’audit pour examiner chaque scénario.</p><section className="report-summary"><div><span>SCÉNARIOS</span><strong>{summary.total ?? "—"}</strong></div><div><span>VALIDÉS</span><strong>{summary.pass ?? 0}</strong></div><div><span>FAILLES</span><strong>{summary.fail ?? 0}</strong></div><div><span>À CONFIRMER</span><strong>{summary.inconclusive ?? 0}</strong></div></section><div className="report-actions">{availableFormats.map((format) => <a key={format} href={`${API}/api/campaigns/${campaign.id}/reports/${format}`} target="_blank" rel="noreferrer" className="primary">{labels[format]} <b>↗</b></a>)}</div></>;
+    return <><p className="stage-copy">Choose the summary for a quick overview or the audit to examine every scenario.</p><section className="report-summary"><div><span>SCENARIOS</span><strong>{summary.total ?? "—"}</strong></div><div><span>PASSED</span><strong>{summary.pass ?? 0}</strong></div><div><span>ISSUES</span><strong>{summary.fail ?? 0}</strong></div><div><span>TO CONFIRM</span><strong>{summary.inconclusive ?? 0}</strong></div></section><div className="report-actions">{availableFormats.map((format) => <a key={format} href={`${API}/api/campaigns/${campaign.id}/reports/${format}`} target="_blank" rel="noreferrer" className="primary">{labels[format]} <b>↗</b></a>)}</div></>;
   }
-  if (!data) return <p className="stage-copy">Cette étape n’a pas encore produit de donnée.</p>;
+  if (!data) return <p className="stage-copy">This stage has not produced data yet.</p>;
   return <dl className="evidence-list">{Object.entries(data).filter(([key]) => !["id", "created_at", "type", "stage"].includes(key)).map(([key, value]) => <div key={key}><dt>{key.replaceAll("_", " ")}</dt><dd>{typeof value === "object" && value !== null ? JSON.stringify(value) : String(value ?? "—")}</dd></div>)}</dl>;
 }
 

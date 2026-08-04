@@ -63,7 +63,7 @@ def _extractive_answer(question: str, evidence: list[EvidenceChunk]) -> str:
     for chunk in evidence:
         excerpt = _relevant_excerpt(chunk.text, question, 620)
         excerpts.append(f"- « {excerpt} » [p. {chunk.page_number}]")
-    return "Réponse fondée directement sur les passages les plus pertinents du rapport :\n\n" + "\n\n".join(excerpts)
+    return "Answer based directly on the most relevant report excerpts:\n\n" + "\n\n".join(excerpts)
 
 
 def _safe_qualitative_analysis(answer: str, evidence: list[EvidenceChunk]) -> str:
@@ -162,7 +162,7 @@ def _source_reading(question: str, evidence: list[EvidenceChunk]) -> str:
     question_text = _normalise(question)
     page = primary.page_number
 
-    if ("autre" in question_text or "y a" in question_text or "existe" in question_text) and ("transaction" in question_text or "parties liees" in question_text):
+    if ("autre" in question_text or "y a" in question_text or "existe" in question_text or "other" in question_text or "more" in question_text) and ("transaction" in question_text or "parties liees" in question_text or "related part" in question_text):
         conclusion = next(
             (
                 chunk
@@ -176,47 +176,47 @@ def _source_reading(question: str, evidence: list[EvidenceChunk]) -> str:
         citations = " ".join(f"[p. {item}]" for item in listed_pages[:3])
         if conclusion:
             return (
-                "Oui. La recherche élargie dans le rapport spécial fait apparaître plusieurs conventions ou opérations "
-                f"au-delà du premier extrait consulté. {citations} Les commissaires indiquent qu’en dehors des conventions "
-                f"et opérations présentées, leur revue n’a pas révélé d’autres opérations dans le périmètre légal examiné. [p. {conclusion.page_number}]"
+                "Yes. The expanded search of the special report identifies several agreements or transactions "
+                f"beyond the first excerpt reviewed. {citations} The auditors state that, apart from the agreements "
+                f"and transactions presented, their review found no other transactions within the legal scope examined. [p. {conclusion.page_number}]"
             )
-        return f"La recherche élargie a identifié plusieurs conventions ou opérations au-delà de la première note consultée. {citations}"
+        return f"The expanded search identified several agreements or transactions beyond the first note reviewed. {citations}"
 
-    if "parties liees" in text or "parties liees" in question_text:
-        entity = "GSM" if "gsm" in text else "l’entité liée mentionnée dans la note"
-        activity = " autour de la location d’un parcours de golf" if "parcours" in text and "golf" in text else ""
+    if "parties liees" in text or "parties liees" in question_text or "related part" in question_text:
+        entity = "GSM" if "gsm" in text else "the related entity mentioned in the note"
+        activity = " concerning the lease of a golf course" if "parcours" in text and "golf" in text else ""
         return (
-            "Cette note isole les opérations avec des entités liées afin d’en rendre la nature et les "
-            f"conditions transparentes. Dans le cas décrit, {primary.bank_name} documente une relation avec {entity}{activity}. "
+            "This note isolates transactions with related entities to make their nature and terms "
+            f"transparent. In the case described, {primary.bank_name} documents a relationship with {entity}{activity}. "
             f"[p. {page}]"
         )
 
     if "portefeuille d'encaissement" in text or "portefeuille d'encaissement" in question_text:
         return (
-            "Le portefeuille d’encaissement regroupe des valeurs reçues pour le compte de tiers et encore "
-            "en attente d’encaissement. La note précise qu’elles sont suivies séparément et ne sont pas "
-            f"présentées au bilan. [p. {page}]"
+            "The collection portfolio includes items received on behalf of third parties that are still "
+            "awaiting collection. The note states that they are tracked separately and are not "
+            f"presented on the balance sheet. [p. {page}]"
         )
 
     if "etat de flux de tresorerie" in text or "etat de flux de tresorerie" in question_text:
         return (
-            "La note explique l’effet des variations de change sur les liquidités de la banque, puis décrit "
-            "les principales composantes de sa trésorerie et de ses équivalents de liquidités. "
+            "The note explains the effect of exchange-rate movements on the bank’s liquidity, then describes "
+            "the main components of its cash and cash equivalents. "
             f"[p. {page}]"
         )
 
     if "risque de contrepartie" in text or "risques de credit" in question_text:
         return (
-            "Le passage relie le risque de crédit à la capacité des contreparties à honorer leurs engagements. "
-            f"{primary.bank_name} présente les mécanismes de couverture et le suivi des créances selon leur niveau de risque. "
+            "The excerpt links credit risk to counterparties’ ability to meet their commitments. "
+            f"{primary.bank_name} presents its coverage mechanisms and monitoring of receivables by risk level. "
             f"[p. {page}]"
         )
 
     title = re.search(r"(?:note\s+[ivxlcdm0-9]+\s*[–-]\s*)([^\n]+)", primary.text, re.IGNORECASE)
-    subject = title.group(1).strip() if title else "ce sujet"
+    subject = title.group(1).strip() if title else "this subject"
     return (
-        f"Le rapport traite « {subject} » dans une note dédiée. Cette présentation permet de distinguer "
-        f"le mécanisme concerné des principaux tableaux financiers et d’en consulter les conditions dans la source. [p. {page}]"
+        f"The report addresses “{subject}” in a dedicated note. This presentation makes it possible to distinguish "
+        f"the mechanism concerned from the main financial statements and review its terms in the source. [p. {page}]"
     )
 
 
@@ -230,22 +230,22 @@ def answer_from_evidence(question: str, evidence: list[EvidenceChunk]) -> str:
     context = "\n\n".join(
         f"[PAGE {chunk.page_number}]\n{_shorten_for_model(chunk.text, question)}" for chunk in evidence
     )
-    prompt = f"""Tu es l'analyste documentaire de MyFinance. Tu dois produire une
-reformulation strictement prouvable par le passage officiel fourni.
+    prompt = f"""You are MyFinance’s documentary analyst. Produce a paraphrase
+that is strictly supported by the supplied official excerpt.
 
-Réponds uniquement avec un objet JSON valide, sans balise Markdown :
-{{"claims":[{{"summary":"reformulation courte sans chiffre", "evidence_quote":"copie exacte d'au moins six mots du passage", "page":12}}]}}
+Respond only with a valid JSON object, without Markdown:
+{{"claims":[{{"summary":"short paraphrase without numbers", "evidence_quote":"an exact continuous quote of at least six words from the excerpt", "page":12}}]}}
 
-Règles impératives :
-- Produis une ou deux claims maximum.
-- `evidence_quote` doit être une copie exacte et continue du passage sur la page indiquée.
-- `summary` peut reformuler, mais ne doit ajouter aucune idée, chiffre, date, taux, appréciation ou définition externe.
-- Ne cite jamais une page absente du passage fourni.
-- Si le passage ne permet pas une reformulation sûre, réponds exactement : {{"claims":[]}}.
+Mandatory rules:
+- Produce at most one or two claims.
+- `evidence_quote` must be an exact continuous copy from the excerpt on the stated page.
+- `summary` may paraphrase, but must not add any idea, figure, date, rate, assessment or external definition.
+- Never cite a page absent from the supplied excerpt.
+- If the excerpt cannot support a safe paraphrase, respond exactly: {{"claims":[]}}.
 
-Question : {question}
+Question: {question}
 
-Passage officiel :
+Official excerpt:
 {context}
 """
     model_response = complete(prompt, json_mode=True, max_tokens=320)

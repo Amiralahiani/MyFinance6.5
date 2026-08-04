@@ -135,7 +135,7 @@ def _read_campaign(campaign_id: str) -> dict:
         row = connection.execute("SELECT * FROM campaigns WHERE id = ?", (campaign_id,)).fetchone()
         events = connection.execute("SELECT * FROM campaign_events WHERE campaign_id = ? ORDER BY id", (campaign_id,)).fetchall()
     if row is None:
-        raise HTTPException(status_code=404, detail="Campagne introuvable.")
+        raise HTTPException(status_code=404, detail="Campaign not found.")
     return {
         "id": row["id"],
         "status": row["status"],
@@ -244,16 +244,16 @@ def _groq_failure_message(error: str | None) -> str:
     """Turn a normalised provider error into an actionable, secret-free message."""
 
     if error and "BadRequestError" in error:
-        return "Groq a refusé la requête. Le détail sûr du fournisseur est affiché sous la tentative concernée."
+        return "Groq rejected the request. The provider’s safe detail is displayed under the relevant attempt."
     if error and "RateLimitError" in error:
-        return "Groq limite temporairement les requêtes de cette clé. Attendez puis relancez la campagne."
+        return "Groq is temporarily rate-limiting requests for this key. Wait, then restart the campaign."
     if error and "AuthenticationError" in error:
-        return "Groq a refusé la clé configurée. Vérifiez GROQ_API_KEY dans le terminal du service Testing."
+        return "Groq rejected the configured key. Check GROQ_API_KEY in the Testing service terminal."
     if error and "PermissionDeniedError" in error:
-        return "Cette clé Groq n’est pas autorisée à utiliser le modèle configuré."
+        return "This Groq key is not authorised to use the configured model."
     if error and "NotFoundError" in error:
-        return "Le modèle Groq configuré est introuvable ou indisponible pour cette clé."
-    return "Groq n’est pas disponible pour générer les scénarios. Réessayez après avoir vérifié le service et sa configuration."
+        return "The configured Groq model was not found or is unavailable for this key."
+    return "Groq is unavailable for scenario generation. Try again after checking the service and its configuration."
 
 
 def _case(test_id: str, payload: dict) -> models.TestCase:
@@ -262,9 +262,9 @@ def _case(test_id: str, payload: dict) -> models.TestCase:
     category = models.TestCategory.CONVERSATION if is_greeting else models.TestCategory.FINANCIAL_FACT
     objective = models.TestObjective(
         objective_id=f"OBJ-{test_id}", category=category,
-        description="Vérifier une réponse conversationnelle sans imposer de preuve financière." if is_greeting else "Rejouer une réponse du chatbot avec des contrôles déterministes et des preuves PDF.",
+        description="Check a conversational response without requiring financial evidence." if is_greeting else "Replay a chatbot response with deterministic checks and PDF evidence.",
         required_properties=["http_success"] if is_greeting else ["http_success", "source_fidelity"],
-        rationale="Le test provient d’une conversation ou d’une saisie explicitement soumise.",
+        rationale="The test originates from a conversation or an explicitly submitted input.",
     )
     return models.TestCase(
         test_id=test_id, title=question[:160], category=category,
@@ -370,12 +370,12 @@ def _run_visual_check(visual_check_id: str) -> None:
         }
         result = {"progress": final_progress, "coverage": coverage}
         status = "completed" if exit_code == 0 and coverage.get("available") else "failed"
-        error = None if status == "completed" else "Le contrôle Playwright a échoué. Consultez le journal ci-dessous."
+        error = None if status == "completed" else "The Playwright check failed. See the log below."
         _update_visual_check(visual_check_id, status=status, result=result, error=error)
         _visual_check_event(visual_check_id, "visual_completed", {
             "status": status,
             "exit_code": exit_code,
-            "message": "Contrôle visuel terminé." if status == "completed" else error,
+            "message": "Visual check completed." if status == "completed" else error,
             **result,
         })
     # Background work must always publish a terminal status, including an
@@ -452,16 +452,16 @@ def _run_catalog_campaign(campaign_id: str) -> None:
         if configuration["scenario_profile"] == "exploration":
             if not groq_enabled or groq_client is None:
                 raise RuntimeError(
-                    f"La campagne exploratoire exige {settings.groq.api_key_environment} dans l’environnement du service Testing."
+                    f"The exploratory campaign requires {settings.groq.api_key_environment} in the Testing service environment."
                 )
             charters = exploration_charters()
             if configuration["max_scenarios"] is not None:
                 charters = charters[:configuration["max_scenarios"]]
             known_questions = _previous_exploration_questions()
             _campaign_event(campaign_id, "stage_update", {
-                "stage": "generator", "status": "running", "title": "Generator IA : recherche de scénarios à risque",
+                "stage": "generator", "status": "running", "title": "AI Generator: searching for risk scenarios",
                 "risk_charters": len(charters), "previous_questions": len(known_questions),
-                "policy": "Le modèle génère les questions ; les contrats de sûreté restent définis localement. Les doublons et les refus sont remplacés dans une limite stricte.",
+                "policy": "The model generates questions; safety contracts remain defined locally. Duplicates and rejections are replaced within a strict limit.",
             })
             target_scenarios = len(charters)
             max_generation_attempts = target_scenarios * 3
@@ -471,7 +471,7 @@ def _run_catalog_campaign(campaign_id: str) -> None:
             generation_attempts = 0
             planner_rejections = 0
             _campaign_event(campaign_id, "stage_update", {
-                "stage": "planner", "status": "running", "title": "Planner IA : vérification des actions autorisées",
+                "stage": "planner", "status": "running", "title": "AI Planner: checking authorised actions",
                 "target_scenarios": target_scenarios,
             })
             while (
@@ -530,9 +530,9 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                     planner_rejections += 1
                     pending_charters.append(charter)
             if not generated_scenarios:
-                raise RuntimeError("Groq n’a produit aucun scénario exploitable après validation de schéma.")
+                raise RuntimeError("Groq produced no usable scenario after schema validation.")
             _campaign_event(campaign_id, "stage_update", {
-                "stage": "generator", "status": "completed", "title": "Scénarios exploratoires générés par IA",
+                "stage": "generator", "status": "completed", "title": "AI-generated exploratory scenarios",
                 "generated_scenarios": len(generated_scenarios), "target_scenarios": target_scenarios,
                 "risk_charters": len(charters), "generation_attempts": generation_attempts,
                 "replacement_attempts": max(0, generation_attempts - target_scenarios),
@@ -544,17 +544,17 @@ def _run_catalog_campaign(campaign_id: str) -> None:
             })
             active_stage = "planner"
             if not selected:
-                raise RuntimeError("Le Planner IA n’a autorisé aucune action exécutable.")
+                raise RuntimeError("The AI Planner did not authorise any runnable action.")
             library = ScenarioLibrary(
                 report_count=0, auto_validated_fact_scenario_count=0, cross_channel_scenario_count=0,
                 missing_fact_scenario_count=0, behavior_scenario_count=len(selected), coverage=[], scenarios=selected,
             )
             _campaign_event(campaign_id, "stage_update", {
-                "stage": "planner", "status": "completed", "title": "Actions exploratoires planifiées",
+                "stage": "planner", "status": "completed", "title": "Exploratory actions planned",
                 "selected_scenarios": len(selected), "api_scenarios": len(selected), "web_scenarios": 0,
                 "target_scenarios": target_scenarios, "planner_rejections": planner_rejections,
                 "replacement_limit_reached": len(selected) < target_scenarios,
-                "policy": "Le Planner ne peut autoriser qu’un envoi de message vers l’API locale du Chat ; les refus déclenchent une génération de remplacement dans la limite fixée.",
+                "policy": "The Planner can authorise only a message to the local Chat API; rejections trigger replacement generation within the set limit.",
             })
         else:
             library = build_scenario_library()
@@ -568,23 +568,23 @@ def _run_catalog_campaign(campaign_id: str) -> None:
             if configuration["max_scenarios"] is not None:
                 selected = selected[:configuration["max_scenarios"]]
             _campaign_event(campaign_id, "stage_update", {
-                "stage": "generator", "status": "completed", "title": "Catalogue déterministe généré",
+                "stage": "generator", "status": "completed", "title": "Deterministic catalogue generated",
                 "report_count": library.report_count, "scenario_count": len(library.scenarios),
                 "auto_validated_fact_scenarios": library.auto_validated_fact_scenario_count,
                 "missing_fact_scenarios": library.missing_fact_scenario_count,
                 "cross_channel_scenarios": library.cross_channel_scenario_count,
             })
             _campaign_event(campaign_id, "stage_update", {
-                "stage": "planner", "status": "completed", "title": "Plan d’exécution borné",
+                "stage": "planner", "status": "completed", "title": "Bounded execution plan",
                 "selected_scenarios": len(selected), "api_scenarios": len(selected),
                 "web_scenarios": sum(scenario.category is models.TestCategory.CROSS_CHANNEL for scenario in selected),
                 "include_web": configuration["include_web"],
-                "policy": "Les questions, canaux et objectifs proviennent uniquement du catalogue validé.",
+                "policy": "Questions, channels and objectives come only from the validated catalogue.",
             })
         if configuration["with_groq"] and not groq_enabled:
             _campaign_event(campaign_id, "stage_update", {
-                "stage": "critic", "status": "skipped", "title": "Critic SLM non configuré",
-                "reason": f"{settings.groq.api_key_environment} est absent : les contrôles déterministes restent exécutés.",
+                "stage": "critic", "status": "skipped", "title": "Critic SLM not configured",
+                "reason": f"{settings.groq.api_key_environment} is missing: deterministic checks still run.",
             })
         primary_selected = list(selected)
         counts = {verdict.value: 0 for verdict in models.Verdict}
@@ -603,7 +603,7 @@ def _run_catalog_campaign(campaign_id: str) -> None:
 
             def callback(index: int, total: int, scenario: models.TestCase, execution: dict) -> None:
                 _campaign_event(campaign_id, "stage_update", {
-                    "stage": executor_stage, "status": "running", "title": "Exécution en cours",
+                    "stage": executor_stage, "status": "running", "title": "Execution in progress",
                     "completed": index, "total": total, "passage": passage,
                 })
                 _campaign_event(campaign_id, "execution_completed", {
@@ -627,7 +627,7 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                 counts[evaluation.verdict.value] += 1
                 passage_counts[evaluation.verdict.value] += 1
                 _campaign_event(campaign_id, "stage_update", {
-                    "stage": evaluator_stage, "status": "running", "title": "Évaluation déterministe en cours",
+                    "stage": evaluator_stage, "status": "running", "title": "Deterministic evaluation in progress",
                     "completed": index, "total": total, "passage": passage,
                 })
                 critic = execution.get("critic") or {}
@@ -661,7 +661,7 @@ def _run_catalog_campaign(campaign_id: str) -> None:
 
         active_stage = "executor"
         _campaign_event(campaign_id, "stage_update", {
-            "stage": "executor", "status": "running", "title": "Passage initial : exécution API et Web",
+            "stage": "executor", "status": "running", "title": "Initial pass: API and Web execution",
             "completed": 0, "total": len(primary_selected), "passage": "initial",
         })
         api_executor = ApiExecutor(CHAT_API_URL)
@@ -685,29 +685,29 @@ def _run_catalog_campaign(campaign_id: str) -> None:
         evaluator_fallbacks = quality_fallbacks["initial"]["evaluator"]
         critic_fallbacks = quality_fallbacks["initial"]["critic"]
         _campaign_event(campaign_id, "stage_update", {
-            "stage": "executor", "status": "completed", "title": "Passage initial terminé",
+            "stage": "executor", "status": "completed", "title": "Initial pass completed",
             "completed": len(primary_report.tests), "total": len(primary_selected), "counts": primary_counts,
         })
         _campaign_event(campaign_id, "stage_update", {
             "stage": "evaluator", "status": "completed_with_fallback" if evaluator_fallbacks else "completed",
-            "title": "Évaluation terminée avec repli déterministe" if evaluator_fallbacks else "Évaluation du passage initial terminée",
+            "title": "Evaluation completed with deterministic fallback" if evaluator_fallbacks else "Initial-pass evaluation completed",
             "completed": len(primary_report.tests), "total": len(primary_selected), "counts": primary_counts,
             "quality_fallbacks": evaluator_fallbacks,
-            "rule": "Un score SLM éventuel ne peut jamais modifier le verdict déterministe.",
+            "rule": "An optional SLM score can never change the deterministic verdict.",
         })
 
         if configuration["scenario_profile"] == "exploration" and groq_enabled:
             _campaign_event(campaign_id, "stage_update", {
                 "stage": "critic", "status": "completed_with_fallback" if critic_fallbacks else "completed",
-                "title": "Revue Critic terminée avec repli déterministe" if critic_fallbacks else "Revue Critic du passage initial terminée",
+                "title": "Critic review completed with deterministic fallback" if critic_fallbacks else "Initial-pass Critic review completed",
                 "reviewed_scenarios": len(primary_report.tests), "confirmation_requested": len(confirmation_requests),
                 "quality_fallbacks": critic_fallbacks,
-                "policy": "Toute contre-vérification démarre un second passage Planner → Executor → Evaluator.",
+                "policy": "Every confirmation starts a second Planner → Executor → Evaluator pass.",
             })
             if confirmation_requests:
                 _campaign_event(campaign_id, "stage_update", {
                     "stage": "planner_confirmation", "status": "running",
-                    "title": "Second passage : planification des contre-vérifications",
+                    "title": "Second pass: confirmation planning",
                     "candidate_scenarios": len(confirmation_requests),
                 })
                 active_stage = "planner_confirmation"
@@ -716,7 +716,7 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                 for parent, question in confirmation_requests:
                     scenario = parent.model_copy(update={
                         "test_id": f"{parent.test_id}-CONFIRM",
-                        "title": f"Contre-vérification · {parent.title}",
+                        "title": f"Confirmation · {parent.title}",
                         "input": question,
                         "origin": "groq_critic_confirmation",
                     })
@@ -734,13 +734,13 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                 if confirmation_scenarios:
                     _campaign_event(campaign_id, "stage_update", {
                         "stage": "planner_confirmation", "status": "completed",
-                        "title": "Contre-vérifications planifiées",
+                        "title": "Confirmations planned",
                         "selected_scenarios": len(confirmation_scenarios),
                         "rejected_scenarios": len(confirmation_requests) - len(confirmation_scenarios),
                     })
                     _campaign_event(campaign_id, "stage_update", {
                         "stage": "executor_confirmation", "status": "running",
-                        "title": "Second passage : exécution des contre-vérifications",
+                        "title": "Second pass: confirmation execution",
                         "completed": 0, "total": len(confirmation_scenarios), "passage": "confirmation",
                     })
                     active_stage = "executor_confirmation"
@@ -762,27 +762,27 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                     reports.append(confirmation_report)
                     _campaign_event(campaign_id, "stage_update", {
                         "stage": "executor_confirmation", "status": "completed",
-                        "title": "Second passage terminé",
+                        "title": "Second pass completed",
                         "completed": len(confirmation_report.tests), "total": len(confirmation_scenarios),
                         "counts": confirmation_counts,
                     })
                     _campaign_event(campaign_id, "stage_update", {
                         "stage": "evaluator_confirmation", "status": "completed",
-                        "title": "Évaluation des contre-vérifications terminée",
+                        "title": "Confirmation evaluation completed",
                         "completed": len(confirmation_report.tests), "total": len(confirmation_scenarios),
                         "counts": confirmation_counts,
                     })
                 else:
                     for stage in ("executor_confirmation", "evaluator_confirmation"):
                         _campaign_event(campaign_id, "stage_update", {
-                            "stage": stage, "status": "skipped", "title": "Aucune contre-vérification autorisée",
-                            "reason": "Le Planner a rejeté toutes les demandes du Critic.",
+                            "stage": stage, "status": "skipped", "title": "No confirmation authorised",
+                            "reason": "The Planner rejected every Critic request.",
                         })
             else:
                 for stage in ("planner_confirmation", "executor_confirmation", "evaluator_confirmation"):
                     _campaign_event(campaign_id, "stage_update", {
-                        "stage": stage, "status": "skipped", "title": "Second passage non nécessaire",
-                        "reason": "Le Critic n’a demandé aucune contre-vérification.",
+                        "stage": stage, "status": "skipped", "title": "Second pass not needed",
+                        "reason": "The Critic requested no confirmation.",
                     })
 
         report = primary_report.model_copy(update={
@@ -815,7 +815,7 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                 ("completed", datetime.now(UTC).isoformat(), json.dumps(result, ensure_ascii=False), campaign_id),
             )
         _campaign_event(campaign_id, "stage_update", {
-            "stage": "reporter", "status": "completed", "title": "Rapports JSON, Markdown et HTML produits",
+            "stage": "reporter", "status": "completed", "title": "JSON, Markdown and HTML reports generated",
             **result,
         })
         _campaign_event(campaign_id, "campaign_completed", {"status": "completed", **result})
@@ -829,7 +829,7 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                 ("technical_error", datetime.now(UTC).isoformat(), message, campaign_id),
             )
         _campaign_event(campaign_id, "stage_update", {
-            "stage": active_stage, "status": "technical_error", "title": "Étape interrompue",
+            "stage": active_stage, "status": "technical_error", "title": "Stage interrupted",
             "reason": str(error),
         })
         _campaign_event(campaign_id, "technical_error", {"stage": active_stage, "error": message})
@@ -860,7 +860,7 @@ def start_visual_check(background_tasks: BackgroundTasks) -> dict:
             "SELECT id FROM visual_checks WHERE status IN ('pending', 'running') ORDER BY created_at DESC LIMIT 1"
         ).fetchone()
         if active:
-            raise HTTPException(status_code=409, detail="Un contrôle visuel est déjà en cours.")
+            raise HTTPException(status_code=409, detail="A visual check is already running.")
         visual_check_id = f"VISUAL-{uuid4().hex[:12]}"
         timestamp = datetime.now(UTC).isoformat()
         connection.execute(
@@ -942,12 +942,12 @@ def start_catalog_campaign(body: StartCatalogCampaignRequest, background_tasks: 
     if body.scenario_profile == "exploration" and not load_settings().groq_api_key:
         raise HTTPException(
             status_code=412,
-            detail="La campagne exploratoire exige GROQ_API_KEY dans l’environnement du service Testing.",
+            detail="The exploratory campaign requires GROQ_API_KEY in the Testing service environment.",
         )
     with _connection() as connection:
         active = connection.execute("SELECT id FROM campaigns WHERE status IN ('pending', 'running') LIMIT 1").fetchone()
         if active is not None:
-            raise HTTPException(status_code=409, detail=f"La campagne {active['id']} est déjà en cours.")
+            raise HTTPException(status_code=409, detail=f"Campaign {active['id']} is already running.")
         campaign_id = f"CAMPAIGN-{uuid4().hex[:12]}"
         timestamp = datetime.now(UTC).isoformat()
         configuration = {
@@ -991,7 +991,7 @@ def get_campaign_report(campaign_id: str, report_format: str):
         "audit_html": "text/html; charset=utf-8",
     }
     if report_format not in media_types:
-        raise HTTPException(status_code=404, detail="Format de rapport inconnu.")
+        raise HTTPException(status_code=404, detail="Unknown report format.")
     campaign = _read_campaign(campaign_id)
     report_paths = (campaign.get("result") or {}).get("report_paths", {})
     raw_path = report_paths.get(report_format)
@@ -1014,11 +1014,11 @@ def get_campaign_report(campaign_id: str, report_format: str):
             )
             raw_path = str(generated_by_format[report_format])
     if not isinstance(raw_path, str):
-        raise HTTPException(status_code=404, detail="Ce rapport n’est pas encore disponible.")
+        raise HTTPException(status_code=404, detail="This report is not available yet.")
     report_path = Path(raw_path).resolve()
     report_root = CAMPAIGN_REPORT_ROOT.resolve()
     if report_root not in report_path.parents or not report_path.is_file():
-        raise HTTPException(status_code=404, detail="Le fichier de rapport est introuvable.")
+        raise HTTPException(status_code=404, detail="The report file was not found.")
     extension = {
         "json": "json",
         "markdown": "md",
@@ -1031,7 +1031,7 @@ def get_campaign_report(campaign_id: str, report_format: str):
     return FileResponse(
         report_path,
         media_type=media_types[report_format],
-        filename=f"{campaign_id}-rapport.{extension}" if not report_format.endswith("_html") and report_format != "html" else None,
+        filename=f"{campaign_id}-report.{extension}" if not report_format.endswith("_html") and report_format != "html" else None,
     )
 
 
@@ -1085,7 +1085,7 @@ def get_test(test_id: str) -> dict:
 def start_test(test_id: str, background_tasks: BackgroundTasks) -> dict:
     test = _read_test(test_id)
     if test["status"] not in {"pending", "failed", "inconclusive", "technical_error", "cancelled"}:
-        raise HTTPException(status_code=409, detail="Ce test est déjà en cours ou terminé avec succès.")
+        raise HTTPException(status_code=409, detail="This test is already running or completed successfully.")
     background_tasks.add_task(_run, test_id)
     return {"id": test_id, "status": "starting"}
 
@@ -1094,7 +1094,7 @@ def start_test(test_id: str, background_tasks: BackgroundTasks) -> dict:
 def stop_test(test_id: str) -> dict:
     test = _read_test(test_id)
     if test["status"] == "running":
-        raise HTTPException(status_code=409, detail="Une exécution API en cours ne peut pas encore être interrompue de façon sûre.")
+        raise HTTPException(status_code=409, detail="A running API execution cannot yet be stopped safely.")
     with _connection() as connection:
         connection.execute("UPDATE tests SET status=?, updated_at=? WHERE id=?", ("cancelled", datetime.now(UTC).isoformat(), test_id))
     _event(test_id, "test_cancelled", {"step": "decision"})

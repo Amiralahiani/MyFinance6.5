@@ -79,7 +79,7 @@ def _evaluation(test_case: TestCase, verdict: Verdict, checks, categories, evide
         confidence=1.0,
         evidence=evidence or [],
         deterministic_checks=checks,
-        rationale="Verdict de campagne déterministe ; aucune appréciation LLM ne peut le modifier.",
+        rationale="Deterministic campaign verdict; no LLM assessment can change it.",
     )
 
 
@@ -248,8 +248,8 @@ def run_scenario_batch(
         regressions=regressions,
         groq_call_count=groq_call_count,
         recommendations=[
-            "Les verdicts sont déterministes ; les scénarios inconclusifs doivent être rejoués avec le canal requis.",
-            "Toute divergence API-Web est à traiter comme une régression potentielle avec ses captures et preuves.",
+            "Verdicts are deterministic; inconclusive scenarios must be rerun using the required channel.",
+            "Any API–Web divergence must be treated as a potential regression with its screenshots and evidence.",
         ],
     )
 
@@ -270,66 +270,66 @@ def write_campaign_report(report: FinalReport, root: Path) -> tuple[Path, Path, 
         if item.failure_category:
             issue_counts[item.failure_category.value] = issue_counts.get(item.failure_category.value, 0) + 1
     actions = {
-        "unsupported_value": "Bloquer toute valeur non prouvée par un fait auto-validé et sa source PDF.",
-        "personal_data_scope": "Refuser explicitement l’accès aux comptes ou données personnelles.",
-        "unsupported_comparison": "Demander un critère mesurable ou refuser le classement non sourcé.",
-        "contract_violation": "Aligner la réponse sur le contrat de comportement attendu par le scénario.",
-        "source_mismatch": "Vérifier le document, la page et l’extrait avant d’afficher une réponse.",
+        "unsupported_value": "Block every value not proven by an automatically validated fact and its PDF source.",
+        "personal_data_scope": "Explicitly refuse access to accounts or personal data.",
+        "unsupported_comparison": "Request a measurable criterion or refuse an unsourced ranking.",
+        "contract_violation": "Align the response with the behavioural contract expected by the scenario.",
+        "source_mismatch": "Check the document, page and excerpt before displaying an answer.",
     }
     summary_markdown = "\n".join(
         [
-            f"# Synthèse de campagne — {report.run_id}",
+            f"# Campaign summary — {report.run_id}",
             "",
-            "## Décision rapide",
-            f"- Scénarios exécutés : **{len(report.tests)}**",
-            f"- Validés : **{counts[Verdict.PASS]}**",
-            f"- Failles détectées : **{counts[Verdict.FAIL]}**",
-            f"- À confirmer : **{counts[Verdict.INCONCLUSIVE]}**",
-            f"- Appels Groq : **{report.groq_call_count}**",
+            "## Quick decision",
+            f"- Scenarios run: **{len(report.tests)}**",
+            f"- Passed: **{counts[Verdict.PASS]}**",
+            f"- Issues detected: **{counts[Verdict.FAIL]}**",
+            f"- To confirm: **{counts[Verdict.INCONCLUSIVE]}**",
+            f"- Groq calls: **{report.groq_call_count}**",
             "",
-            "## Failles à corriger",
+            "## Issues to address",
             *[
-                f"- **{category}** : {count} cas — {actions.get(category, 'Analyser le contrat et ajouter un test de régression.')}"
+                f"- **{category}**: {count} case(s) — {actions.get(category, 'Analyse the contract and add a regression test.')}"
                 for category, count in sorted(issue_counts.items(), key=lambda item: (-item[1], item[0]))
             ],
             "",
-            "## Résultats par scénario",
-            "| Scénario | Verdict | Catégorie |",
+            "## Results by scenario",
+            "| Scenario | Verdict | Category |",
             "| --- | --- | --- |",
             *[
                 f"| {item.test_id} | {item.verdict.value.upper()} | {item.failure_category.value if item.failure_category else '—'} |"
                 for item in report.tests
             ],
             "",
-            "Consultez le rapport d’audit pour les contrôles déterministes, scores et preuves de chaque scénario.",
+            "See the audit report for deterministic checks, scores and evidence for every scenario.",
             "",
         ]
     )
     audit_lines = [
-        f"# Audit détaillé de campagne — {report.run_id}",
+        f"# Detailed campaign audit — {report.run_id}",
         "",
-        f"Période : {report.started_at.isoformat()} → {report.finished_at.isoformat()}",
-        f"Scénarios : {len(report.tests)} · PASS : {counts[Verdict.PASS]} · FAIL : {counts[Verdict.FAIL]} · INCONCLUSIVE : {counts[Verdict.INCONCLUSIVE]}",
+        f"Period: {report.started_at.isoformat()} → {report.finished_at.isoformat()}",
+        f"Scenarios: {len(report.tests)} · PASS: {counts[Verdict.PASS]} · FAIL: {counts[Verdict.FAIL]} · INCONCLUSIVE: {counts[Verdict.INCONCLUSIVE]}",
         "",
     ]
     for item in report.tests:
         audit_lines.extend(
             [
                 f"## {item.test_id} — {item.verdict.value.upper()}",
-                f"- Catégorie : {item.failure_category.value if item.failure_category else '—'}",
-                f"- Scores : pertinence {item.relevance}/5, exactitude {item.factuality}/5, source {item.source_fidelity}/5, cohérence {item.conversation_coherence}/5, clarté {item.clarity}/5",
-                f"- Conclusion : {item.rationale}",
+                f"- Category: {item.failure_category.value if item.failure_category else '—'}",
+                f"- Scores: relevance {item.relevance}/5, factuality {item.factuality}/5, source fidelity {item.source_fidelity}/5, coherence {item.conversation_coherence}/5, clarity {item.clarity}/5",
+                f"- Conclusion: {item.rationale}",
             ]
         )
         if item.probable_cause:
-            audit_lines.append(f"- Cause probable : {item.probable_cause}")
-        audit_lines.extend(["", "### Contrôles déterministes"])
+            audit_lines.append(f"- Probable cause: {item.probable_cause}")
+        audit_lines.extend(["", "### Deterministic checks"])
         audit_lines.extend(
-            f"- {'✓' if check.passed else '✗'} **{check.name}** — attendu : {check.expected!s} ; obtenu : {check.actual!s}{f' ({check.detail})' if check.detail else ''}"
+            f"- {'✓' if check.passed else '✗'} **{check.name}** — expected: {check.expected!s}; actual: {check.actual!s}{f' ({check.detail})' if check.detail else ''}"
             for check in item.deterministic_checks
         )
         if item.evidence:
-            audit_lines.extend(["", "### Preuves"])
+            audit_lines.extend(["", "### Evidence"])
             audit_lines.extend(
                 f"- {evidence.source_path} · p. {evidence.page_number} — {' '.join(evidence.excerpt.split())[:400]}"
                 for evidence in item.evidence
@@ -344,13 +344,13 @@ def write_campaign_report(report: FinalReport, root: Path) -> tuple[Path, Path, 
         return escape(str(value)) if value is not None else "—"
 
     def verdict_badge(verdict: Verdict) -> str:
-        label = {Verdict.PASS: "PASS", Verdict.FAIL: "FAIL", Verdict.INCONCLUSIVE: "À CONFIRMER"}[verdict]
+        label = {Verdict.PASS: "PASS", Verdict.FAIL: "FAIL", Verdict.INCONCLUSIVE: "TO CONFIRM"}[verdict]
         return f'<span class="badge {verdict.value}">{label}</span>'
 
     def write_html(path: Path, title: str, body: str) -> None:
         path.write_text(
             f"""<!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -378,31 +378,31 @@ def write_campaign_report(report: FinalReport, root: Path) -> tuple[Path, Path, 
         )
 
     issue_list = "".join(
-        f"<li><strong>{safe(category)}</strong> — {count} cas <span class=\"action\">· {safe(actions.get(category, 'Analyser le contrat et ajouter un test de régression.'))}</span></li>"
+        f"<li><strong>{safe(category)}</strong> — {count} case(s) <span class=\"action\">· {safe(actions.get(category, 'Analyse the contract and add a regression test.'))}</span></li>"
         for category, count in sorted(issue_counts.items(), key=lambda item: (-item[1], item[0]))
-    ) or '<p class="empty">Aucune faille catégorisée.</p>'
+    ) or '<p class="empty">No categorised issue.</p>'
     summary_rows = "".join(
         f"<tr><td>{safe(item.test_id)}</td><td>{verdict_badge(item.verdict)}</td><td>{safe(item.failure_category.value if item.failure_category else None)}</td></tr>"
         for item in report.tests
-    ) or '<tr><td colspan="3" class="empty">Aucun scénario exécuté.</td></tr>'
+    ) or '<tr><td colspan="3" class="empty">No scenario was run.</td></tr>'
     summary_body = f"""
-<header class="hero"><p class="eyebrow">MyFinance · Test Lab</p><h1>Synthèse de campagne</h1><p class="subtitle">{safe(report.run_id)}</p><p class="meta">Exécutée du {safe(report.started_at.isoformat())} au {safe(report.finished_at.isoformat())}</p></header>
-<main><div class="cards"><div class="card"><span class="number">{len(report.tests)}</span><span class="label">Scénarios exécutés</span></div><div class="card pass"><span class="number">{counts[Verdict.PASS]}</span><span class="label">Validés</span></div><div class="card fail"><span class="number">{counts[Verdict.FAIL]}</span><span class="label">Failles détectées</span></div><div class="card inconclusive"><span class="number">{counts[Verdict.INCONCLUSIVE]}</span><span class="label">À confirmer</span></div></div>
-<section><h2>Priorités de correction</h2><ul>{issue_list}</ul></section>
-<section><h2>Résultats par scénario</h2><div class="table-wrap"><table><thead><tr><th>Scénario</th><th>Verdict</th><th>Catégorie</th></tr></thead><tbody>{summary_rows}</tbody></table></div></section>
-<p class="meta">{report.groq_call_count} appel(s) Groq. L’audit détaillé contient les contrôles et preuves associés à chaque scénario.</p></main>"""
+<header class="hero"><p class="eyebrow">MyFinance · Test Lab</p><h1>Campaign summary</h1><p class="subtitle">{safe(report.run_id)}</p><p class="meta">Run from {safe(report.started_at.isoformat())} to {safe(report.finished_at.isoformat())}</p></header>
+<main><div class="cards"><div class="card"><span class="number">{len(report.tests)}</span><span class="label">Scenarios run</span></div><div class="card pass"><span class="number">{counts[Verdict.PASS]}</span><span class="label">Passed</span></div><div class="card fail"><span class="number">{counts[Verdict.FAIL]}</span><span class="label">Issues detected</span></div><div class="card inconclusive"><span class="number">{counts[Verdict.INCONCLUSIVE]}</span><span class="label">To confirm</span></div></div>
+<section><h2>Fix priorities</h2><ul>{issue_list}</ul></section>
+<section><h2>Results by scenario</h2><div class="table-wrap"><table><thead><tr><th>Scenario</th><th>Verdict</th><th>Category</th></tr></thead><tbody>{summary_rows}</tbody></table></div></section>
+<p class="meta">{report.groq_call_count} Groq call(s). The detailed audit contains checks and evidence for every scenario.</p></main>"""
 
-    score_labels = (("Pertinence", "relevance"), ("Exactitude", "factuality"), ("Source", "source_fidelity"), ("Cohérence", "conversation_coherence"), ("Année", "year_respect"), ("Unité", "unit_respect"), ("Clarté", "clarity"), ("Format", "format_respect"))
+    score_labels = (("Relevance", "relevance"), ("Factuality", "factuality"), ("Source fidelity", "source_fidelity"), ("Coherence", "conversation_coherence"), ("Year", "year_respect"), ("Unit", "unit_respect"), ("Clarity", "clarity"), ("Format", "format_respect"))
     audit_cases: list[str] = []
     for item in report.tests:
         checks = "".join(
-            f'<div class="check {"pass" if check.passed else "fail"}"><span class="status">{"✓" if check.passed else "✗"}</span> <span class="check-name">{safe(check.name)}</span><br><span class="meta">Attendu : {safe(check.expected)} · Obtenu : {safe(check.actual)}{f" · {safe(check.detail)}" if check.detail else ""}</span></div>'
+            f'<div class="check {"pass" if check.passed else "fail"}"><span class="status">{"✓" if check.passed else "✗"}</span> <span class="check-name">{safe(check.name)}</span><br><span class="meta">Expected: {safe(check.expected)} · Actual: {safe(check.actual)}{f" · {safe(check.detail)}" if check.detail else ""}</span></div>'
             for check in item.deterministic_checks
-        ) or '<p class="empty">Aucun contrôle déterministe renseigné.</p>'
+        ) or '<p class="empty">No deterministic check recorded.</p>'
         evidence = "".join(
             f'<div class="evidence"><strong>{safe(proof.source_path)} · page {safe(proof.page_number)}</strong><p>{safe(" ".join(proof.excerpt.split())[:500])}</p></div>'
             for proof in item.evidence
-        ) or '<p class="empty">Aucune preuve source associée à ce scénario.</p>'
+        ) or '<p class="empty">No source evidence is associated with this scenario.</p>'
         scores = "".join(
             f'<div class="score"><b>{safe(getattr(item, field))}/5</b><span>{label}</span></div>'
             for label, field in score_labels
@@ -411,12 +411,12 @@ def write_campaign_report(report: FinalReport, root: Path) -> tuple[Path, Path, 
         audit_cases.append(
             f"""<details class="audit-case {item.verdict.value}"{' open' if item.verdict is Verdict.FAIL else ''}>
 <summary><span>{verdict_badge(item.verdict)}</span><h3>{safe(item.test_id)}</h3><span class="meta">{safe(category)}</span></summary>
-<div class="case-content"><p><strong>Conclusion :</strong> {safe(item.rationale)}</p>{f'<p><strong>Cause probable :</strong> {safe(item.probable_cause)}</p>' if item.probable_cause else ''}<div class="score-grid">{scores}</div><h3>Contrôles déterministes</h3>{checks}<h3 style="margin-top:18px">Preuves</h3>{evidence}</div></details>"""
+<div class="case-content"><p><strong>Conclusion:</strong> {safe(item.rationale)}</p>{f'<p><strong>Probable cause:</strong> {safe(item.probable_cause)}</p>' if item.probable_cause else ''}<div class="score-grid">{scores}</div><h3>Deterministic checks</h3>{checks}<h3 style="margin-top:18px">Evidence</h3>{evidence}</div></details>"""
         )
     audit_body = f"""
-<header class="hero"><p class="eyebrow">MyFinance · Test Lab</p><h1>Audit détaillé</h1><p class="subtitle">{safe(report.run_id)}</p><p class="meta">{len(report.tests)} scénarios · {counts[Verdict.PASS]} validés · {counts[Verdict.FAIL]} failles · {counts[Verdict.INCONCLUSIVE]} à confirmer</p></header>
-<main><p class="meta">Ouvrez chaque scénario pour consulter l’évaluation, les contrôles déterministes et les extraits de preuve. Les scénarios en échec sont ouverts par défaut.</p>{''.join(audit_cases) or '<section><p class="empty">Aucun scénario exécuté.</p></section>'}</main>"""
+<header class="hero"><p class="eyebrow">MyFinance · Test Lab</p><h1>Detailed audit</h1><p class="subtitle">{safe(report.run_id)}</p><p class="meta">{len(report.tests)} scenarios · {counts[Verdict.PASS]} passed · {counts[Verdict.FAIL]} issues · {counts[Verdict.INCONCLUSIVE]} to confirm</p></header>
+<main><p class="meta">Open each scenario to review the evaluation, deterministic checks and evidence excerpts. Failed scenarios are open by default.</p>{''.join(audit_cases) or '<section><p class="empty">No scenario was run.</p></section>'}</main>"""
 
-    write_html(summary_html_path, f"Synthèse — {report.run_id}", summary_body)
-    write_html(audit_html_path, f"Audit détaillé — {report.run_id}", audit_body)
+    write_html(summary_html_path, f"Summary — {report.run_id}", summary_body)
+    write_html(audit_html_path, f"Detailed audit — {report.run_id}", audit_body)
     return json_path, summary_markdown_path, summary_html_path, audit_markdown_path, audit_html_path

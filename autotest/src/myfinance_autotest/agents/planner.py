@@ -36,12 +36,12 @@ def plan_api_action(
         campaign=campaign,
         max_completion_tokens=160,
     )
-    rationale = proposal.rationale if proposal is not None else "Plan local de repli : envoyer la question validée à l’API locale."
+    rationale = proposal.rationale if proposal is not None else "Local fallback plan: send the validated question to the local API."
     if proposal is None:
         metadata = metadata.model_copy(
             update={
                 "status": "fallback_local",
-                "error": metadata.error or "Le Planner IA est indisponible ; la politique locale autorise cette action bornée.",
+                "error": metadata.error or "The AI Planner is unavailable; local policy authorises this bounded action.",
             }
         )
     # Every execution-relevant field is assigned locally, whether the Planner
