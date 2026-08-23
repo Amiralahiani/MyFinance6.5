@@ -1,30 +1,25 @@
-# Sécurité et déploiement — MyFinance
+# Security and Deployment
 
-## Position actuelle
+## 1. Current security posture: local by default
 
-MyFinance est livré comme application **locale**. Docker lie par défaut le Chat,
-Testing, Qdrant et Ollama à `127.0.0.1`. Ils sont donc accessibles depuis le
-poste de développement, pas depuis le réseau local ou Internet.
+MyFinance is delivered as a local application. Docker publishes the Chat, Testing, Qdrant and Playwright viewer to `127.0.0.1` by default. They are available on the workstation, not to the LAN or Internet.
 
-Cette décision protège particulièrement :
+This is particularly important because the Testing Lab can run campaigns, retain diagnostic evidence and delete its own local history. Qdrant and Ollama are internal data services and must not be exposed as public endpoints.
 
-- la plateforme Testing, qui peut lancer des campagnes et supprimer leurs
-  rapports locaux ;
-- Qdrant et Ollama, qui sont des services internes et n’ont pas à être exposés ;
-- les diagnostics techniques de l’API.
+## 2. Application protections
 
-## Protections applicatives
+Both APIs apply runtime protections appropriate to local use:
 
-Les deux APIs installent :
+| Protection | Local behaviour |
+| --- | --- |
+| CORS | Restricted to configured local origins |
+| Browser response headers | `no-store`, `nosniff`, frame denial and no-referrer behaviour |
+| Host/origin policy | Production mode rejects missing or wildcard production values |
+| Rate limit | Can be disabled locally; production mode requires a positive configured limit |
+| Diagnostics | Detailed conversation-plan diagnostics are not intended for public exposure |
+| Secret handling | Environment variables only; no key is stored in the codebase |
 
-- CORS restreint aux origines locales en mode `local` ;
-- headers `no-store`, `nosniff`, `DENY` pour les frames et `no-referrer` ;
-- une limite de débit par processus quand elle est activée ;
-- une configuration `production` qui échoue au démarrage si les origines CORS
-  ou les noms d’hôtes acceptés sont absents ou utilisent `*` ;
-- la désactivation du diagnostic de plan détaillé dans l’API Chat publique.
-
-Les paramètres sont dans `.env`, jamais dans Git :
+Local configuration belongs in `.env`:
 
 ```env
 MYFINANCE_DEPLOYMENT_MODE=local
@@ -33,8 +28,34 @@ MYFINANCE_ALLOWED_HOSTS=
 MYFINANCE_RATE_LIMIT_PER_MINUTE=0
 ```
 
-En mode `production`, fournissez des valeurs explicites, y compris une limite
-strictement positive ; une valeur à `0` arrête volontairement le service :
+## 3. Secrets
+
+`GROQ_API_KEY` is the only optional external-provider secret currently used by the project. Keep it in `.env`, the host environment or a deployment secret manager.
+
+Never place a real key in:
+
+- source code or Markdown;
+- Git commits or GitHub issues;
+- screenshots, test reports or campaign artefacts;
+- browser console output;
+- a copied command-history export.
+
+If a key has been exposed, revoke it at the provider, create a replacement and recreate `chat-api` and `testing-api` so they receive the new environment.
+
+## 4. Before any Internet deployment
+
+The production runtime checks are necessary but not sufficient. Before exposing MyFinance outside the local workstation, implement all of the following:
+
+1. **Reverse proxy with TLS/HTTPS.** Terminate TLS at a maintained proxy; redirect HTTP to HTTPS.
+2. **Authentication and authorisation.** Protect both applications. The Testing Lab should normally be restricted to administrators or an internal SSO group.
+3. **Shared rate limiting.** Use the proxy or gateway, not only per-process in-memory limiting.
+4. **Private internal services.** Do not publish Qdrant, Ollama, Testing API or the Playwright viewer directly.
+5. **Explicit allowed origins and hosts.** Set production `MYFINANCE_CORS_ORIGINS` and `MYFINANCE_ALLOWED_HOSTS` to real domains—never `*`.
+6. **Managed secrets.** Inject secrets from a vault or platform secret manager and rotate them.
+7. **Observability and backups.** Centralise logs, alert on health/freshness, back up required local data and test recovery.
+8. **Data governance.** Review ownership, retention and access rights for official PDFs, snapshots and campaign logs.
+
+Example production environment shape:
 
 ```env
 MYFINANCE_DEPLOYMENT_MODE=production
@@ -43,55 +64,38 @@ MYFINANCE_ALLOWED_HOSTS=api.example.com
 MYFINANCE_RATE_LIMIT_PER_MINUTE=60
 ```
 
-Ne mettez jamais de clé Groq dans le code, les captures, les rapports de
-campagne ou un message de discussion. Gardez-la uniquement dans `.env`, le
-gestionnaire de secrets de l’hébergeur ou l’environnement du conteneur.
+## 5. Recommended production topology
 
-## Ce qu’il faut avant une publication Internet
-
-Le mode `production` est un garde-fou de configuration, pas un système complet
-d’authentification. Avant exposition publique, il faut impérativement :
-
-1. un reverse proxy avec TLS/HTTPS ;
-2. une authentification et une autorisation métier ou SSO devant Testing ;
-3. une limite de débit partagée au proxy (pas seulement en mémoire dans une API) ;
-4. des logs centralisés, alertes de santé et sauvegardes de données ;
-5. des secrets stockés dans un coffre, avec rotation ;
-6. aucun port Qdrant, Ollama ou Testing API publié directement ;
-7. une revue des politiques de conservation de documents et traces.
-
-Une architecture sûre est :
-
-```text
-Internet
-  → reverse proxy TLS + authentification + rate limit partagé
-  → Chat Web / Chat API
-      ├─ Qdrant privé sur le réseau Docker
-      └─ Ollama privé sur le réseau Docker
-
-Testing API et Testing Web : réseau d’administration seulement
+```mermaid
+flowchart LR
+    I[Internet user] --> P[Reverse proxy\nTLS + SSO + shared rate limit]
+    P --> CW[Chat Web]
+    P --> CA[Chat API]
+    A[Administrator] --> AP[Admin network / SSO]
+    AP --> TW[Testing Web]
+    AP --> TA[Testing API]
+    CA --> Q[(Private Qdrant)]
+    CA --> O[Private Ollama]
+    TA --> CA
+    TA --> Q
 ```
 
-## Exploitation locale
+The public Chat and administrative Testing plane have different risk profiles. Keep them separate even if they share code and local source data.
 
-```powershell
-.\scripts\myfinance.ps1 start
-.\scripts\myfinance.ps1 status
-.\scripts\myfinance.ps1 stop
-```
+## 6. Operational security checklist
 
-Après un changement de code dans l’API Chat, reconstruisez uniquement ce
-service :
+- [ ] Docker ports bind to loopback or private service networks only.
+- [ ] `.env` and generated reports are ignored by Git.
+- [ ] The Groq key is valid, scoped and rotatable.
+- [ ] Qdrant and Ollama have no public port mapping.
+- [ ] Production uses HTTPS and authenticated access.
+- [ ] CORS/hosts are explicit, not wildcards.
+- [ ] Shared rate limiting and access logs are in place.
+- [ ] Campaign history retention is intentional.
+- [ ] Source PDFs and market snapshots have an approved retention policy.
 
-```powershell
-docker compose up -d --build chat-api
-```
+## 7. What this guide does not claim
 
-`testing-api` monte son code source localement et se met à jour avec :
+Local Docker defaults are a strong development baseline; they are not a complete enterprise-security certification. Authentication, backup, audit retention, incident response and data-classification controls must be chosen by the organisation that deploys MyFinance.
 
-```powershell
-docker compose up -d --force-recreate testing-api
-```
-
-Le réindexage Qdrant est réservé à un changement de corpus ou de faits ; voir
-[data-coverage.md](data-coverage.md).
+For day-to-day local operation, use the [Operations guide](operations-guide.md). For the source-trust boundary, use the [Architecture](architecture.md).

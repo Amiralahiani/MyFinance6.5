@@ -1,72 +1,51 @@
-# Chat MyFinance
+# MyFinance Chat
 
-Le Chat est l’application utilisateur. Il répond aux questions financières à partir de faits auto-validés et explique les rapports à partir d’extraits PDF sourcés.
+The Chat is the evidence-first user application. It turns a question into one of five explicit outcomes: a validated value, comparison, documentary explanation, official market answer or clarification.
 
-## Responsabilités
+## Responsibilities
 
-```text
-api/        API FastAPI : routage, sûreté, conversation et exposition des documents
-knowledge/  Catalogue, ingestion PDF, corpus, extraction et validation déterministe
-market/     Logique et données de marché associées
-web/        Interface React/Vite et parcours Playwright
-scripts/    Commandes explicites de lancement et de reconstruction des données
-tests/      Tests métier, API et intégration
-```
-
-## Contrat de réponse
-
-| Situation | Comportement attendu |
+| Area | Responsibility |
 | --- | --- |
-| Valeur validée | Afficher valeur, banque, exercice, unité et source |
-| Demande ambiguë | Poser la précision minimale utile |
-| Preuve absente ou insuffisante | Ne pas conclure et expliquer pourquoi |
-| Question documentaire | Répondre avec des extraits et leurs pages |
+| `api/` | FastAPI routes, request safety, assessment, conversation state and response contracts |
+| `knowledge/` | Official PDFs, corpus, validated facts, lexical retrieval and optional Qdrant adapter |
+| `market/` | Official Market Watch reading, mappings, snapshots and freshness |
+| `web/` | React interface, typed response rendering and Playwright journeys |
+| `scripts/` | Explicit entry points for API, data audit, vector indexing and market collection |
+| `tests/` | Domain, API, routing, evidence and market regression tests |
 
-## Lancer le Chat
+## Response contract
 
-Depuis la racine du dépôt :
+| Situation | Required behaviour |
+| --- | --- |
+| Matching approved fact | Show number, unit, year, source PDF, page and excerpt |
+| Compatible multi-bank request | Show a comparison only from compatible approved facts |
+| Documentary topic | Explain retrieved evidence and retain pages/source references |
+| Current market request | Show official quote data with capture time and source link |
+| Missing/unsafe scope | Ask the minimal clarification or abstain clearly |
+
+## Local development
 
 ```powershell
-# API : http://127.0.0.1:8000
+# Chat API: http://127.0.0.1:8000
 uv run python chat/scripts/run_orchestrator.py
 
-# Interface : http://127.0.0.1:3000
-cd chat/web
+# Chat Web: http://127.0.0.1:3000
+Set-Location chat/web
 npm install
 npm run dev:chat
 ```
 
-## Vérifier l’interface réelle
+Run the real browser journeys:
 
 ```powershell
-cd chat/web
+Set-Location chat/web
 npm run test:e2e
 ```
 
-Le test démarre le vrai parcours Chat local. Ses résultats sont générés dans l’environnement de travail et ne doivent pas être versionnés.
+For Docker, RAG, collector and targeted rebuild instructions, use the [Operations guide](../docs/operations-guide.md). For code-level responsibilities, use the [Developer guide](../docs/developer-guide.md).
 
-## Synthèse Groq sourcée (optionnelle)
+## Optional Groq assistance
 
-La synthèse rédactionnelle reste optionnelle. Même lorsqu’elle est activée, Groq
-ne reçoit que les extraits PDF déjà sélectionnés : il ne choisit pas les sources,
-ne produit pas de chiffres et son texte est rejeté s’il ne fournit pas une citation
-exacte présente sur la page indiquée. En cas d’indisponibilité ou de validation
-échouée, MyFinance affiche l’extrait source plutôt qu’une réponse non vérifiable.
+Groq can provide source-grounded wording and supports the Testing Lab’s AI exploration. It receives only selected local evidence for applicable tasks. It cannot choose a numeric fact, bypass a source rule or convert an unsupported answer into a reported value.
 
-```powershell
-$env:GROQ_API_KEY = "votre-cle"
-$env:MYFINANCE_USE_LLM = "true"
-$env:MYFINANCE_LLM_PROVIDER = "groq"
-# Facultatif : le modèle par défaut est celui du rôle generator dans autotest.
-$env:MYFINANCE_GROQ_MODEL = "openai/gpt-oss-20b"
-# Réécrit la demande entière (orthographe, grammaire, espaces) avant la recherche.
-# Cette étape ne répond jamais à la question et ne choisit aucune source.
-$env:MYFINANCE_QUERY_REWRITE = "true"
-uv run python chat/scripts/run_orchestrator.py
-```
-
-La réécriture de demande est activée automatiquement lorsqu'une clé Groq est
-présente. Sans clé, MyFinance applique uniquement les réparations déterministes
-non ambiguës (espaces oubliés, noms de banques collés et vocabulaire financier).
-
-Pour le modèle de données et la chaîne de preuve, consultez [../docs/architecture.md](../docs/architecture.md), [../docs/developer-guide.md](../docs/developer-guide.md), [../docs/data-coverage.md](../docs/data-coverage.md) et [../data/README.md](../data/README.md).
+Configure it only through `.env` or the process environment. Never commit a real key.

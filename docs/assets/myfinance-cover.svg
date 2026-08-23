@@ -1,0 +1,99 @@
+<svg width="1200" height="480" viewBox="0 0 1200 480" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">MyFinance — Evidence-first banking intelligence</title>
+  <desc id="desc">A visual overview linking official PDFs, validated facts, hybrid retrieval, a financial chat and an agentic testing lab.</desc>
+  <defs>
+    <linearGradient id="background" x1="84" y1="30" x2="1114" y2="458" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B292A"/>
+      <stop offset="0.52" stop-color="#123D3B"/>
+      <stop offset="1" stop-color="#0C2426"/>
+    </linearGradient>
+    <linearGradient id="lime" x1="192" y1="75" x2="1004" y2="393" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DDFF72"/>
+      <stop offset="1" stop-color="#8EDC6A"/>
+    </linearGradient>
+    <linearGradient id="line" x1="228" y1="0" x2="945" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D7FF64" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#D7FF64" stop-opacity="0.65"/>
+      <stop offset="1" stop-color="#D7FF64" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow" x="-80" y="-80" width="1360" height="640" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="28" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" stroke="#B8DAD0" stroke-opacity="0.09"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="480" rx="18" fill="url(#background)"/>
+  <rect width="1200" height="480" rx="18" fill="url(#grid)"/>
+  <circle cx="1058" cy="86" r="132" fill="#D7FF64" fill-opacity="0.08" filter="url(#glow)"/>
+  <circle cx="157" cy="413" r="164" fill="#63DFAA" fill-opacity="0.06" filter="url(#glow)"/>
+  <path d="M0 348C220 311 285 419 531 370C753 326 883 229 1200 298V480H0V348Z" fill="#071D1E" fill-opacity="0.32"/>
+
+  <g transform="translate(66 61)">
+    <rect x="0" y="0" width="54" height="54" rx="12" fill="url(#lime)"/>
+    <path d="M14 18.5L27 11L40 18.5L27 26L14 18.5Z" fill="#103335"/>
+    <path d="M14 27L27 19.5L40 27L27 34.5L14 27Z" fill="#103335" fill-opacity="0.72"/>
+    <path d="M14 35.5L27 28L40 35.5L27 43L14 35.5Z" fill="#103335" fill-opacity="0.45"/>
+    <text x="72" y="22" fill="#D7FF64" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" letter-spacing="3.2">MYFINANCE</text>
+    <text x="72" y="45" fill="#A8C5BE" font-family="Arial, Helvetica, sans-serif" font-size="12" letter-spacing="1.2">EVIDENCE-FIRST BANKING INTELLIGENCE</text>
+  </g>
+
+  <g transform="translate(66 165)">
+    <text fill="#F2F8F3" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="700" letter-spacing="-1.8">Answers that can be</text>
+    <text y="57" fill="url(#lime)" font-family="Georgia, serif" font-size="54" font-style="italic" font-weight="700" letter-spacing="-1.8">reviewed, not guessed.</text>
+    <text y="103" fill="#B8CDC6" font-family="Arial, Helvetica, sans-serif" font-size="17">Official PDFs. Validated facts. Hybrid RAG. Transparent market data.</text>
+  </g>
+
+  <g transform="translate(66 343)">
+    <rect width="196" height="46" rx="8" fill="#D7FF64"/>
+    <text x="17" y="29" fill="#103335" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" letter-spacing="1.2">TRACE EVERY ANSWER</text>
+    <text x="217" y="28" fill="#A8C5BE" font-family="Arial, Helvetica, sans-serif" font-size="12" letter-spacing="1">PDF → FACT → EVIDENCE → TEST</text>
+  </g>
+
+  <g transform="translate(744 148)">
+    <path d="M76 0H388" stroke="url(#line)" stroke-width="1"/>
+    <text x="0" y="-18" fill="#87A69D" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" letter-spacing="2.1">TRUST PIPELINE</text>
+
+    <g transform="translate(0 22)">
+      <rect width="130" height="74" rx="10" fill="#F4F8F5" fill-opacity="0.98"/>
+      <rect x="13" y="14" width="22" height="27" rx="3" fill="#143E3D"/>
+      <path d="M29 14V20H35" stroke="#D7FF64" stroke-width="2"/>
+      <text x="46" y="29" fill="#173637" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700">OFFICIAL</text>
+      <text x="46" y="44" fill="#173637" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700">PDFS</text>
+      <text x="13" y="61" fill="#66807A" font-family="Arial, Helvetica, sans-serif" font-size="9">primary evidence</text>
+    </g>
+
+    <path d="M140 59H166" stroke="#D7FF64" stroke-width="2"/>
+    <path d="M162 55L168 59L162 63" stroke="#D7FF64" stroke-width="2"/>
+
+    <g transform="translate(176 22)">
+      <rect width="130" height="74" rx="10" fill="#143E3D" stroke="#4D746B"/>
+      <circle cx="25" cy="27" r="13" fill="#D7FF64"/>
+      <path d="M20 27L24 31L31 22" stroke="#143E3D" stroke-width="2.2"/>
+      <text x="47" y="29" fill="#F4F8F5" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700">VALIDATED</text>
+      <text x="47" y="44" fill="#F4F8F5" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700">FACTS</text>
+      <text x="13" y="61" fill="#A7C3BB" font-family="Arial, Helvetica, sans-serif" font-size="9">deterministic checks</text>
+    </g>
+
+    <path d="M316 59H342" stroke="#D7FF64" stroke-width="2"/>
+    <path d="M338 55L344 59L338 63" stroke="#D7FF64" stroke-width="2"/>
+
+    <g transform="translate(352 22)">
+      <rect width="130" height="74" rx="10" fill="#F4F8F5" fill-opacity="0.98"/>
+      <path d="M18 22H41V42H18V22Z" fill="#143E3D"/>
+      <path d="M23 28H36M23 33H33M23 38H30" stroke="#D7FF64" stroke-width="1.5"/>
+      <text x="53" y="29" fill="#173637" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700">CHAT +</text>
+      <text x="53" y="44" fill="#173637" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700">TEST LAB</text>
+      <text x="13" y="61" fill="#66807A" font-family="Arial, Helvetica, sans-serif" font-size="9">visible proof</text>
+    </g>
+
+    <g transform="translate(0 126)">
+      <rect width="482" height="92" rx="12" fill="#0C292A" fill-opacity="0.82" stroke="#315952"/>
+      <text x="18" y="28" fill="#D7FF64" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" letter-spacing="1.7">CONTROLLED INTELLIGENCE</text>
+      <text x="18" y="53" fill="#EAF2ED" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700">Lexical search + optional Qdrant + local embeddings</text>
+      <text x="18" y="74" fill="#9EBCB4" font-family="Arial, Helvetica, sans-serif" font-size="11">Never replaces the source, page, unit or validation rule.</text>
+    </g>
+  </g>
+</svg>

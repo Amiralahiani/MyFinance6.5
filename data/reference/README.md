@@ -1,21 +1,17 @@
-# Référentiel métier
+# Reference Policies
 
-`financial_metrics.json` est la source unique des définitions d'indicateurs. Son
-profil d'extraction commun couvre sept métriques comparables dans les états
-financiers individuels 2021–2025 d'Amen Bank, Attijari Bank, BIAT, Banque de
-Tunisie et Banque Zitouna. Il ne contient aucun montant financier.
+The files in this directory define meaning and routing policy. They must not contain annual financial values copied from a report.
 
-Le catalogue v3.0 définit les sept métriques du profil commun qui sont extraites
-et validées automatiquement pour les cinq banques.
+| File family | Responsibility |
+| --- | --- |
+| `financial_metrics.json` | Supported metric definitions, labels, synonyms, statement location, scale and validation expectations |
+| Bank definitions | Supported banks, aliases and user-facing names |
+| General sources | Curated official sources allowed for sourced general explanations |
+| Market instruments and sources | Official Market Watch mapping and source policy |
+| Documentary glossary | Bilingual bridges between user wording and official report terminology |
 
-La couverture mesurée est de 175 faits auto-validés sur 175 emplacements
-attendus. Le résultat net Banque Zitouna 2021 est validé depuis sa ligne nette
-dans le bilan (page PDF 2), car le compte de résultat de la page 4 espace chaque
-chiffre dans son calque texte tout en confirmant le même montant.
+The shared profile currently covers seven comparable metrics over the individual 2021–2025 reports of Amen Bank, Attijari Bank, BIAT, Banque de Tunisie and Banque Zitouna. The measured target is 175 approved facts across 175 expected cells.
 
-Une métrique ayant `user_intent_status: supported` peut être comprise dans une
-question. Aucune valeur ne peut être renvoyée avant la création puis la validation
-d'un fait dans `normalized/facts/auto_validated/`.
+A metric marked as supported may be recognised in a user request, but it can be displayed only when a matching `auto_validated` fact exists under `data/normalized/facts/`. A missing or ambiguous metric remains unavailable until an official PDF line supports deterministic extraction and validation.
 
-Une métrique absente ou ambiguë reste hors des réponses jusqu’à ce qu’une preuve
-PDF non ambiguë permette son extraction.
+See [Data coverage](../../docs/data-coverage.md) before editing this directory.

@@ -1,180 +1,225 @@
+<p align="center">
+  <img src="docs/assets/myfinance-cover.svg" alt="MyFinance — evidence-first banking intelligence" width="100%" />
+</p>
+
+<p align="center">
+  <a href="#see-the-product-in-one-minute"><strong>Quick start</strong></a>
+  &nbsp;·&nbsp;
+  <a href="docs/user-guide.md"><strong>User guide</strong></a>
+  &nbsp;·&nbsp;
+  <a href="docs/architecture.md"><strong>Architecture</strong></a>
+  &nbsp;·&nbsp;
+  <a href="docs/operations-guide.md"><strong>Operations</strong></a>
+  &nbsp;·&nbsp;
+  <a href="docs/demo.md"><strong>Demo flow</strong></a>
+</p>
+
 # MyFinance
 
-> Assistant d’analyse d’états financiers bancaires, fondé sur des preuves officielles et vérifié par une plateforme de tests autonome.
+> **Evidence-first banking intelligence for Tunisian financial reports.**
+>
+> MyFinance answers financial questions only when it can show the official evidence behind the answer: the bank, reporting year, unit, PDF page and source excerpt.
 
-MyFinance ne répond pas à partir d’estimations. Chaque réponse chiffrée est construite à partir d’un fait financier validé, relié à un extrait et au PDF officiel d’origine. Lorsqu’une information est ambiguë ou absente, l’application clarifie ou refuse de conclure.
+> [!IMPORTANT]
+> **The project does not optimise for a plausible answer. It optimises for a reviewable one.**
 
-## Ce que le projet démontre
+MyFinance is not a generic financial chatbot. It is a local, evidence-controlled research workspace built around official bank reports, an optional hybrid RAG layer, official market snapshots and an independent Agentic Testing lab.
 
-| Besoin | Réponse MyFinance |
+| Current verified scope | Coverage |
 | --- | --- |
-| Retrouver un indicateur bancaire | Valeur validée avec banque, exercice, unité et preuve PDF |
-| Comprendre un passage du rapport | Analyse documentaire avec extraits sourcés et pages associées |
-| Éviter une réponse fragile | Clarification ou non-conclusion, jamais de chiffre inventé |
-| Vérifier le produit | Campagnes API, rapports d’audit et parcours Playwright visibles |
+| Institutions | Amen Bank, Attijari Bank, BIAT, Banque de Tunisie and Banque Zitouna |
+| Individual financial reports | 2021–2025 (25 reports) |
+| Automatically validated facts | 175 facts across 7 comparable metrics |
+| User experiences | Financial Chat and Agentic Testing Lab |
+| Evidence channels | Official PDFs, page-level corpus, validated facts and official Market Watch snapshots |
 
-Le périmètre actuel couvre les états financiers individuels 2021–2025 d’Amen Bank, Attijari Bank, BIAT, Banque de Tunisie et Banque Zitouna.
+## Why MyFinance is different
 
-## Architecture
+| A conventional assistant may… | MyFinance does instead |
+| --- | --- |
+| infer a number from prose | shows a value only when it is an `auto_validated` financial fact |
+| cite a document without locating the evidence | keeps the PDF, page, excerpt, year, unit and reporting scope attached to the answer |
+| treat semantic search as truth | uses Qdrant to improve retrieval, then verifies provenance and deterministic rules |
+| make an unsupported comparison | compares only compatible validated values for the requested period |
+| hide a data or service failure | returns an explicit clarification or availability notice |
+| test only an API | validates API contracts, the real web interface and live Playwright journeys |
+
+## See the product in one minute
+
+### 1. Start the local stack
+
+Open PowerShell in the repository root. Docker Desktop must already be running.
+
+```powershell
+Copy-Item .env.example .env
+.\scripts\myfinance.ps1 start
+```
+
+The first start may take several minutes because Docker builds the images, Ollama downloads the local embeddings model and Qdrant receives its first vector index. Later starts reuse the existing images, model and index.
+
+### 2. Open the two applications
+
+| Application | Address | Purpose |
+| --- | --- | --- |
+| MyFinance Chat | <http://localhost:3000> | Ask financial, documentary and market questions |
+| Agentic Testing Lab | <http://localhost:3001> | Run release validation, inspect campaigns and watch Playwright |
+| Live Playwright browser | <http://localhost:6080> | Observe the real browser during a visual check |
+
+### 3. Try the evidence contracts
 
 ```text
-Utilisateur
-  → Chat React → API Chat FastAPI
-                    ├─ Faits auto-validés → PDF officiels
-                    └─ Corpus PDF sourcé → PDF officiels
-
-Testing React → API Testing
-                  ├─ API Chat
-                  ├─ Groq : génération et évaluation
-                  └─ Rapports et contrôles Playwright
+What is the PNB of BIAT in 2023?
+Compare BIAT, BT and Amen Bank's current share prices.
+How many shares made up BIAT's share capital in 2025?
+What does BIAT's 2021 report say about related-party transactions?
 ```
 
-La frontière est volontairement nette : `chat/` sert l’utilisateur, `autotest/` le vérifie, `shared/` porte les contrats et `data/` conserve les preuves.
+Each question demonstrates a different response contract: validated value, official market comparison, documentary evidence or a safe clarification.
 
-## Démarrage local
+> **Groq is optional for core financial safety.** Add `GROQ_API_KEY` to `.env` only to enable AI exploration, qualitative review and optional source-grounded phrasing. It never becomes the authority for a financial number.
 
-Prérequis : Python 3.12+, [uv](https://docs.astral.sh/uv/), Node.js 20+ et, pour les campagnes qualitatives, une clé Groq.
+## The trust model
+
+```mermaid
+flowchart LR
+    PDF[Official bank PDF] --> INGEST[Page-level corpus\nPDF hash + metadata]
+    INGEST --> FACTS[Deterministic validation]
+    FACTS -->|approved only| CATALOG[auto_validated facts]
+    INGEST --> EVIDENCE[Evidence chunks]
+    EVIDENCE --> RAG[Hybrid retrieval\nlexical + optional Qdrant]
+    CATALOG --> CHAT[Chat orchestration]
+    RAG --> CHAT
+    MARKET[Official Market Watch\nimmutable snapshots] --> CHAT
+    CHAT --> ANSWER[Typed, evidence-backed response]
+    ANSWER --> LAB[Agentic Testing Lab\nAPI + Web + Playwright]
+```
+
+The critical rule is simple: **a PDF is the primary source; a validated fact is the only source allowed to produce a financial number.** Qdrant and Groq can improve retrieval or wording, but neither can override that rule.
+
+## What the Chat can answer
+
+| Response | When it is used | What the user sees |
+| --- | --- | --- |
+| **Automatically validated value** | A supported metric, bank and year match an approved fact | Value, scale, currency, financial year, PDF page and excerpt |
+| **Comparison view** | Compatible facts exist for two or more banks | Ranked values, range, ratio and source count |
+| **Documentary answer** | The user asks about a report topic rather than a validated metric | Source-grounded explanation with retrieved excerpts and pages |
+| **Market Watch** | The user requests a current official share price or comparison | Dated quote, session move, ticker, ISIN and official link |
+| **Clarification / refusal** | Scope, evidence or supported data is missing | The minimum information needed; never an invented value |
+
+### Conversation context is intentional
+
+The Chat remembers a selected bank or a previously stated financial metric only when that context is unambiguous. For example, selecting **Banque Zitouna** asks for a metric and year; it does not silently assume the latest report. Unknown bank names and incomplete comparisons are stopped before they can reuse an unrelated previous answer.
+
+## The two product surfaces
+
+### Financial Chat — `chat/`
+
+The Chat is the user-facing application. It combines a FastAPI API, React interface, financial-fact catalogue, documentary retrieval, Market Watch reader and explicit conversation state.
+
+Its job is not to sound confident. Its job is to make the answer inspectable.
+
+### Agentic Testing Lab — `autotest/`
+
+The Testing Lab treats the Chat as a product that must be proved continuously:
+
+```mermaid
+flowchart LR
+    A[Scenario catalogue or AI exploration] --> B[Planner\nlocal safety policy]
+    B --> C[Executor\nreal Chat API and Web]
+    C --> D[Evaluator\ndeterministic contracts]
+    D --> E[AI Critic\nwhen enabled]
+    E -->|confirmation needed| F[Confirmation pass]
+    E -->|otherwise| G[Reporter]
+    F --> G[Reporter]
+    G --> H[JSON, Markdown and HTML audit]
+```
+
+- **Release validation** replays reproducible facts, API ↔ Web agreement and behaviour contracts.
+- **AI exploration** proposes additional edge cases through Groq but keeps them separate from deterministic release checks.
+- **Visual checks** drive the real Chat interface with Playwright. The live browser can be watched at port `6080`.
+- Campaigns can be stopped, resumed where applicable and deleted locally. A partial execution is clearly marked instead of being presented as a full success.
+
+## Hybrid RAG, without giving up evidence
+
+MyFinance has two documentary retrieval paths:
+
+1. **Lexical, page-level retrieval** is always available and remains the safe fallback.
+2. **Qdrant semantic retrieval** enriches recall by searching vector embeddings created locally with `nomic-embed-text` through Ollama.
+
+Both paths return chunks that still carry bank, report year, PDF page, source path and PDF hash. If Qdrant, Ollama or the vector index is unavailable, the Chat continues using lexical retrieval; it does not fabricate an answer and it does not block the rest of the product.
+
+Rebuild the index only after changing the source corpus or validated data:
 
 ```powershell
-uv sync --all-groups
+.\scripts\myfinance.ps1 reindex
 ```
 
-Lancez ensuite les services dans des terminaux séparés :
+## Local services
 
-```powershell
-# 1 — API du Chat : http://127.0.0.1:8000
-uv run python chat/scripts/run_orchestrator.py
+| Service | Role | Local address |
+| --- | --- | --- |
+| `chat-web` | React Chat interface | `localhost:3000` |
+| `chat-api` | Conversation and evidence API | `localhost:8000` |
+| `testing-web` | Testing Lab interface | `localhost:3001` |
+| `testing-api` | Campaign orchestration, SSE and local reports | `localhost:8001` |
+| `testing-viewer` | Headed Playwright display via noVNC | `localhost:6080` |
+| `qdrant` | Optional semantic evidence index | `localhost:6333` |
+| `ollama` | Local embeddings provider | `localhost:11434` |
+| `market-collector` | Official Market Watch snapshot collector every 30 minutes | internal background service |
 
-# 2 — Interface du Chat : http://127.0.0.1:3000
-cd chat/web
-npm install
-npm run dev:chat
+All Docker ports except the local Ollama endpoint are bound to `127.0.0.1` by default. The project is designed for local development and internal demonstration, not for direct public exposure.
 
-# 3 — API Testing : http://127.0.0.1:8001
-$env:GROQ_API_KEY = "votre-cle"
-uv run python autotest/scripts/run_testing_api.py
+## Repository map
 
-# 4 — Interface Testing : http://127.0.0.1:3001
-cd autotest/web
-npm install
-npm run dev:testing
+```text
+myfinance6.5/
+├── chat/                 Financial Chat: API, evidence engine, market reader and React UI
+├── autotest/             Agentic Testing: campaigns, evaluators, Playwright and dashboard
+├── shared/contracts/     Pydantic contracts shared across applications
+├── data/                 Official PDFs, corpus, facts, reference catalogues and local artefacts
+├── docker/               Dockerfiles and SPA configuration
+├── scripts/              PowerShell start, status, reindex and stop commands
+├── docs/                 Product, architecture, operations and development documentation
+└── .github/workflows/    Quality gate executed on `main` and pull requests
 ```
 
-Commencez la démo dans le Chat, puis ouvrez Testing pour lancer une campagne et consulter sa synthèse ou son audit détaillé. Le déroulé complet est dans le [guide de démonstration](docs/demo.md).
-
-## Qualité et vérification
+## Quality gates
 
 ```powershell
 uv run ruff check .
 uv run pytest -q
 
-cd chat/web
+Set-Location chat/web
 npm run test:e2e
 ```
 
-Les résultats Playwright, campagnes, captures et bases SQLite sont des traces locales : ils sont volontairement exclus de Git.
+GitHub Actions repeats the Python checks and builds both web applications on `main` and on pull requests. Generated campaign reports, Playwright artefacts, screenshots, SQLite files, embeddings and secrets are deliberately excluded from Git.
 
-La vérification est aussi exécutée automatiquement par GitHub Actions à chaque
-pull request et sur `main` : Ruff, tests Python et builds des deux interfaces.
+## Documentation map
 
-## Démarrage Docker simplifié
+Start here depending on your role:
 
-Depuis PowerShell à la racine du projet, une seule commande démarre les services,
-télécharge le modèle d'embeddings si nécessaire, indexe les rapports dans Qdrant et
-active la collecte Market Watch :
-
-```powershell
-.\scripts\myfinance.ps1 start
-```
-
-Les commandes courantes sont ensuite :
-
-```powershell
-.\scripts\myfinance.ps1 status   # état des conteneurs et dernière collecte
-.\scripts\myfinance.ps1 reindex  # après ajout ou modification de rapports
-.\scripts\myfinance.ps1 stop     # arrêt propre des services
-```
-
-Le script ne modifie pas `.env` et ne demande jamais la clé Groq dans le terminal.
-Lors des démarrages suivants, il détecte l'index Qdrant existant et ne recalcule
-pas les vecteurs. Utilisez seulement `reindex` après l'ajout ou la modification
-de rapports.
-
-## RAG hybride avec Qdrant (avancé)
-
-La recherche lexicale sourcée reste la référence de MyFinance. Qdrant l'enrichit avec une
-recherche sémantique sur les mêmes chunks et ne remplace jamais les contrôles de banque,
-année, page et extrait PDF.
-
-```powershell
-# Démarre Qdrant et l'API, puis l'embeddings local Ollama.
-# Avant le premier démarrage, créez `.env` depuis `.env.example` et renseignez
-# uniquement `GROQ_API_KEY` : Groq rédige la réponse finale, Ollama sert aux embeddings.
-docker compose --profile local-embeddings up -d
-docker compose exec ollama ollama pull nomic-embed-text
-
-# Construit les vecteurs à partir du corpus déjà extrait et validé.
-docker compose --profile tools run --rm vector-index
-```
-
-Dans Docker, l'indexeur utilise automatiquement l'adresse interne d'Ollama.
-La valeur `MYFINANCE_EMBEDDINGS_URL=http://127.0.0.1:11434/...` reste réservée
-aux lancements Python directement depuis Windows.
-
-Les interfaces sont ensuite disponibles sur les ports 3000 (Chat) et 3001 (Testing).
-Sans Qdrant, sans Ollama ou sans index construit, MyFinance revient automatiquement à la
-recherche lexicale locale : aucune réponse n'est bloquée ni remplacée par une réponse non sourcée.
-
-L'image de l'API inclut aussi Chromium pour lire la cotation publique officielle de la Bourse de Tunis.
-La première construction Docker est donc plus longue ; sans ce navigateur, l'agent Market Watch refuse
-volontairement d'afficher un cours non vérifié.
-
-## Collecte Market Watch toutes les 30 minutes
-
-Le chat peut lire le cours public courant sans écrire de donnée. Pour conserver aussi un historique
-daté et vérifiable, démarrez le collecteur séparé ci-dessous. Il crée un instantané immuable à chaque
-passage et enregistre explicitement chaque succès ou échec ; il ne fabrique jamais de cours.
-
-```powershell
-docker compose --profile market-collector up -d market-collector
-docker compose logs -f market-collector
-```
-
-Les données restent dans `data/market-snapshots/` et l'état du dernier passage dans
-`data/market-collection-runs/latest.json`. Pour l'arrêter :
-
-```powershell
-docker compose --profile market-collector stop market-collector
-```
-
-## Documentation technique et sécurité
-
-- [Guide développeur](docs/developer-guide.md) : flux de code, responsabilités
-  des modules, contrats, tests et procédure d’évolution.
-- [Couverture des données](docs/data-coverage.md) : matrice des faits validés et
-  procédure d’ajout de PDF, métriques et vecteurs.
-- [Sécurité et déploiement](docs/security-and-deployment.md) : ports locaux,
-  protections runtime et prérequis avant exposition publique.
-
-Les ports Docker sont liés à `127.0.0.1` par défaut. MyFinance est donc sûr pour
-le développement local ; une publication Internet requiert un reverse proxy TLS,
-une authentification et une limite de débit partagée.
-
-## Organisation du dépôt
-
-| Dossier | Responsabilité |
+| I want to… | Read |
 | --- | --- |
-| [chat/](chat/README.md) | API de conversation, interface utilisateur, corpus et tests E2E |
-| [autotest/](autotest/README.md) | Campagnes Agentic Testing, Groq, rapports et interface de suivi |
-| [shared/](shared/) | Contrats Python échangés entre les applications |
-| [data/](data/README.md) | PDF officiels, corpus, références métier et faits validés |
-| [docs/](docs/README.md) | Architecture, modèle de données, décisions et démo |
+| Understand the product and answer types | [User guide](docs/user-guide.md) |
+| Present the project in a meeting or demo | [Demo guide](docs/demo.md) |
+| Understand the complete system | [Architecture](docs/architecture.md) |
+| Run, maintain or troubleshoot Docker | [Operations guide](docs/operations-guide.md) |
+| Extend the code safely | [Developer guide](docs/developer-guide.md) |
+| Add a bank report, metric or vector index | [Data coverage and onboarding](docs/data-coverage.md) |
+| Review the evidence model | [Data model](docs/data-model.md) |
+| Review security boundaries | [Security and deployment](docs/security-and-deployment.md) |
+| Understand technical decisions | [Decision log](docs/decision-log.md) |
+| Navigate all documents | [Documentation home](docs/README.md) |
 
-## Documentation et contribution
+## Scope and honest limits
 
-- [Architecture](docs/architecture.md)
-- [Modèle de données](docs/data-model.md)
-- [Guide de démonstration](docs/demo.md)
-- [Cycle agile et règles de contribution](CONTRIBUTING.md)
+- The current corpus covers the five listed banks and individual reports only; it is not a general market-data terminal.
+- A report topic can be explained only when evidence is found in the local corpus.
+- Current share prices are tied to the official Market Watch reading and its capture time; a stale or unavailable source is reported explicitly.
+- Groq must be configured with a valid API key for AI exploration and qualitative criticism. Deterministic release validation remains meaningful without it.
+- Public deployment requires HTTPS, authentication, a shared rate limit, secret management and private internal services. See the [security guide](docs/security-and-deployment.md).
 
-Les documents financiers et le corpus sont des éléments de preuve. Ne supprimez pas de données dans `data/` sans validation métier explicite.
+---
+
+**MyFinance makes the answer reviewable, not merely plausible.**

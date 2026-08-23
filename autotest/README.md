@@ -1,85 +1,61 @@
-# Agentic Testing
+# MyFinance Agentic Testing Lab
 
-La plateforme Testing vérifie le Chat à travers de vraies requêtes API et des parcours Playwright. Elle sépare la génération de scénarios, l’autorisation des actions, l’exécution, l’évaluation et le reporting.
+The Testing Lab independently verifies the Chat through real API requests, optional real web interactions and inspectable campaign reports.
 
-## Cycle d’une campagne
-
-```text
-Generator → Planner → Executor → Evaluator → Critic
-                                            ├─ sans contre-vérification → Reporter
-                                            └─ contre-vérification requise
-                                               → Planner complémentaire
-                                               → Executor complémentaire
-                                               → Evaluator complémentaire
-                                               → Reporter
-```
-
-Le Critic ne déclenche les étapes complémentaires que lorsqu’une incertitude justifie réellement une contre-vérification.
-
-## Contenu
+## Campaign flow
 
 ```text
-api/      API FastAPI, persistance SQLite locale et flux SSE de suivi
-src/      Moteur de campagnes, garde-fous, évaluation, critic et reporting
-web/      Interface React de suivi, lancement et consultation des rapports
-configs/  Limites de campagne et modèles Groq
-scripts/  Points d’entrée CLI reproductibles
-tests/    Tests unitaires et d’intégration
+Catalogue or AI Generator
+  → Planner (local action policy)
+  → Executor (Chat API and optional Web)
+  → Evaluator (deterministic contracts)
+  → AI Critic when enabled
+  → optional confirmation pass
+  → Reporter (JSON, Markdown and HTML)
 ```
 
-## Lancer la plateforme
+The Planner and Evaluator are deliberately separate. An AI-generated scenario never directly becomes an unrestricted action, and an AI critic never overrides a deterministic factual verdict.
 
-L’API du Chat doit être disponible sur `http://127.0.0.1:8000`. La clé Groq reste dans le terminal ou dans `.env` local : elle ne doit jamais être versionnée.
+## Components
+
+| Path | Purpose |
+| --- | --- |
+| `api/` | FastAPI campaign endpoints, local persistence and SSE events |
+| `src/` | Catalogue, planner, executors, evaluator, critic, reports and observability |
+| `web/` | React dashboard for campaigns, history, stack health and live Playwright |
+| `configs/` | Bounded campaign and provider configuration |
+| `scripts/` | Reproducible local entry points |
+| `tests/` | Campaign control, provider fallback, system-state and visual-check tests |
+
+## Two different validations
+
+| Validation | Purpose | Groq required? |
+| --- | --- | --- |
+| **Release validation** | Replays known financial facts, behaviour contracts and API ↔ Web consistency | No for deterministic verdicts |
+| **AI exploration** | Generates additional edge cases and asks for confirmation where useful | Yes |
+
+Keeping these paths separate prevents an external provider quota from changing release truth.
+
+## Local development
+
+The Chat API must be reachable first.
 
 ```powershell
-# API Testing : http://127.0.0.1:8001
-$env:GROQ_API_KEY = "votre-cle"
+# Testing API: http://127.0.0.1:8001
 uv run python autotest/scripts/run_testing_api.py
 
-# Interface Testing : http://127.0.0.1:3001
-cd autotest/web
+# Testing Web: http://127.0.0.1:3001
+Set-Location autotest/web
 npm install
 npm run dev:testing
 ```
 
-## Résultats
+The live browser used by Docker Playwright checks is available at <http://localhost:6080>.
 
-Une campagne produit une synthèse lisible, un audit détaillé, les versions Markdown et le JSON brut. Les fichiers sont conservés localement dans `data/autotest/`, exclus de Git et supprimables sans effet sur le code ni les données financières.
+## Campaign controls and artefacts
 
-## Vérification
+Campaign history, raw events and reports are kept locally under `data/autotest/`. They are excluded from Git and can be deleted through the dashboard without changing the source PDFs or validated facts.
 
-```powershell
-uv run pytest autotest/tests -q
-```
+An executor issue is preserved as transport evidence. When a campaign receives some responses but another request fails, the UI shows **Completed with execution issue** rather than presenting it as either a full pass or an unexplained total failure.
 
-Le contrôle visuel Playwright reste séparé d’une campagne Groq : il teste l’interface Chat, pas la qualité d’un scénario financier.
-
-## Tableau de bord de validation
-
-L’interface sur `http://127.0.0.1:3001` présente deux campagnes distinctes :
-
-- **Validation de version** : le catalogue complet des valeurs PDF et les
-  contrôles API ↔ Web, sans Groq.
-- **Exploration IA** : des questions inédites générées par Groq, séparées des
-  contrôles reproductibles.
-
-Elle affiche aussi un état en lecture seule de l’API Chat, de Qdrant, du modèle
-`nomic-embed-text` et de la fraîcheur de la dernière collecte Market Watch.
-Un composant dégradé n’est pas masqué : le tableau de bord indique le repli sûr
-attendu (recherche lexicale ou avis Market Watch) plutôt qu’un faux « prêt ».
-
-Quand **Start check** lance Playwright dans Docker, un second onglet ouvre le
-navigateur de test en direct via `http://127.0.0.1:6080`. Les six parcours sont
-joués séquentiellement ; le tableau de bord conserve en parallèle le journal et
-le résultat final.
-
-Après une modification de cette interface en Docker :
-
-```powershell
-docker compose up -d --build testing-api testing-web
-```
-
-Le détail du flux de campagnes, des sources de vérité et des responsabilités de
-code est documenté dans [../docs/developer-guide.md](../docs/developer-guide.md).
-Les contraintes d’exposition et les contrôles runtime sont dans
-[../docs/security-and-deployment.md](../docs/security-and-deployment.md).
+For operations and targeted rebuilds, see the [Operations guide](../docs/operations-guide.md). For the full engineering model, see the [Developer guide](../docs/developer-guide.md).

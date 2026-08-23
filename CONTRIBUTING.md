@@ -1,21 +1,24 @@
-# Contribution et cycle de livraison
+# Contribution and Delivery Workflow
 
-## Architecture
+## Architecture boundary
 
-MyFinance est organisé par responsabilité : `chat/` sert l’utilisateur, `autotest/` vérifie le comportement, `shared/` porte les contrats et `data/` conserve les preuves et faits validés. Une application ne dépend pas de l’interface de l’autre ; elles communiquent uniquement par les API locales et les contrats partagés.
+MyFinance is organised by responsibility: `chat/` serves the user, `autotest/` verifies behaviour, `shared/` carries contracts and `data/` holds evidence and validated facts. The two applications communicate through local APIs and shared contracts, not through one another’s UI code.
 
-## Cycle agile d’une évolution
+## Safe change workflow
 
-1. Formuler une intention de risque ou un besoin utilisateur et définir son critère d’acceptation.
-2. Modifier le plus petit périmètre concerné : contrat, logique, interface ou scénario de test.
-3. Ajouter ou adapter le test déterministe correspondant.
-4. Exécuter `uv run ruff check .`, `uv run pytest -q`, puis compiler l’interface touchée.
-5. Vérifier le parcours réel dans Testing si l’évolution concerne le Chat, Groq ou le reporting.
-6. Documenter une décision structurante dans `docs/decision-log.md`.
+1. State the user need or risk intent and write an acceptance criterion.
+2. Change the smallest responsible layer: contract, source validation, orchestration, interface or test scenario.
+3. Add or adapt the deterministic regression test.
+4. Run `uv run ruff check .`, `uv run pytest -q` and the build for every changed web application.
+5. Exercise the real Testing journey when the change affects the Chat, Groq integration, campaign flow or reporting.
+6. Update the relevant guide and add a durable architectural decision to `docs/decision-log.md` when appropriate.
 
-## Règles de qualité
+## Non-negotiable quality rules
 
-- Aucun chiffre n’est ajouté sans fait `auto_validated` et preuve PDF.
-- Aucune clé ou trace d’exécution ne va dans Git ; `.env`, `data/autotest/` et les résultats Playwright sont ignorés.
-- Les scripts de `chat/scripts/` et `autotest/scripts/` restent des outils explicites et reproductibles, jamais des tâches lancées au démarrage d’une API.
-- Toute suppression de données de `data/` doit être explicitement validée : les PDF et corpus font partie de la preuve métier.
+- No financial value is added without an `auto_validated` fact and official PDF evidence.
+- No API key, generated campaign trace or browser artefact is committed. `.env`, `data/autotest/` and Playwright output remain ignored.
+- Scripts under `chat/scripts/` and `autotest/scripts/` stay explicit and reproducible; they must not become hidden API-startup work.
+- Any deletion under `data/` requires explicit review: source PDFs and corpus content are business evidence.
+- A provider failure must be labelled as a provider failure, not disguised as a factual Chat result.
+
+Read the [Developer guide](docs/developer-guide.md) before changing application behaviour and the [Operations guide](docs/operations-guide.md) before changing runtime configuration.

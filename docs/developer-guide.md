@@ -1,188 +1,206 @@
-# Guide développeur — MyFinance
+# Developer Guide
 
-Ce guide décrit le code actif, ses frontières et la manière de le faire évoluer
-sans casser la règle centrale du projet : un chiffre présenté comme financier
-doit être traçable jusqu’à un PDF officiel, une page et un extrait.
+## 1. Development principle
 
-## 1. Carte du dépôt
+MyFinance is an evidence system first and an AI application second. A safe change keeps these responsibilities separate:
 
 ```text
-shared/contracts/       modèles Pydantic et protections runtime partagées
-chat/
-  api/                  API FastAPI et orchestration de conversation
-  knowledge/            PDF, corpus, extraction, validation et Qdrant
-  market/               cotations officielles, snapshots et fraîcheur
-  web/                  interface React et tests Playwright du Chat
-autotest/
-  api/                  API de campagnes, SSE et persistance SQLite locale
-  src/                  générateur, planner, exécuteurs, évaluateur, critic
-  web/                  tableau de bord React de validation
-data/                   preuves, corpus, faits validés et références métier
-docker/                 images applicatives et navigateur Playwright visible
-scripts/                commande PowerShell de démarrage et maintenance
+source material → deterministic validation → typed contract → Chat experience → independent product testing
 ```
 
-`shared/contracts` ne contient pas de logique métier bancaire. Il définit les
-formes échangées entre composants, notamment `ConversationRequest`,
-`ConversationContext`, `FinancialFact`, `EvidenceChunk` et les protections de
-configuration runtime. Cette séparation évite que l’interface, l’API Chat et la
-plateforme de tests aient des interprétations différentes d’une réponse.
+Do not solve a data-quality problem in the UI, and do not solve a conversation problem by weakening a source-validation rule.
 
-## 2. Parcours d’une question Chat
+## 2. Repository map
 
-```text
-React Chat
-  → POST /api/conversation/answer
-  → normalise_financial_request()
-  → assess_request()
-  → garde-fous déterministes et plan de tour
-  → fait validé / recherche documentaire / marché / clarification
-  → réponse typée avec contexte et preuves
-```
+| Path | Responsibility | Primary entry points |
+| --- | --- | --- |
+| `shared/contracts/src/` | Pydantic request, response, evidence and runtime-security contracts | `myfinance_contracts` |
+| `chat/api/src/` | FastAPI routes, assessment, dialogue state machine and safeguards | `myfinance_orchestrator.main` |
+| `chat/knowledge/src/` | Catalogue, corpus, validated facts, retrieval and vector-store adapter | `myfinance_agent_docs` |
+| `chat/market/src/` | Official Market Watch reading, snapshots, availability and collector | `myfinance_agent_market` |
+| `chat/web/` | React Chat interface and Playwright journeys | `npm run dev:chat`, `npm run test:e2e` |
+| `autotest/api/` | FastAPI campaign API, persistence, SSE and visual-check controls | `myfinance_testing_api.main` |
+| `autotest/src/` | Scenario generation, planning, execution, evaluation, critic and reports | `myfinance_autotest` |
+| `autotest/web/` | React testing dashboard | `npm run dev:testing` |
+| `data/` | Source PDFs, normalised corpus, fact catalogue and reference policies | See [data README](../data/README.md) |
+| `docker/`, `scripts/` | Runtime packaging and PowerShell operations | `myfinance.ps1` |
 
-Les points d’entrée importants sont :
+## 3. Core contracts
 
-| Fichier | Rôle |
+The shared package is the boundary between components. The most important models are:
+
+| Contract | Meaning |
 | --- | --- |
-| `chat/api/.../main.py` | Routes HTTP, CORS, headers de sécurité, limite de débit et exposition contrôlée des PDF. |
-| `chat/api/.../language.py` | Réparation non ambiguë de la formulation utilisateur ; elle ne choisit jamais une source. |
-| `chat/api/.../assessment.py` | Détection de banque, année, métrique et décision répondre / clarifier / s’abstenir. |
-| `chat/api/.../dialogue.py` | Machine de conversation, comparaisons, continuité documentaire et garde-fous. |
-| `chat/api/.../evidence_synthesis.py` | Synthèse limitée aux extraits déjà sélectionnés. |
-| `chat/knowledge/.../facts.py` | Lecture des faits `auto_validated` et extraction strictement sourcée hors noyau. |
-| `chat/knowledge/.../corpus.py` | Recherche lexicale et hybride ; filtre toujours banque, année, page et provenance. |
-| `chat/knowledge/.../vector_store.py` | Couche Qdrant optionnelle. Son indisponibilité remet la recherche lexicale en service. |
-| `chat/market/.../collector.py` | Lecture officielle, snapshots immuables et rapport de dernière collecte. |
+| `ConversationRequest` | A user message plus serialisable conversation context |
+| `ConversationContext` | Safe remembered state: bank, year, metric, mode and scoped comparison/market information |
+| `RequestAssessment` | Deterministic extraction of banks, years, metric and missing information |
+| `DocumentRecord` | Immutable identity of an official PDF, including hash and page count |
+| `EvidenceChunk` | Page-bounded source text and provenance metadata |
+| `FinancialFact` | Normalised metric with value, unit, scope, source page and validation status |
+| `ReportedValueAnswer` | Strict response shape for a validated numeric answer |
 
-### Types de réponse
+When changing a response shape, update the contract first, then the API, then the web renderer and finally the test expectations. Avoid sending unstructured dictionaries across package boundaries when a contract already exists.
 
-- `numeric` : fait automatiquement validé. La réponse doit inclure valeur,
-  unité, exercice, PDF, page et extrait.
-- `comparison` : plusieurs faits automatiquement validés, comparables dans le
-  même exercice et la même unité.
-- `documentary` : explication à partir d’extraits de PDF, sans transformer un
-  extrait narratif en chiffre.
-- `market` : donnée de marché officielle datée ; si la lecture échoue, une
-  indisponibilité explicite est retournée.
-- `clarification` : information ou preuve insuffisante. C’est une réponse
-  correcte, pas une erreur à masquer.
+## 4. Chat request flow
 
-## 3. Règles de sûreté du Chat
+`POST /api/conversation/answer` is the conversation endpoint used by both web applications and campaign executors.
 
-Les garde-fous sont écrits dans `dialogue.py` et vérifiés par
-`chat/tests/channels/api/` :
+```mermaid
+sequenceDiagram
+    participant U as User / Executor
+    participant API as Chat API
+    participant A as Assessment
+    participant D as Dialogue planner
+    participant F as Facts / Evidence / Market
+    participant R as Typed response
 
-1. pas de valeur sans fait `auto_validated` ;
-2. pas de conversion de devise sans taux officiel daté ;
-3. pas d’accès supposé à un compte bancaire personnel ;
-4. pas de classement « safest » sans critère mesurable et sourçable ;
-5. pas de réponse pour un exercice hors corpus ;
-6. une comparaison complète ne demande pas de précision déjà fournie ;
-7. le modèle externe ne peut ni sélectionner une source ni remplacer un
-   contrôle déterministe.
-
-Groq est donc une couche rédactionnelle ou exploratoire. Il n’est jamais la
-preuve d’une valeur financière.
-
-## 4. De PDF à fait affichable
-
-```text
-PDF officiel immuable
-  → ingestion page par page et SHA-256
-  → chunks avec banque, année, page, section et source
-  → candidat de métrique
-  → contrôles d’unicité, unité, périmètre et bilan
-  → financial_facts.json avec validation_status=auto_validated
-  → API Chat
+    U->>API: message + safe context
+    API->>A: normalise and assess
+    A->>D: bank, year, metric, gaps, safety state
+    D->>F: validated fact OR evidence retrieval OR market reader
+    F-->>D: source-backed result or unavailable state
+    D-->>API: typed response + next context
+    API-->>R: JSON consumed by Chat Web and Testing
 ```
 
-Les définitions métier sont dans `data/reference/financial_metrics.json`. Elles
-décrivent synonymes, libellés acceptés, section de l’état financier et règles de
-validation ; elles ne doivent jamais contenir de valeur annuelle.
+### Key source files
 
-Pour comprendre le format des preuves, consultez aussi
-[data-model.md](data-model.md) et [data-coverage.md](data-coverage.md).
-
-## 5. RAG et Qdrant
-
-Qdrant indexe les mêmes chunks déjà présents dans le corpus. Il améliore la
-proximité sémantique d’une demande documentaire, mais ne remplace ni le filtre
-exact banque/année ni le PDF. La hiérarchie de décision est :
-
-```text
-fait validé pour les chiffres
-  > extrait PDF filtré pour les explications
-  > Qdrant pour enrichir le rappel d’extraits
-  > recherche lexicale si Qdrant ou Ollama est absent
-```
-
-Après un ajout ou une modification de PDF/corpus, reconstruire l’index :
-
-```powershell
-.\scripts\myfinance.ps1 reindex
-```
-
-Ne relancez pas cette commande pour une modification d’interface ou de texte de
-réponse : elle est réservée aux preuves documentaires.
-
-## 6. Plateforme Agentic Testing
-
-```text
-Catalogue déterministe ou charters d’exploration
-  → Planner
-  → Executor API et, si demandé, Web
-  → Evaluator déterministe
-  → AI Critic Groq optionnel
-  → rapports JSON, Markdown et HTML
-```
-
-| Partie | Responsabilité |
+| File | Why a developer changes it |
 | --- | --- |
-| `autotest/api/.../main.py` | Campagnes, événements SSE, arrêt/reprise/suppression, état de la stack. |
-| `autotest/src/.../scenarios/` | Catalogue reproductible et charters d’exploration. |
-| `autotest/src/.../validators/` | Contrats déterministes : valeur, année, unité, source, comportement. |
-| `autotest/src/.../executors/` | Appels au vrai Chat API et à l’interface Web. |
-| `autotest/src/.../agents/` | Génération/critique Groq bornées par les preuves et le verdict déterministe. |
-| `autotest/web/` | Affichage des stages, historique, preuves et navigateur Playwright. |
+| `chat/api/.../main.py` | Add or adapt an HTTP route, runtime protection or endpoint wiring |
+| `chat/api/.../assessment.py` | Add a deterministic bank/year/metric interpretation rule |
+| `chat/api/.../dialogue.py` | Change conversation transitions, comparison handling or clarification guardrails |
+| `chat/api/.../language.py` | Add an unambiguous spelling/normalisation repair |
+| `chat/api/.../evidence_synthesis.py` | Change the optional evidence-grounded documentary wording boundary |
+| `chat/knowledge/.../facts.py` | Read approved financial facts |
+| `chat/knowledge/.../corpus.py` | Retrieve page-level evidence with source filters |
+| `chat/knowledge/.../vector_store.py` | Change only the optional Qdrant adapter behaviour |
 
-Un échec Groq ne transforme pas automatiquement un test en échec métier. Le
-tableau de bord indique que les scores IA sont indisponibles et conserve le
-verdict déterministe, les règles et les sources.
+## 5. The non-negotiable numeric rule
 
-## 7. Ajouter une évolution correctement
+The Chat may emit a numeric financial value only from an `auto_validated` fact. A good implementation sequence is:
 
-1. Écrire l’intention métier et le comportement attendu.
-2. Identifier la frontière : contrat partagé, données, API, Chat, interface ou
-   campagne de test.
-3. Modifier la logique minimale et ajouter le test de régression dans le même
-   changement.
-4. Si un fait financier est concerné, ne l’ajouter qu’après validation PDF ; ne
-   jamais le saisir dans une réponse ou un prompt.
-5. Exécuter :
+1. add/verify the source PDF and corpus;
+2. define the metric semantics in `data/reference/financial_metrics.json`;
+3. run extraction and deterministic validation;
+4. inspect source page, unit and excerpt;
+5. create a specific regression test;
+6. expose the result through the typed response.
+
+Never extract a number directly in a React component, a Groq prompt, a Qdrant payload or a test fixture and present it as a published fact.
+
+## 6. Primary API surface
+
+The APIs are local product interfaces, not a versioned public SaaS API. These are the main endpoints developers interact with:
+
+| Service | Endpoint | Purpose |
+| --- | --- | --- |
+| Chat | `GET /health` | Basic process health |
+| Chat | `GET /api/status` | Router/runtime status for local diagnostics |
+| Chat | `GET /api/market/collection-health` | Market collector freshness |
+| Chat | `POST /api/conversation/answer` | Main context-aware conversation endpoint |
+| Chat | `POST /api/requests/assess` | Deterministic request assessment |
+| Chat | `POST /api/requests/answer` | Strict reported-value contract |
+| Testing | `GET /health` | Testing process health |
+| Testing | `GET /api/system-state` | Chat/Qdrant/embeddings/collector dashboard health |
+| Testing | `POST /api/campaigns/catalog` | Start reproducible release validation |
+| Testing | `POST /api/campaigns/{id}/stop` | Request a safe campaign stop |
+| Testing | `POST /api/campaigns/{id}/resume` | Resume an eligible stopped campaign |
+| Testing | `GET /api/campaigns/{id}/events` | Stream campaign state for the dashboard |
+| Testing | `POST /api/visual-checks` | Start the Playwright visual suite |
+
+Treat diagnostics and plan endpoints as local developer tools. Do not expose them publicly without the controls described in the security guide.
+
+## 7. How to change a conversation behaviour
+
+Use this workflow for a new guardrail, metric phrasing or follow-up transition:
+
+1. Reproduce the question in a test under `chat/tests/channels/api/`.
+2. Decide whether the rule is deterministic. Prefer deterministic rules when the outcome controls source, bank, year, metric or safety.
+3. Change `assessment.py`, `dialogue.py` or an explicit helper with the smallest scoped change.
+4. Test both the new path and a nearby existing path that must remain unchanged.
+5. Exercise the Chat Web if the response type or renderer changes.
+6. Add the scenario to the Testing catalogue if it is a release-critical behaviour.
+
+For example, an unknown bank supplied in a metric question must be stopped before an active BIAT/BT comparison context can be reused. This is a state-machine guard, not an LLM-prompt improvement.
+
+## 8. How to add a bank, report or metric
+
+The canonical procedure is in [Data coverage](data-coverage.md). In short:
+
+```text
+official PDF → immutable record → page-level corpus → candidate extraction
+→ deterministic validation → auto_validated fact → focused test → optional Qdrant reindex
+```
+
+Changing a metric definition without validating the associated facts is incomplete. Changing corpus data without rebuilding Qdrant affects only semantic retrieval, not numeric fact validity.
+
+## 9. Testing strategy
+
+| Layer | Location | What it protects |
+| --- | --- | --- |
+| Unit / domain | `chat/tests`, `autotest/tests` | Data rules, routing, planner policies and campaign state |
+| API integration | FastAPI TestClient tests | Request/response contracts and evidence fields |
+| Cross-channel | Agentic Testing catalogue | API ↔ Web agreement for real scenarios |
+| Browser | `chat/web/tests/` | User-visible behaviour, scrolling and source display |
+| Manual visual observation | Testing viewer on port `6080` | Real browser interaction during Playwright |
+
+Run the baseline before handing off a change:
 
 ```powershell
 uv run ruff check .
 uv run pytest -q
-cd chat/web; npm run build
-cd ..\..\autotest\web; npm run build
+
+Set-Location chat/web
+npm run build
+npm run test:e2e
+
+Set-Location ../../autotest/web
+npm run build
 ```
 
-6. Relancer une campagne ciblée et un parcours Playwright lorsque le changement
-   est visible par l’utilisateur.
-7. Mettre à jour la documentation de la frontière modifiée.
+The GitHub Actions workflow repeats Ruff, the Python suite and both web builds on `main` and pull requests. It does not replace a source review or a live market-data check.
 
-## 8. Démarrage et diagnostics
+## 10. Agentic Testing implementation notes
 
-Pour une stack locale complète :
+The campaign engine uses a local planner policy before the executor touches the Chat. Keep this distinction intact:
+
+- **Generator** may suggest a question but cannot authorise execution.
+- **Planner** authorises only safe local Chat actions.
+- **Executor** records raw transport data; it does not decide quality.
+- **Evaluator** owns deterministic verdicts.
+- **Critic** may request confirmation but cannot rewrite a factual verdict.
+- **Reporter** serialises what happened, including partial execution errors.
+
+When an exploratory question reveals a real defect, add a deterministic regression scenario. Do not depend on the same Groq output to prove the fix.
+
+## 11. Code-quality conventions
+
+- Keep Python formatted and within the configured Ruff rule set.
+- Type public function inputs and outputs; use existing Pydantic models at boundaries.
+- Preserve source metadata as data moves through layers.
+- Prefer a safe clarification over a weak fallback.
+- Keep API keys and generated artefacts out of Git.
+- Do not use a test’s expected answer to mutate source data or test the same code path twice as “independent” evidence.
+- Update the relevant documentation whenever a service, command, contract or safety boundary changes.
+
+## 12. Useful local commands
 
 ```powershell
-.\scripts\myfinance.ps1 start
-.\scripts\myfinance.ps1 status
+# Python dependencies
+uv sync --all-groups
+
+# Entire deterministic suite
+uv run pytest -q
+
+# Chat only
+uv run pytest chat/tests -q
+
+# Testing platform only
+uv run pytest autotest/tests -q
+
+# Static checks
+uv run ruff check .
 ```
 
-Les deux interfaces sont sur `http://127.0.0.1:3000` et
-`http://127.0.0.1:3001`. Les APIs et outils internes sont liés à `127.0.0.1`
-par défaut ; ils ne sont pas conçus pour être publiés directement.
-
-Pour les responsabilités de sécurité et de déploiement, lire
-[security-and-deployment.md](security-and-deployment.md).
+For runtime changes, use the targeted rebuild table in the [Operations guide](operations-guide.md) rather than rebuilding every container.

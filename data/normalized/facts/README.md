@@ -1,11 +1,10 @@
-# États des faits financiers
-
-Un fait suit ce cycle :
+# Financial Fact States
 
 ```text
-PDF officiel → extraction en mémoire → validation déterministe → auto_validated | rejected
+Official PDF → in-memory extraction → deterministic validation → auto_validated | rejected
 ```
 
-- `auto_validated/` : seules valeurs utilisables dans une réponse financière.
-- `validation-runs/<banque>/<année>/rejected_facts.json` : candidats refusés avec
-  les motifs de chaque contrôle.
+- `auto_validated/` contains the only values that may be returned in a financial response.
+- `validation-runs/<bank>/<year>/rejected_facts.json` retains candidates rejected by one or more checks and their reasons.
+
+The Chat never promotes a rejected candidate, raw OCR text or an evidence chunk to a financial value. See [the data model](../../../docs/data-model.md) for the provenance chain.
