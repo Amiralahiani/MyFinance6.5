@@ -11,7 +11,7 @@ MyFinance is organised by responsibility: `chat/` serves the user, `autotest/` v
 3. Add or adapt the deterministic regression test.
 4. Run `uv run ruff check .`, `uv run pytest -q` and the build for every changed web application.
 5. Exercise the real Testing journey when the change affects the Chat, Groq integration, campaign flow or reporting.
-6. Update the relevant guide and add a durable architectural decision to `docs/decision-log.md` when appropriate.
+6. Update the relevant guide whenever a user-facing, operational or architectural behaviour changes.
 
 ## Non-negotiable quality rules
 

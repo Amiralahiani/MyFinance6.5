@@ -192,7 +192,6 @@ Start here depending on your role:
 | Add a bank report, metric or vector index | [Data coverage and onboarding](docs/data-coverage.md) |
 | Review the evidence model | [Data model](docs/data-model.md) |
 | Review security boundaries | [Security and deployment](docs/security-and-deployment.md) |
-| Understand technical decisions | [Decision log](docs/decision-log.md) |
 | Navigate all documents | [Documentation home](docs/README.md) |
 
 ## Scope and honest limits

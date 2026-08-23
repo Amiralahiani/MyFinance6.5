@@ -11,7 +11,7 @@ The documentation is organised as reading routes, not as a flat list of technica
 | Discovering the product | [Project README](../README.md) | [User guide](user-guide.md) and [Demo guide](demo.md) |
 | Reviewing trust and evidence | [Architecture](architecture.md) | [Data model](data-model.md) and [Data coverage](data-coverage.md) |
 | Running the local stack | [Operations guide](operations-guide.md) | [Security and deployment](security-and-deployment.md) |
-| Extending the project | [Developer guide](developer-guide.md) | [Decision log](decision-log.md) and [Contribution guide](../CONTRIBUTING.md) |
+| Extending the project | [Developer guide](developer-guide.md) | [Contribution guide](../CONTRIBUTING.md) |
 | Validating a release | [Agentic Testing README](../autotest/README.md) | [Demo guide](demo.md) and [Operations guide](operations-guide.md) |
 
 ## Documentation map
@@ -39,7 +39,6 @@ The documentation is organised as reading routes, not as a flat list of technica
 | [Operations guide](operations-guide.md) | Docker lifecycle, environment configuration, Qdrant, Ollama, collector and troubleshooting |
 | [Security and deployment](security-and-deployment.md) | Local security defaults and requirements before Internet exposure |
 | [Developer guide](developer-guide.md) | Code map, contracts, test strategy and safe change workflow |
-| [Decision log](decision-log.md) | Durable product and technical decisions |
 
 ## Documentation promises
 
