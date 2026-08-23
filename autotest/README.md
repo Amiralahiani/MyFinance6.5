@@ -4,15 +4,9 @@ The Testing Lab independently verifies the Chat through real API requests, optio
 
 ## Campaign flow
 
-```text
-Catalogue or AI Generator
-  → Planner (local action policy)
-  → Executor (Chat API and optional Web)
-  → Evaluator (deterministic contracts)
-  → AI Critic when enabled
-  → optional confirmation pass
-  → Reporter (JSON, Markdown and HTML)
-```
+<p align="center">
+  <img src="../docs/assets/testing-lab-flow.svg" alt="MyFinance Testing Lab campaign flow" width="100%" />
+</p>
 
 The Planner and Evaluator are deliberately separate. An AI-generated scenario never directly becomes an unrestricted action, and an AI critic never overrides a deterministic factual verdict.
 

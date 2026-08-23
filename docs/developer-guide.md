@@ -4,9 +4,9 @@
 
 MyFinance is an evidence system first and an AI application second. A safe change keeps these responsibilities separate:
 
-```text
-source material → deterministic validation → typed contract → Chat experience → independent product testing
-```
+<p align="center">
+  <img src="assets/delivery-chain.svg" alt="MyFinance controlled delivery chain" width="100%" />
+</p>
 
 Do not solve a data-quality problem in the UI, and do not solve a conversation problem by weakening a source-validation rule.
 
@@ -45,16 +45,9 @@ When changing a response shape, update the contract first, then the API, then th
 
 `POST /api/conversation/answer` is the conversation endpoint used by both web applications and campaign executors.
 
-```text
-User / Executor
-  -> Chat API: message + safe context
-  -> Assessment: normalise and assess
-  -> Dialogue planner: bank, year, metric, gaps and safety state
-  -> Facts / Evidence / Market: validated fact OR retrieval OR market reader
-  <- Dialogue planner: source-backed result or explicit unavailable state
-  <- Chat API: typed response + next context
-  -> Chat Web and Testing: JSON contract
-```
+<p align="center">
+  <img src="assets/chat-request-flow.svg" alt="MyFinance Chat request flow" width="100%" />
+</p>
 
 ### Key source files
 
@@ -121,10 +114,9 @@ For example, an unknown bank supplied in a metric question must be stopped befor
 
 The canonical procedure is in [Data coverage](data-coverage.md). In short:
 
-```text
-official PDF → immutable record → page-level corpus → candidate extraction
-→ deterministic validation → auto_validated fact → focused test → optional Qdrant reindex
-```
+<p align="center">
+  <img src="assets/evidence-lifecycle.svg" alt="From official PDF to validated financial fact" width="100%" />
+</p>
 
 Changing a metric definition without validating the associated facts is incomplete. Changing corpus data without rebuilding Qdrant affects only semantic retrieval, not numeric fact validity.
 

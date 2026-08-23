@@ -66,19 +66,9 @@ MYFINANCE_RATE_LIMIT_PER_MINUTE=60
 
 ## 5. Recommended production topology
 
-```text
-Internet user
-  -> reverse proxy: TLS + SSO + shared rate limit
-      -> Chat Web
-      -> Chat API -> private Qdrant
-                  -> private Ollama
-
-Administrator
-  -> administration network / SSO
-      -> Testing Web
-      -> Testing API -> Chat API
-                      -> private Qdrant
-```
+<p align="center">
+  <img src="assets/deployment-topology.svg" alt="Recommended MyFinance production topology" width="100%" />
+</p>
 
 The public Chat and administrative Testing plane have different risk profiles. Keep them separate even if they share code and local source data.
 

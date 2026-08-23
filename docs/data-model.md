@@ -2,14 +2,9 @@
 
 ## 1. The provenance chain
 
-```text
-Official PDF
-  → DocumentRecord
-  → EvidenceChunk (one page at a time)
-  → candidate metric extraction
-  → FinancialFact: auto_validated or rejected
-  → typed Chat response
-```
+<p align="center">
+  <img src="assets/evidence-lifecycle.svg" alt="MyFinance evidence and financial fact lifecycle" width="100%" />
+</p>
 
 Each object exists to answer a different question: *what is the source*, *where is the evidence*, *has the number been approved*, and *what may the product show to a user*.
 
@@ -26,16 +21,7 @@ Each object exists to answer a different question: *what is the source*, *where 
 
 ## 3. FinancialFact lifecycle
 
-```text
-source line recognised
-        |
-        v
-    Candidate
-    |       |
-    |       +--> validation fails or scope is ambiguous --> Rejected
-    |
-    +--> deterministic checks pass --> AutoValidated --> Presented by the Chat
-```
+> A recognised source line is a candidate only. Deterministic validation either rejects it with a trace or promotes it to `AutoValidated`, the sole state permitted in a numeric Chat answer.
 
 Only `AutoValidated` reaches a numeric Chat answer. An evidence chunk may explain a report passage, but cannot promote itself to a number.
 
@@ -69,16 +55,9 @@ This is why selecting a bank asks for a metric and year instead of silently assu
 
 ## 6. Retrieval model
 
-```text
-EvidenceChunk metadata
-  bank + year + page + section + document hash
-       ├── lexical retrieval (always available)
-       └── Qdrant vector retrieval (optional enrichment)
-                ↓
-       provenance-filtered evidence set
-                ↓
-       documentary response with citations
-```
+<p align="center">
+  <img src="assets/evidence-lifecycle.svg" alt="Provenance-filtered evidence retrieval" width="100%" />
+</p>
 
 Both retrieval paths use the same evidence model. Qdrant never becomes the source; it stores representations of already sourced chunks.
 

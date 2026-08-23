@@ -8,24 +8,9 @@ The result is deliberately different from a general LLM application. A language 
 
 ## 2. System at a glance
 
-```text
-Analyst / reviewer
-  |                         |
-  v                         v
-Chat Web                 Testing Web
-  |                         |
-  v                         v
-Chat API <------------- Testing API --------> optional Playwright viewer
-  |                         |
-  |                         +--> Chat API and Chat Web for real execution
-  |
-  +--> validated fact catalogue ---> official bank PDFs
-  +--> page-level evidence corpus -> optional Qdrant -> local Ollama embeddings
-  +--> official Market Watch reader -> immutable market snapshots
-  +--> optional source-grounded wording through Groq
-
-Testing API --> optional AI exploration and critique through Groq
-```
+<p align="center">
+  <img src="assets/architecture-overview.svg" alt="MyFinance system architecture" width="100%" />
+</p>
 
 ## 3. Boundaries and responsibilities
 
@@ -43,22 +28,9 @@ Testing API --> optional AI exploration and critique through Groq
 
 Every Chat request first goes through deterministic assessment: known bank, reporting year, metric, market intent, safety constraints and active conversation context. It then takes one of the paths below.
 
-```text
-User message + previous safe context
-                 |
-                 v
-         Deterministic request assessment
-                 |
-        +--------+---------+
-        |                  |
-guardrail/unknown       supported request
-        |                  |
-        v                  v
-clarification       validated metric ----> numeric answer + PDF evidence
-or refusal           documentary topic --> explanation + excerpts
-                     current market ----> quote + capture time
-                     comparison --------> compatible values + sources
-```
+<p align="center">
+  <img src="assets/answer-router.svg" alt="MyFinance answer routing" width="100%" />
+</p>
 
 ### Numeric facts
 
@@ -78,26 +50,9 @@ Clarifications are a product feature, not an error state. They prevent unsupport
 
 ## 5. Evidence pipeline
 
-```text
-Official PDF --> DocumentRecord (identity + SHA-256) --> page-level extraction
-                                                        |
-                                                        v
-                                      EvidenceChunk (page + source metadata)
-                                        |                         |
-                                        |                         +--> lexical retrieval --------+
-                                        |                         +--> optional vector index -----+--> documentary context
-                                        v
-                              candidate metric extraction
-                                        |
-                                        v
-                  deterministic checks: unit, scope, uniqueness, balance
-                         |                                  |
-                         v                                  v
-             auto_validated FinancialFact             traceable rejection
-                         |
-                         v
-             numeric and comparison answers
-```
+<p align="center">
+  <img src="assets/evidence-lifecycle.svg" alt="MyFinance evidence lifecycle" width="100%" />
+</p>
 
 ### Why Qdrant is an enrichment, not a replacement
 
