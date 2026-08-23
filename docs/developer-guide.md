@@ -45,22 +45,15 @@ When changing a response shape, update the contract first, then the API, then th
 
 `POST /api/conversation/answer` is the conversation endpoint used by both web applications and campaign executors.
 
-```mermaid
-sequenceDiagram
-    participant U as User / Executor
-    participant API as Chat API
-    participant A as Assessment
-    participant D as Dialogue planner
-    participant F as Facts / Evidence / Market
-    participant R as Typed response
-
-    U->>API: message + safe context
-    API->>A: normalise and assess
-    A->>D: bank, year, metric, gaps, safety state
-    D->>F: validated fact OR evidence retrieval OR market reader
-    F-->>D: source-backed result or unavailable state
-    D-->>API: typed response + next context
-    API-->>R: JSON consumed by Chat Web and Testing
+```text
+User / Executor
+  -> Chat API: message + safe context
+  -> Assessment: normalise and assess
+  -> Dialogue planner: bank, year, metric, gaps and safety state
+  -> Facts / Evidence / Market: validated fact OR retrieval OR market reader
+  <- Dialogue planner: source-backed result or explicit unavailable state
+  <- Chat API: typed response + next context
+  -> Chat Web and Testing: JSON contract
 ```
 
 ### Key source files

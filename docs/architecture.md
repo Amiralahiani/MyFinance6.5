@@ -8,28 +8,23 @@ The result is deliberately different from a general LLM application. A language 
 
 ## 2. System at a glance
 
-```mermaid
-flowchart TB
-    USER[Analyst or reviewer] --> CW[Chat Web<br/>React + Vite]
-    USER --> TW[Testing Web<br/>React + Vite]
+```text
+Analyst / reviewer
+  |                         |
+  v                         v
+Chat Web                 Testing Web
+  |                         |
+  v                         v
+Chat API <------------- Testing API --------> optional Playwright viewer
+  |                         |
+  |                         +--> Chat API and Chat Web for real execution
+  |
+  +--> validated fact catalogue ---> official bank PDFs
+  +--> page-level evidence corpus -> optional Qdrant -> local Ollama embeddings
+  +--> official Market Watch reader -> immutable market snapshots
+  +--> optional source-grounded wording through Groq
 
-    CW --> CA[Chat API<br/>FastAPI conversation orchestration]
-    TW --> TA[Testing API<br/>campaign engine + SSE]
-    TA --> CA
-    TA --> CW
-    TA --> PV[Playwright viewer<br/>headed browser]
-
-    CA --> FACT[Validated fact catalogue]
-    CA --> CORPUS[Page-level evidence corpus]
-    CA --> MARKET[Official Market Watch reader]
-    CORPUS --> QDRANT[(Qdrant<br/>optional semantic index)]
-    QDRANT --> OLLAMA[Ollama<br/>local embeddings]
-    MARKET --> SNAP[Immutable market snapshots]
-    FACT --> PDF[Official bank PDFs]
-    CORPUS --> PDF
-
-    CA -. optional grounded wording .-> GROQ[Groq]
-    TA -. optional exploration and critique .-> GROQ
+Testing API --> optional AI exploration and critique through Groq
 ```
 
 ## 3. Boundaries and responsibilities
@@ -48,20 +43,21 @@ flowchart TB
 
 Every Chat request first goes through deterministic assessment: known bank, reporting year, metric, market intent, safety constraints and active conversation context. It then takes one of the paths below.
 
-```mermaid
-flowchart TD
-    Q[User message + previous safe context] --> A[Request assessment]
-    A --> G{Guardrail or unknown scope?}
-    G -->|yes| CL[Clarification / refusal]
-    G -->|no| M{Request kind}
-    M -->|validated metric| N[Financial fact lookup]
-    M -->|document topic| D[Evidence retrieval]
-    M -->|current market data| W[Official Market Watch]
-    M -->|comparison| C[Compatible facts or quotes]
-    N --> V[Numeric response + PDF evidence]
-    D --> E[Documentary response + excerpts]
-    W --> MQ[Market response + capture time]
-    C --> CV[Comparison response + sources]
+```text
+User message + previous safe context
+                 |
+                 v
+         Deterministic request assessment
+                 |
+        +--------+---------+
+        |                  |
+guardrail/unknown       supported request
+        |                  |
+        v                  v
+clarification       validated metric ----> numeric answer + PDF evidence
+or refusal           documentary topic --> explanation + excerpts
+                     current market ----> quote + capture time
+                     comparison --------> compatible values + sources
 ```
 
 ### Numeric facts
@@ -82,20 +78,25 @@ Clarifications are a product feature, not an error state. They prevent unsupport
 
 ## 5. Evidence pipeline
 
-```mermaid
-flowchart LR
-    A[Official PDF] --> B[DocumentRecord<br/>identity + SHA-256]
-    B --> C[Page-level extraction]
-    C --> D[EvidenceChunk<br/>page + source metadata]
-    D --> E[Candidate metric extraction]
-    E --> F{Deterministic checks<br/>unit, scope, uniqueness, balance}
-    F -->|approved| G[FinancialFact<br/>auto_validated]
-    F -->|rejected| H[Validation run<br/>traceable rejection]
-    D --> I[Lexical retrieval]
-    D --> J[Optional vector index]
-    I --> K[Documentary context]
-    J --> K
-    G --> L[Numeric and comparison answers]
+```text
+Official PDF --> DocumentRecord (identity + SHA-256) --> page-level extraction
+                                                        |
+                                                        v
+                                      EvidenceChunk (page + source metadata)
+                                        |                         |
+                                        |                         +--> lexical retrieval --------+
+                                        |                         +--> optional vector index -----+--> documentary context
+                                        v
+                              candidate metric extraction
+                                        |
+                                        v
+                  deterministic checks: unit, scope, uniqueness, balance
+                         |                                  |
+                         v                                  v
+             auto_validated FinancialFact             traceable rejection
+                         |
+                         v
+             numeric and comparison answers
 ```
 
 ### Why Qdrant is an enrichment, not a replacement

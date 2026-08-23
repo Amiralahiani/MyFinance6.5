@@ -26,14 +26,15 @@ Each object exists to answer a different question: *what is the source*, *where 
 
 ## 3. FinancialFact lifecycle
 
-```mermaid
-stateDiagram-v2
-    [*] --> Candidate: source line recognised
-    Candidate --> Rejected: validation fails or scope is ambiguous
-    Candidate --> AutoValidated: deterministic checks pass
-    AutoValidated --> Presented: Chat receives compatible request
-    Rejected --> [*]
-    Presented --> [*]
+```text
+source line recognised
+        |
+        v
+    Candidate
+    |       |
+    |       +--> validation fails or scope is ambiguous --> Rejected
+    |
+    +--> deterministic checks pass --> AutoValidated --> Presented by the Chat
 ```
 
 Only `AutoValidated` reaches a numeric Chat answer. An evidence chunk may explain a report passage, but cannot promote itself to a number.

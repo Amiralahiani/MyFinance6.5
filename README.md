@@ -81,19 +81,9 @@ Each question demonstrates a different response contract: validated value, offic
 
 ## The trust model
 
-```mermaid
-flowchart LR
-    PDF[Official bank PDF] --> INGEST[Page-level corpus<br/>PDF hash + metadata]
-    INGEST --> FACTS[Deterministic validation]
-    FACTS -->|approved only| CATALOG[auto_validated facts]
-    INGEST --> EVIDENCE[Evidence chunks]
-    EVIDENCE --> RAG[Hybrid retrieval<br/>lexical + optional Qdrant]
-    CATALOG --> CHAT[Chat orchestration]
-    RAG --> CHAT
-    MARKET[Official Market Watch<br/>immutable snapshots] --> CHAT
-    CHAT --> ANSWER[Typed, evidence-backed response]
-    ANSWER --> LAB[Agentic Testing Lab<br/>API + Web + Playwright]
-```
+<p align="center">
+  <img src="docs/assets/trust-pipeline.svg" alt="MyFinance trust pipeline: official PDFs and market snapshots flow through controlled evidence paths to typed Chat answers and independent testing" width="100%" />
+</p>
 
 The critical rule is simple: **a PDF is the primary source; a validated fact is the only source allowed to produce a financial number.** Qdrant and Groq can improve retrieval or wording, but neither can override that rule.
 
@@ -123,17 +113,9 @@ Its job is not to sound confident. Its job is to make the answer inspectable.
 
 The Testing Lab treats the Chat as a product that must be proved continuously:
 
-```mermaid
-flowchart LR
-    A[Scenario catalogue or AI exploration] --> B[Planner<br/>local safety policy]
-    B --> C[Executor<br/>real Chat API and Web]
-    C --> D[Evaluator<br/>deterministic contracts]
-    D --> E[AI Critic<br/>when enabled]
-    E -->|confirmation needed| F[Confirmation pass]
-    E -->|otherwise| G[Reporter]
-    F --> G[Reporter]
-    G --> H[JSON, Markdown and HTML audit]
-```
+<p align="center">
+  <img src="docs/assets/testing-lab-flow.svg" alt="MyFinance Agentic Testing workflow from scenarios through policy, execution, deterministic evaluation and reporting" width="100%" />
+</p>
 
 - **Release validation** replays reproducible facts, API ↔ Web agreement and behaviour contracts.
 - **AI exploration** proposes additional edge cases through Groq but keeps them separate from deterministic release checks.

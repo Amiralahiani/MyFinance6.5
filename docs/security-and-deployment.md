@@ -66,18 +66,18 @@ MYFINANCE_RATE_LIMIT_PER_MINUTE=60
 
 ## 5. Recommended production topology
 
-```mermaid
-flowchart LR
-    I[Internet user] --> P[Reverse proxy<br/>TLS + SSO + shared rate limit]
-    P --> CW[Chat Web]
-    P --> CA[Chat API]
-    A[Administrator] --> AP[Admin network / SSO]
-    AP --> TW[Testing Web]
-    AP --> TA[Testing API]
-    CA --> Q[(Private Qdrant)]
-    CA --> O[Private Ollama]
-    TA --> CA
-    TA --> Q
+```text
+Internet user
+  -> reverse proxy: TLS + SSO + shared rate limit
+      -> Chat Web
+      -> Chat API -> private Qdrant
+                  -> private Ollama
+
+Administrator
+  -> administration network / SSO
+      -> Testing Web
+      -> Testing API -> Chat API
+                      -> private Qdrant
 ```
 
 The public Chat and administrative Testing plane have different risk profiles. Keep them separate even if they share code and local source data.
