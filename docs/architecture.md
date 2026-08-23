@@ -10,20 +10,20 @@ The result is deliberately different from a general LLM application. A language 
 
 ```mermaid
 flowchart TB
-    USER[Analyst or reviewer] --> CW[Chat Web\nReact + Vite]
-    USER --> TW[Testing Web\nReact + Vite]
+    USER[Analyst or reviewer] --> CW[Chat Web<br/>React + Vite]
+    USER --> TW[Testing Web<br/>React + Vite]
 
-    CW --> CA[Chat API\nFastAPI conversation orchestration]
-    TW --> TA[Testing API\ncampaign engine + SSE]
+    CW --> CA[Chat API<br/>FastAPI conversation orchestration]
+    TW --> TA[Testing API<br/>campaign engine + SSE]
     TA --> CA
     TA --> CW
-    TA --> PV[Playwright viewer\nheaded browser]
+    TA --> PV[Playwright viewer<br/>headed browser]
 
     CA --> FACT[Validated fact catalogue]
     CA --> CORPUS[Page-level evidence corpus]
     CA --> MARKET[Official Market Watch reader]
-    CORPUS --> QDRANT[(Qdrant\noptional semantic index)]
-    QDRANT --> OLLAMA[Ollama\nlocal embeddings]
+    CORPUS --> QDRANT[(Qdrant<br/>optional semantic index)]
+    QDRANT --> OLLAMA[Ollama<br/>local embeddings]
     MARKET --> SNAP[Immutable market snapshots]
     FACT --> PDF[Official bank PDFs]
     CORPUS --> PDF
@@ -84,13 +84,13 @@ Clarifications are a product feature, not an error state. They prevent unsupport
 
 ```mermaid
 flowchart LR
-    A[Official PDF] --> B[DocumentRecord\nidentity + SHA-256]
+    A[Official PDF] --> B[DocumentRecord<br/>identity + SHA-256]
     B --> C[Page-level extraction]
-    C --> D[EvidenceChunk\npage + source metadata]
+    C --> D[EvidenceChunk<br/>page + source metadata]
     D --> E[Candidate metric extraction]
-    E --> F{Deterministic checks\nunit, scope, uniqueness, balance}
-    F -->|approved| G[FinancialFact\nauto_validated]
-    F -->|rejected| H[Validation run\ntraceable rejection]
+    E --> F{Deterministic checks<br/>unit, scope, uniqueness, balance}
+    F -->|approved| G[FinancialFact<br/>auto_validated]
+    F -->|rejected| H[Validation run<br/>traceable rejection]
     D --> I[Lexical retrieval]
     D --> J[Optional vector index]
     I --> K[Documentary context]

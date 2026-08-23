@@ -68,7 +68,7 @@ MYFINANCE_RATE_LIMIT_PER_MINUTE=60
 
 ```mermaid
 flowchart LR
-    I[Internet user] --> P[Reverse proxy\nTLS + SSO + shared rate limit]
+    I[Internet user] --> P[Reverse proxy<br/>TLS + SSO + shared rate limit]
     P --> CW[Chat Web]
     P --> CA[Chat API]
     A[Administrator] --> AP[Admin network / SSO]

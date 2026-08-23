@@ -90,7 +90,7 @@ Use **Explore with Groq** to look for additional edge cases. These questions are
 
 ### Visual check
 
-Use **Start check** in the Chat visual check card to run live Playwright journeys. The Testing dashboard shows progress and logs. Open <http://localhost:6080> to watch the browser click, type, wait for responses and scroll through the resulting answer.
+Use **Start check** in the Chat visual check card to run live Playwright journeys. The Testing dashboard shows progress and logs. Only while that check is running, you can optionally open <http://localhost:6080> to watch the browser click, type, wait for responses and scroll through the resulting answer. Outside a check, the viewer may be blank.
 
 ### Campaign control
 

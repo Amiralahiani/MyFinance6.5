@@ -61,7 +61,7 @@ The initial run is expected to be slower: Docker pulls/builds images, Chromium i
 | Chat API | <http://localhost:8000/health> | It returns an HTTP success |
 | Testing Web | <http://localhost:3001> | The dashboard loads stack health |
 | Testing API | <http://localhost:8001/health> | It returns an HTTP success |
-| Playwright viewer | <http://localhost:6080> | The noVNC browser display opens |
+| Playwright viewer | <http://localhost:6080> | Optional noVNC observer; useful only while a Chat Visual Check is active |
 | Qdrant | <http://localhost:6333> | The collection is reachable; vectors may be zero before indexing |
 | Ollama | <http://localhost:11434> | `docker compose exec ollama ollama list` shows `nomic-embed-text` |
 

@@ -143,7 +143,7 @@ Changing a metric definition without validating the associated facts is incomple
 | API integration | FastAPI TestClient tests | Request/response contracts and evidence fields |
 | Cross-channel | Agentic Testing catalogue | API ↔ Web agreement for real scenarios |
 | Browser | `chat/web/tests/` | User-visible behaviour, scrolling and source display |
-| Manual visual observation | Testing viewer on port `6080` | Real browser interaction during Playwright |
+| Manual visual observation | Testing viewer on port `6080` | Optional real-browser observer while a Playwright check is running |
 
 Run the baseline before handing off a change:
 

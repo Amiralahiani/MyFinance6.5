@@ -50,7 +50,7 @@ npm install
 npm run dev:testing
 ```
 
-The live browser used by Docker Playwright checks is available at <http://localhost:6080>.
+While a Chat Visual Check is running, the Docker Playwright browser can optionally be observed at <http://localhost:6080>. Outside a visual check it may be blank; it is not a separate user application.
 
 ## Campaign controls and artefacts
 

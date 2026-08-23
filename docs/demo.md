@@ -19,7 +19,6 @@ Open these tabs before the audience arrives:
 | --- | --- |
 | Financial Chat | <http://localhost:3000> |
 | Agentic Testing Lab | <http://localhost:3001> |
-| Live Playwright viewer | <http://localhost:6080> |
 
 Run `.\scripts\myfinance.ps1 status` first if you need to verify containers and the last market-collector events.
 
@@ -89,7 +88,7 @@ Open <http://localhost:3001> and show:
 2. **Run full validation**: reproducible financial facts and API ↔ Web contracts.
 3. **Campaign timeline**: catalogue, planner, executor, evaluator, optional critic and reporter.
 4. **Scenario detail**: raw response, latency, evaluator rules and source comparison.
-5. **Visual check**: start it, then open port `6080` to watch the real Chat browser type, receive an answer and scroll the page.
+5. **Visual check**: start it, then optionally open port `6080` to watch the real Chat browser type, receive an answer and scroll the page. This observer is meaningful only while the check is active.
 
 If Groq is configured, also show **AI exploration**. Make clear that it generates potential edge cases, while release validation remains deterministic and reproducible.
 

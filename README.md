@@ -63,7 +63,8 @@ The first start may take several minutes because Docker builds the images, Ollam
 | --- | --- | --- |
 | MyFinance Chat | <http://localhost:3000> | Ask financial, documentary and market questions |
 | Agentic Testing Lab | <http://localhost:3001> | Run release validation, inspect campaigns and watch Playwright |
-| Live Playwright browser | <http://localhost:6080> | Observe the real browser during a visual check |
+
+During a running **Chat Visual Check** only, you may open <http://localhost:6080> to watch the real Playwright browser. It is an optional observer window, not a third application to keep open during normal use.
 
 ### 3. Try the evidence contracts
 
@@ -82,16 +83,16 @@ Each question demonstrates a different response contract: validated value, offic
 
 ```mermaid
 flowchart LR
-    PDF[Official bank PDF] --> INGEST[Page-level corpus\nPDF hash + metadata]
+    PDF[Official bank PDF] --> INGEST[Page-level corpus<br/>PDF hash + metadata]
     INGEST --> FACTS[Deterministic validation]
     FACTS -->|approved only| CATALOG[auto_validated facts]
     INGEST --> EVIDENCE[Evidence chunks]
-    EVIDENCE --> RAG[Hybrid retrieval\nlexical + optional Qdrant]
+    EVIDENCE --> RAG[Hybrid retrieval<br/>lexical + optional Qdrant]
     CATALOG --> CHAT[Chat orchestration]
     RAG --> CHAT
-    MARKET[Official Market Watch\nimmutable snapshots] --> CHAT
+    MARKET[Official Market Watch<br/>immutable snapshots] --> CHAT
     CHAT --> ANSWER[Typed, evidence-backed response]
-    ANSWER --> LAB[Agentic Testing Lab\nAPI + Web + Playwright]
+    ANSWER --> LAB[Agentic Testing Lab<br/>API + Web + Playwright]
 ```
 
 The critical rule is simple: **a PDF is the primary source; a validated fact is the only source allowed to produce a financial number.** Qdrant and Groq can improve retrieval or wording, but neither can override that rule.
@@ -124,10 +125,10 @@ The Testing Lab treats the Chat as a product that must be proved continuously:
 
 ```mermaid
 flowchart LR
-    A[Scenario catalogue or AI exploration] --> B[Planner\nlocal safety policy]
-    B --> C[Executor\nreal Chat API and Web]
-    C --> D[Evaluator\ndeterministic contracts]
-    D --> E[AI Critic\nwhen enabled]
+    A[Scenario catalogue or AI exploration] --> B[Planner<br/>local safety policy]
+    B --> C[Executor<br/>real Chat API and Web]
+    C --> D[Evaluator<br/>deterministic contracts]
+    D --> E[AI Critic<br/>when enabled]
     E -->|confirmation needed| F[Confirmation pass]
     E -->|otherwise| G[Reporter]
     F --> G[Reporter]
@@ -136,7 +137,7 @@ flowchart LR
 
 - **Release validation** replays reproducible facts, API ↔ Web agreement and behaviour contracts.
 - **AI exploration** proposes additional edge cases through Groq but keeps them separate from deterministic release checks.
-- **Visual checks** drive the real Chat interface with Playwright. The live browser can be watched at port `6080`.
+- **Visual checks** drive the real Chat interface with Playwright. While one is running, its browser can optionally be observed at port `6080`.
 - Campaigns can be stopped, resumed where applicable and deleted locally. A partial execution is clearly marked instead of being presented as a full success.
 
 ## Hybrid RAG, without giving up evidence
@@ -162,7 +163,7 @@ Rebuild the index only after changing the source corpus or validated data:
 | `chat-api` | Conversation and evidence API | `localhost:8000` |
 | `testing-web` | Testing Lab interface | `localhost:3001` |
 | `testing-api` | Campaign orchestration, SSE and local reports | `localhost:8001` |
-| `testing-viewer` | Headed Playwright display via noVNC | `localhost:6080` |
+| `testing-viewer` | Optional headed Playwright observer, useful only during a visual check | `localhost:6080` |
 | `qdrant` | Optional semantic evidence index | `localhost:6333` |
 | `ollama` | Local embeddings provider | `localhost:11434` |
 | `market-collector` | Official Market Watch snapshot collector every 30 minutes | internal background service |
