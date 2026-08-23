@@ -4,10 +4,10 @@ from myfinance_agent_docs.corpus import (
     retrieve_evidence,
     retrieve_related_conventions,
 )
-from myfinance_agent_docs.facts import extract_candidate_facts
+from myfinance_agent_docs.facts import auto_validated_fact, extract_candidate_facts
 from myfinance_agent_docs.ingestion import classify_section, ingest_report
 from myfinance_contracts import EvidenceChunk
-from myfinance_orchestrator.ollama import (
+from myfinance_orchestrator.evidence_synthesis import (
     _relevant_excerpt,
     _safe_qualitative_analysis,
     _source_reading,
@@ -53,6 +53,16 @@ def test_biat_2023_financial_candidates_remain_unverified_and_traceable() -> Non
     assert facts["net_banking_income"].value == 1_396_872
     assert all(fact.unit_scale == "thousand" for fact in facts.values())
     assert all(fact.validation_status == "candidate" for fact in facts.values())
+
+
+def test_zitouna_2021_net_income_uses_the_clean_balance_sheet_line() -> None:
+    fact = auto_validated_fact("zitouna", 2021, "net_income")
+
+    assert fact is not None
+    assert fact.value == 60_117
+    assert fact.page_number == 2
+    assert fact.section == "balance_sheet"
+    assert fact.source_excerpt == "Résultat de l'exercice  60 117  51 411"
 
 
 def test_credit_risk_query_prefers_credit_risk_notes_over_governance_mentions() -> None:
@@ -205,6 +215,45 @@ def test_source_reading_explains_the_portfolio_collection_mechanism() -> None:
     assert "on behalf of third parties" in reading
     assert "presented on the balance sheet" in reading
     assert reading.endswith("[p. 36]")
+
+
+def test_source_reading_marks_securities_portfolio_as_a_scope_not_a_single_total() -> None:
+    evidence = retrieve_evidence("biat", 2025, "portefeuille titres commercial", limit=1)
+
+    reading = _source_reading("What is BIAT's portfolio in 2025?", evidence)
+
+    assert "not one single balance" in reading
+    assert "commercial securities portfolio" in reading
+    assert "distinct from the investment securities portfolio" in reading
+
+
+def test_source_reading_confirms_an_explicit_commercial_portfolio_scope() -> None:
+    evidence = retrieve_evidence("biat", 2025, "portefeuille titres commercial", limit=1)
+
+    reading = _source_reading("What is BIAT's commercial securities portfolio in 2025?", evidence)
+
+    assert "portfolio you selected" in reading
+    assert "trading securities and placement securities" in reading
+    assert "not one single balance" not in reading
+
+
+def test_portfolio_source_reading_uses_the_bank_named_by_the_evidence() -> None:
+    evidence = retrieve_evidence("amen_bank", 2025, "portefeuille titres commercial", limit=1)
+
+    reading = _source_reading("What is Amen Bank's commercial portfolio in 2025?", evidence)
+
+    assert "Amen Bank's commercial securities portfolio" in reading
+    assert "BIAT" not in reading
+
+
+def test_source_reading_explains_investment_portfolio_as_distinct_scope() -> None:
+    evidence = retrieve_evidence("biat", 2025, "portefeuille titres investissement", limit=1)
+
+    reading = _source_reading("What is BIAT's investment portfolio in 2025?", evidence)
+
+    assert "investment securities portfolio" in reading
+    assert "held to maturity" in reading
+    assert reading.endswith("[p. 8]")
 
 
 def test_source_reading_explains_cash_flow_note_content() -> None:

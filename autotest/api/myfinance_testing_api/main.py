@@ -5,19 +5,22 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 import sqlite3
 import subprocess
-import sys
 import time
 import unicodedata
 from datetime import UTC, datetime
 from difflib import SequenceMatcher
 from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.request import Request as UrlRequest
+from urllib.request import urlopen
 from uuid import uuid4
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from myfinance_autotest import models
 from myfinance_autotest.agents.generator import generate_test_case
 from myfinance_autotest.agents.planner import plan_api_action
@@ -30,22 +33,52 @@ from myfinance_autotest.scenarios.exploration import bind_generated_scenario, ex
 from myfinance_autotest.scenarios.library import ScenarioLibrary, build_scenario_library
 from myfinance_autotest.state import CampaignState
 from myfinance_autotest.tools.groq_client import GroqClient
+from myfinance_contracts import SlidingWindowRateLimiter, load_runtime_security_settings
 from pydantic import BaseModel, Field
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DATABASE_PATH = Path(os.environ.get("TESTING_DATABASE_PATH", PROJECT_ROOT / "data" / "autotest" / "testing.sqlite"))
 CHAT_API_URL = os.environ.get("CHAT_API_URL", "http://127.0.0.1:8000")
 CHAT_WEB_URL = os.environ.get("CHAT_WEB_URL", "http://127.0.0.1:3000")
+QDRANT_URL = os.environ.get("MYFINANCE_QDRANT_URL", "http://127.0.0.1:6333").rstrip("/")
+QDRANT_COLLECTION = os.environ.get("MYFINANCE_QDRANT_COLLECTION", "myfinance_evidence")
+OLLAMA_URL = os.environ.get("MYFINANCE_OLLAMA_URL", "http://127.0.0.1:11434").rstrip("/")
+EMBEDDING_MODEL = os.environ.get("MYFINANCE_EMBEDDING_MODEL", "nomic-embed-text")
 PLAYWRIGHT_REPORT_PATH = PROJECT_ROOT / "chat" / "web" / "test-results" / "playwright-results.json"
 PLAYWRIGHT_WORKDIR = PROJECT_ROOT / "chat" / "web"
 CAMPAIGN_REPORT_ROOT = PROJECT_ROOT / "data" / "autotest" / "campaigns"
+ACTIVE_CAMPAIGN_IDS: set[str] = set()
+RUNTIME_SECURITY = load_runtime_security_settings()
+RATE_LIMITER = SlidingWindowRateLimiter(RUNTIME_SECURITY.rate_limit_per_minute)
 app = FastAPI(title="MyFinance Agentic Testing", version="0.1.0")
+if RUNTIME_SECURITY.is_public:
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=list(RUNTIME_SECURITY.allowed_hosts))
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"],
-    allow_methods=["GET", "POST"],
+    allow_origins=list(RUNTIME_SECURITY.cors_origins),
+    allow_origin_regex=(r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$" if not RUNTIME_SECURITY.is_public else None),
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["Content-Type"],
 )
+
+
+@app.middleware("http")
+async def apply_runtime_protections(request: Request, call_next):
+    """Keep the local testing control plane private by default and rate bounded."""
+    client_id = request.client.host if request.client else "unknown"
+    if request.url.path != "/health" and not RATE_LIMITER.allows(client_id):
+        return JSONResponse(
+            status_code=429,
+            content={"detail": "Too many requests. Please retry in one minute."},
+            headers={"Retry-After": "60"},
+        )
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    return response
 
 
 class CreateTestRequest(BaseModel):
@@ -64,6 +97,10 @@ class StartCatalogCampaignRequest(BaseModel):
     with_groq: bool = True
     max_scenarios: int | None = Field(default=None, ge=1, le=500)
     scenario_profile: str = Field(default="exploration", pattern=r"^(catalog|behavior|exploration)$")
+
+
+class CampaignCancellationRequested(RuntimeError):
+    """Raised by the validation loop after a user requests a safe stop."""
 
 
 def _connection() -> sqlite3.Connection:
@@ -128,6 +165,140 @@ def _campaign_event(campaign_id: str, event_type: str, data: dict) -> None:
             "INSERT INTO campaign_events(campaign_id, created_at, type, data) VALUES (?, ?, ?, ?)",
             (campaign_id, datetime.now(UTC).isoformat(), event_type, json.dumps(data, ensure_ascii=False)),
         )
+
+
+def _campaign_cancellation_requested(campaign_id: str) -> bool:
+    with _connection() as connection:
+        row = connection.execute("SELECT status FROM campaigns WHERE id=?", (campaign_id,)).fetchone()
+    return row is not None and row["status"] == "cancelling"
+
+
+def _raise_if_campaign_cancellation_requested(campaign_id: str) -> None:
+    if _campaign_cancellation_requested(campaign_id):
+        raise CampaignCancellationRequested
+
+
+def _completed_initial_scenario_ids(campaign_id: str) -> set[str]:
+    """Return initial-pass scenarios already persisted before a resume."""
+
+    with _connection() as connection:
+        rows = connection.execute(
+            "SELECT data FROM campaign_events WHERE campaign_id=? AND type='scenario_completed' ORDER BY id",
+            (campaign_id,),
+        ).fetchall()
+    return {
+        str(payload["scenario_id"])
+        for row in rows
+        if (payload := json.loads(row["data"])).get("passage", "initial") == "initial"
+        and isinstance(payload.get("scenario_id"), str)
+    }
+
+
+def _campaign_verdict_counts(campaign_id: str, *, passage: str | None = None) -> dict[str, int]:
+    """Count persisted deterministic verdicts, including work before a resume."""
+
+    counts = {verdict.value: 0 for verdict in models.Verdict}
+    with _connection() as connection:
+        rows = connection.execute(
+            "SELECT data FROM campaign_events WHERE campaign_id=? AND type='scenario_completed' ORDER BY id",
+            (campaign_id,),
+        ).fetchall()
+    for row in rows:
+        payload = json.loads(row["data"])
+        if passage is not None and payload.get("passage", "initial") != passage:
+            continue
+        verdict = payload.get("verdict")
+        if verdict in counts:
+            counts[verdict] += 1
+    return counts
+
+
+def _finish_cancelled_campaign(
+    campaign_id: str,
+    *,
+    stage: str,
+    completed: int | None = None,
+    total: int | None = None,
+) -> None:
+    """Persist a requested stop exactly once, keeping prior scenario events."""
+
+    campaign = _read_campaign(campaign_id)
+    delete_after_stop = bool(campaign["configuration"].get("delete_after_stop"))
+    counts = _campaign_verdict_counts(campaign_id)
+    completed_count = completed if completed is not None else sum(counts.values())
+    result = {
+        "summary": {"total": completed_count, **counts},
+        "progress": {"completed": completed_count, "total": total},
+        "stopped": True,
+    }
+    with _connection() as connection:
+        updated = connection.execute(
+            "UPDATE campaigns SET status=?, updated_at=?, result=?, error=NULL WHERE id=? AND status='cancelling'",
+            ("cancelled", datetime.now(UTC).isoformat(), json.dumps(result, ensure_ascii=False), campaign_id),
+        ).rowcount
+    if not updated:
+        return
+    progress: dict[str, object] = {
+        "stage": stage, "status": "cancelled", "title": "Validation stopped",
+        "reason": "Stop requested from the Testing dashboard.", "completed": completed_count,
+    }
+    if total is not None:
+        progress["total"] = total
+    _campaign_event(campaign_id, "stage_update", progress)
+    _campaign_event(campaign_id, "campaign_cancelled", {"status": "cancelled", **progress})
+    if delete_after_stop:
+        _delete_campaign_artifacts(campaign)
+        with _connection() as connection:
+            connection.execute("DELETE FROM campaign_events WHERE campaign_id=?", (campaign_id,))
+            connection.execute("DELETE FROM campaigns WHERE id=?", (campaign_id,))
+
+
+def _clear_campaign_artifacts() -> None:
+    """Remove only generated campaign reports within their dedicated root."""
+
+    root = CAMPAIGN_REPORT_ROOT.resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    for artifact in root.iterdir():
+        resolved = artifact.resolve()
+        if root not in resolved.parents:
+            continue
+        if artifact.is_dir():
+            shutil.rmtree(artifact)
+        else:
+            artifact.unlink()
+
+
+def _delete_campaign_artifacts(campaign: dict) -> None:
+    """Delete report folders explicitly recorded for one campaign only."""
+
+    root = CAMPAIGN_REPORT_ROOT.resolve()
+    targets: set[Path] = set()
+    for raw_path in (campaign.get("result") or {}).get("report_paths", {}).values():
+        if not isinstance(raw_path, str):
+            continue
+        path = Path(raw_path).resolve()
+        if root not in path.parents:
+            continue
+        target = path
+        while target.parent != root:
+            target = target.parent
+        targets.add(target)
+    for target in targets:
+        if target.is_dir():
+            shutil.rmtree(target)
+        elif target.exists():
+            target.unlink()
+
+
+def _recover_orphaned_cancellations() -> None:
+    """Close a requested stop whose worker disappeared during a service restart."""
+
+    with _connection() as connection:
+        rows = connection.execute("SELECT id FROM campaigns WHERE status='cancelling'").fetchall()
+    for row in rows:
+        campaign_id = str(row["id"])
+        if campaign_id not in ACTIVE_CAMPAIGN_IDS:
+            _finish_cancelled_campaign(campaign_id, stage="executor")
 
 
 def _read_campaign(campaign_id: str) -> dict:
@@ -314,19 +485,19 @@ def _run_visual_check(visual_check_id: str) -> None:
     _update_visual_check(visual_check_id, status="running", result={"progress": progress})
     _visual_check_event(visual_check_id, "visual_started", {
         "status": "running",
-        "message": "Le navigateur automatisé démarre. Les parcours apparaîtront ci-dessous.",
+        "message": "The automated browser is starting. The journeys will appear below.",
         "progress": progress,
     })
     try:
+        # A failed prior run must never be displayed as a current success.
+        PLAYWRIGHT_REPORT_PATH.unlink(missing_ok=True)
         command = ["npm.cmd" if os.name == "nt" else "npm", "run", "test:e2e"]
         environment = os.environ.copy()
-        # Playwright starts its own orchestrator through ``python -m uv``.  The
-        # Testing API itself often runs from .venv, where uv is intentionally
-        # absent; its base interpreter is the one that owns uv on this setup.
-        base_python = Path(sys.base_prefix) / ("python.exe" if os.name == "nt" else "bin/python")
-        environment.setdefault("MYFINANCE_UV_PYTHON", str(base_python))
-        # A run explicitly launched from the Testing page is meant to be observed.
-        environment["MYFINANCE_PLAYWRIGHT_VISIBLE"] = "1"
+        environment["MYFINANCE_PLAYWRIGHT_API_URL"] = CHAT_API_URL
+        environment["MYFINANCE_PLAYWRIGHT_VISIBLE"] = os.environ.get("MYFINANCE_PLAYWRIGHT_VISIBLE", "0")
+        display = os.environ.get("MYFINANCE_PLAYWRIGHT_DISPLAY")
+        if display:
+            environment["DISPLAY"] = display
         process = subprocess.Popen(
             command,
             cwd=PLAYWRIGHT_WORKDIR,
@@ -369,7 +540,12 @@ def _run_visual_check(visual_check_id: str) -> None:
             "failed": summary.get("failed", progress["failed"]),
         }
         result = {"progress": final_progress, "coverage": coverage}
-        status = "completed" if exit_code == 0 and coverage.get("available") else "failed"
+        status = "completed" if (
+            exit_code == 0
+            and coverage.get("available")
+            and summary.get("total", 0) > 0
+            and summary.get("failed", 0) == 0
+        ) else "failed"
         error = None if status == "completed" else "The Playwright check failed. See the log below."
         _update_visual_check(visual_check_id, status=status, result=result, error=error)
         _visual_check_event(visual_check_id, "visual_completed", {
@@ -381,7 +557,7 @@ def _run_visual_check(visual_check_id: str) -> None:
     # Background work must always publish a terminal status, including an
     # unexpected Playwright process failure.
     except Exception as error:  # noqa: BLE001
-        message = f"Impossible de démarrer Playwright : {type(error).__name__}"
+        message = f"Unable to start Playwright: {type(error).__name__}"
         _update_visual_check(visual_check_id, status="technical_error", result={"progress": progress}, error=message)
         _visual_check_event(visual_check_id, "visual_completed", {
             "status": "technical_error", "message": message, "progress": progress,
@@ -413,7 +589,7 @@ def _run(test_id: str) -> None:
         connection.execute("UPDATE tests SET status=?, updated_at=? WHERE id=?", ("running", now, test_id))
     _event(test_id, "execution_started", {"step": "observation"})
     try:
-        settings = load_settings().model_copy(update={"endpoints": EndpointConfig(api_base_url=CHAT_API_URL, web_base_url="http://127.0.0.1:3000")})
+        settings = load_settings().model_copy(update={"endpoints": EndpointConfig(api_base_url=CHAT_API_URL, web_base_url=CHAT_WEB_URL)})
         _, report, report_path = run_api_prototype(
             _case(test_id, payload), settings, executor=ApiExecutor(CHAT_API_URL),
             trace_root=PROJECT_ROOT / "data" / "autotest" / "traces", report_root=PROJECT_ROOT / "data" / "autotest" / "reports",
@@ -435,12 +611,18 @@ def _run_catalog_campaign(campaign_id: str) -> None:
     """Run the complete reproducible catalogue without manual scenario entry."""
     campaign = _read_campaign(campaign_id)
     configuration = campaign["configuration"]
+    resume_requested = bool(configuration.get("resume"))
+    completed_initial_ids = _completed_initial_scenario_ids(campaign_id) if resume_requested else set()
+    if _campaign_cancellation_requested(campaign_id):
+        _finish_cancelled_campaign(campaign_id, stage="generator")
+        return
     with _connection() as connection:
         connection.execute(
-            "UPDATE campaigns SET status=?, updated_at=?, error=NULL WHERE id=?",
+            "UPDATE campaigns SET status=?, updated_at=?, error=NULL WHERE id=? AND status='pending'",
             ("running", datetime.now(UTC).isoformat(), campaign_id),
         )
     active_stage = "generator"
+    ACTIVE_CAMPAIGN_IDS.add(campaign_id)
     try:
         settings = load_settings().model_copy(update={
             "endpoints": EndpointConfig(api_base_url=CHAT_API_URL, web_base_url=CHAT_WEB_URL),
@@ -479,6 +661,7 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                 and len(selected) < target_scenarios
                 and generation_attempts < max_generation_attempts
             ):
+                _raise_if_campaign_cancellation_requested(campaign_id)
                 charter = pending_charters.pop(0)
                 generation_attempts += 1
                 state = CampaignState.initialise(charter, settings.limits)
@@ -557,6 +740,7 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                 "policy": "The Planner can authorise only a message to the local Chat API; rejections trigger replacement generation within the set limit.",
             })
         else:
+            _raise_if_campaign_cancellation_requested(campaign_id)
             library = build_scenario_library()
             selected = (
                 [scenario for scenario in library.scenarios if scenario.origin == "catalog_behavior_contract"]
@@ -567,6 +751,9 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                 selected = [scenario for scenario in selected if models.Channel.WEB not in scenario.channels]
             if configuration["max_scenarios"] is not None:
                 selected = selected[:configuration["max_scenarios"]]
+            planned_total = len(selected)
+            if completed_initial_ids:
+                selected = [scenario for scenario in selected if scenario.test_id not in completed_initial_ids]
             _campaign_event(campaign_id, "stage_update", {
                 "stage": "generator", "status": "completed", "title": "Deterministic catalogue generated",
                 "report_count": library.report_count, "scenario_count": len(library.scenarios),
@@ -575,9 +762,11 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                 "cross_channel_scenarios": library.cross_channel_scenario_count,
             })
             _campaign_event(campaign_id, "stage_update", {
-                "stage": "planner", "status": "completed", "title": "Bounded execution plan",
+                "stage": "planner", "status": "completed",
+                "title": "Validation resumed from saved progress" if completed_initial_ids else "Bounded execution plan",
                 "selected_scenarios": len(selected), "api_scenarios": len(selected),
                 "web_scenarios": sum(scenario.category is models.TestCategory.CROSS_CHANNEL for scenario in selected),
+                "already_completed": len(completed_initial_ids), "total_scenarios": planned_total,
                 "include_web": configuration["include_web"],
                 "policy": "Questions, channels and objectives come only from the validated catalogue.",
             })
@@ -587,14 +776,17 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                 "reason": f"{settings.groq.api_key_environment} is missing: deterministic checks still run.",
             })
         primary_selected = list(selected)
-        counts = {verdict.value: 0 for verdict in models.Verdict}
-        primary_counts = {verdict.value: 0 for verdict in models.Verdict}
+        completed_offset = len(completed_initial_ids)
+        primary_total = completed_offset + len(primary_selected)
+        counts = _campaign_verdict_counts(campaign_id, passage="initial") if resume_requested else {verdict.value: 0 for verdict in models.Verdict}
+        primary_counts = dict(counts)
         confirmation_counts = {verdict.value: 0 for verdict in models.Verdict}
         confirmation_requests: list[tuple[models.TestCase, str]] = []
         quality_fallbacks = {
             "initial": {"evaluator": 0, "critic": 0},
             "confirmation": {"evaluator": 0, "critic": 0},
         }
+        critic_provider_errors: list[str] = []
 
         def record_execution(passage: str):
             """Publish the Chat response before any slower Groq quality review."""
@@ -602,13 +794,16 @@ def _run_catalog_campaign(campaign_id: str) -> None:
             executor_stage = "executor" if passage == "initial" else "executor_confirmation"
 
             def callback(index: int, total: int, scenario: models.TestCase, execution: dict) -> None:
+                offset = completed_offset if passage == "initial" else 0
+                visible_index = offset + index
+                visible_total = offset + total
                 _campaign_event(campaign_id, "stage_update", {
                     "stage": executor_stage, "status": "running", "title": "Execution in progress",
-                    "completed": index, "total": total, "passage": passage,
+                    "completed": visible_index, "total": visible_total, "passage": passage,
                 })
                 _campaign_event(campaign_id, "execution_completed", {
                     "stage": executor_stage, "status": "completed", "passage": passage,
-                    "index": index, "total": total, "scenario_id": scenario.test_id,
+                    "index": visible_index, "total": visible_total, "scenario_id": scenario.test_id,
                     "title": scenario.title, "question": scenario.input, "category": scenario.category.value,
                     "channels": [channel.value for channel in scenario.channels], "execution": execution,
                 })
@@ -624,11 +819,14 @@ def _run_catalog_campaign(campaign_id: str) -> None:
             def callback(
                 index: int, total: int, scenario: models.TestCase, evaluation: models.EvaluationResult, execution: dict
             ) -> None:
+                offset = completed_offset if passage == "initial" else 0
+                visible_index = offset + index
+                visible_total = offset + total
                 counts[evaluation.verdict.value] += 1
                 passage_counts[evaluation.verdict.value] += 1
                 _campaign_event(campaign_id, "stage_update", {
                     "stage": evaluator_stage, "status": "running", "title": "Deterministic evaluation in progress",
-                    "completed": index, "total": total, "passage": passage,
+                    "completed": visible_index, "total": visible_total, "passage": passage,
                 })
                 critic = execution.get("critic") or {}
                 evaluator_provider = (execution.get("evaluator") or {}).get("provider") or {}
@@ -637,12 +835,15 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                     quality_fallbacks[passage]["evaluator"] += 1
                 if critic_provider.get("status") == "failed":
                     quality_fallbacks[passage]["critic"] += 1
+                    error = critic_provider.get("error")
+                    if isinstance(error, str):
+                        critic_provider_errors.append(error)
                 follow_up = critic.get("follow_up_question")
                 if passage == "initial" and critic.get("next_action_required") and isinstance(follow_up, str):
                     confirmation_requests.append((scenario, follow_up))
                 _campaign_event(campaign_id, "scenario_completed", {
                     "stage": evaluator_stage, "status": evaluation.verdict.value,
-                    "passage": passage, "index": index, "total": total, "scenario_id": scenario.test_id,
+                    "passage": passage, "index": visible_index, "total": visible_total, "scenario_id": scenario.test_id,
                     "title": scenario.title, "question": scenario.input, "category": scenario.category.value,
                     "channels": [channel.value for channel in scenario.channels],
                     "verdict": evaluation.verdict.value,
@@ -660,9 +861,10 @@ def _run_catalog_campaign(campaign_id: str) -> None:
             return callback
 
         active_stage = "executor"
+        _raise_if_campaign_cancellation_requested(campaign_id)
         _campaign_event(campaign_id, "stage_update", {
             "stage": "executor", "status": "running", "title": "Initial pass: API and Web execution",
-            "completed": 0, "total": len(primary_selected), "passage": "initial",
+            "completed": completed_offset, "total": primary_total, "passage": "initial",
         })
         api_executor = ApiExecutor(CHAT_API_URL)
         try:
@@ -678,30 +880,54 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                 planned_actions=planned_actions,
                 on_execution_complete=record_execution("initial"),
                 on_scenario_complete=record_scenario("initial"),
+                should_stop=lambda: _campaign_cancellation_requested(campaign_id),
             )
         finally:
             api_executor.close()
+        if _campaign_cancellation_requested(campaign_id):
+            _finish_cancelled_campaign(
+                campaign_id, stage=active_stage, completed=sum(primary_counts.values()), total=primary_total
+            )
+            return
         reports = [primary_report]
         evaluator_fallbacks = quality_fallbacks["initial"]["evaluator"]
         critic_fallbacks = quality_fallbacks["initial"]["critic"]
         _campaign_event(campaign_id, "stage_update", {
             "stage": "executor", "status": "completed", "title": "Initial pass completed",
-            "completed": len(primary_report.tests), "total": len(primary_selected), "counts": primary_counts,
+            "completed": sum(primary_counts.values()), "total": primary_total, "counts": primary_counts,
         })
         _campaign_event(campaign_id, "stage_update", {
             "stage": "evaluator", "status": "completed_with_fallback" if evaluator_fallbacks else "completed",
             "title": "Evaluation completed with deterministic fallback" if evaluator_fallbacks else "Initial-pass evaluation completed",
-            "completed": len(primary_report.tests), "total": len(primary_selected), "counts": primary_counts,
+            "completed": sum(primary_counts.values()), "total": primary_total, "counts": primary_counts,
             "quality_fallbacks": evaluator_fallbacks,
             "rule": "An optional SLM score can never change the deterministic verdict.",
         })
 
         if configuration["scenario_profile"] == "exploration" and groq_enabled:
+            critic_limit_reached = any(
+                term in error.lower()
+                for error in critic_provider_errors
+                for term in ("quota", "rate limit", "rate_limit", "429", "limit reached")
+            )
+            critic_status = (
+                "budget_exhausted" if critic_limit_reached
+                else "provider_error" if critic_fallbacks
+                else "completed"
+            )
+            critic_title = (
+                "AI Critic unavailable: Groq quota reached; deterministic checks retained"
+                if critic_limit_reached
+                else "AI Critic unavailable: provider error; deterministic checks retained"
+                if critic_fallbacks
+                else "Initial-pass Critic review completed"
+            )
             _campaign_event(campaign_id, "stage_update", {
-                "stage": "critic", "status": "completed_with_fallback" if critic_fallbacks else "completed",
-                "title": "Critic review completed with deterministic fallback" if critic_fallbacks else "Initial-pass Critic review completed",
+                "stage": "critic", "status": critic_status,
+                "title": critic_title,
                 "reviewed_scenarios": len(primary_report.tests), "confirmation_requested": len(confirmation_requests),
                 "quality_fallbacks": critic_fallbacks,
+                "provider_limit_reached": critic_limit_reached,
                 "policy": "Every confirmation starts a second Planner → Executor → Evaluator pass.",
             })
             if confirmation_requests:
@@ -714,6 +940,7 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                 confirmation_actions: dict[str, models.PlannedAction] = {}
                 confirmation_scenarios: list[models.TestCase] = []
                 for parent, question in confirmation_requests:
+                    _raise_if_campaign_cancellation_requested(campaign_id)
                     scenario = parent.model_copy(update={
                         "test_id": f"{parent.test_id}-CONFIRM",
                         "title": f"Confirmation · {parent.title}",
@@ -756,9 +983,18 @@ def _run_catalog_campaign(campaign_id: str) -> None:
                             planned_actions=confirmation_actions,
                             on_execution_complete=record_execution("confirmation"),
                             on_scenario_complete=record_scenario("confirmation"),
+                            should_stop=lambda: _campaign_cancellation_requested(campaign_id),
                         )
                     finally:
                         api_executor.close()
+                    if _campaign_cancellation_requested(campaign_id):
+                        _finish_cancelled_campaign(
+                            campaign_id,
+                            stage=active_stage,
+                            completed=len(confirmation_report.tests),
+                            total=len(confirmation_scenarios),
+                        )
+                        return
                     reports.append(confirmation_report)
                     _campaign_event(campaign_id, "stage_update", {
                         "stage": "executor_confirmation", "status": "completed",
@@ -799,7 +1035,7 @@ def _run_catalog_campaign(campaign_id: str) -> None:
             audit_html_path,
         ) = write_campaign_report(report, PROJECT_ROOT / "data" / "autotest" / "campaigns")
         result = {
-            "summary": {"total": len(report.tests), **counts},
+            "summary": {"total": sum(counts.values()), **counts},
             "report_paths": {
                 "json": str(json_path),
                 "summary_markdown": str(summary_markdown_path),
@@ -819,6 +1055,8 @@ def _run_catalog_campaign(campaign_id: str) -> None:
             **result,
         })
         _campaign_event(campaign_id, "campaign_completed", {"status": "completed", **result})
+    except CampaignCancellationRequested:
+        _finish_cancelled_campaign(campaign_id, stage=active_stage)
     # The campaign boundary records unexpected provider or storage failures
     # as a terminal event for the user interface.
     except Exception as error:  # noqa: BLE001
@@ -833,11 +1071,130 @@ def _run_catalog_campaign(campaign_id: str) -> None:
             "reason": str(error),
         })
         _campaign_event(campaign_id, "technical_error", {"stage": active_stage, "error": message})
+    finally:
+        ACTIVE_CAMPAIGN_IDS.discard(campaign_id)
+
+
+def _fetch_json(url: str, *, timeout_seconds: float = 2.0) -> tuple[dict | None, str | None]:
+    """Read a local service status without letting diagnostics affect a campaign."""
+    try:
+        request = UrlRequest(url, headers={"Accept": "application/json"})
+        with urlopen(request, timeout=timeout_seconds) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        return payload if isinstance(payload, dict) else None, None
+    except HTTPError as error:
+        return None, f"HTTP {error.code}"
+    except (OSError, URLError, ValueError, json.JSONDecodeError) as error:
+        return None, type(error).__name__
+
+
+def _component(name: str, status: str, summary: str, **details: object) -> dict[str, object]:
+    return {"name": name, "status": status, "summary": summary, "details": details}
+
+
+def _system_components() -> list[dict[str, object]]:
+    """Expose the components that materially change a testing verdict.
+
+    The test lab does not start or mutate any dependency.  It only distinguishes
+    a fully enriched stack from its documented safe fallbacks (lexical evidence,
+    market notices and source-required general answers).
+    """
+    components: list[dict[str, object]] = []
+    chat_health, chat_error = _fetch_json(f"{CHAT_API_URL}/health")
+    chat_runtime, runtime_error = _fetch_json(f"{CHAT_API_URL}/api/status")
+    if chat_health and chat_health.get("status") == "ok":
+        components.append(_component(
+            "chat_api", "ready", "Chat API reachable",
+            router_revision=chat_runtime.get("router_revision") if chat_runtime else None,
+            llm_provider=chat_runtime.get("llm_provider") if chat_runtime else None,
+            runtime_status="available" if chat_runtime else runtime_error,
+        ))
+    else:
+        components.append(_component("chat_api", "unavailable", "Chat API unreachable", error=chat_error))
+
+    qdrant, qdrant_error = _fetch_json(f"{QDRANT_URL}/collections/{QDRANT_COLLECTION}")
+    qdrant_result = qdrant.get("result") if qdrant else None
+    points_count = qdrant_result.get("points_count") if isinstance(qdrant_result, dict) else None
+    if isinstance(points_count, int) and points_count > 0:
+        components.append(_component(
+            "qdrant", "ready", "Semantic evidence index available",
+            collection=QDRANT_COLLECTION, points_count=points_count,
+        ))
+    elif qdrant_result is not None:
+        components.append(_component(
+            "qdrant", "degraded", "Semantic index is empty; lexical evidence remains active",
+            collection=QDRANT_COLLECTION, points_count=points_count or 0,
+        ))
+    else:
+        components.append(_component(
+            "qdrant", "degraded", "Qdrant unavailable; lexical evidence fallback remains active",
+            collection=QDRANT_COLLECTION, error=qdrant_error,
+        ))
+
+    ollama, ollama_error = _fetch_json(f"{OLLAMA_URL}/api/tags")
+    models = ollama.get("models", []) if ollama else []
+    model_names = {
+        str(item.get("name", "")).split(":", 1)[0]
+        for item in models if isinstance(item, dict)
+    }
+    if EMBEDDING_MODEL.split(":", 1)[0] in model_names:
+        components.append(_component(
+            "embeddings", "ready", "Local embeddings model available", model=EMBEDDING_MODEL,
+        ))
+    elif ollama is not None:
+        components.append(_component(
+            "embeddings", "degraded", "Embeddings model not installed", model=EMBEDDING_MODEL,
+        ))
+    else:
+        components.append(_component(
+            "embeddings", "degraded", "Embeddings service unavailable", model=EMBEDDING_MODEL, error=ollama_error,
+        ))
+
+    market, market_error = _fetch_json(f"{CHAT_API_URL}/api/market/collection-health")
+    if market and market.get("fresh") is True:
+        components.append(_component(
+            "market_collector", "ready", "Official Market Watch snapshot is current",
+            retrieved_at=market.get("retrieved_at"), observation_count=market.get("observation_count"),
+        ))
+    elif market is not None:
+        components.append(_component(
+            "market_collector", "degraded", "Market data is not current; safe notices remain expected",
+            collection_status=market.get("status"), alerts=market.get("alerts", []),
+        ))
+    else:
+        components.append(_component(
+            "market_collector", "degraded", "Market collector status unavailable", error=market_error,
+        ))
+    return components
 
 
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "service": "agentic-testing"}
+
+
+@app.get("/api/system-state")
+def system_state() -> dict[str, object]:
+    """Return a read-only operational picture for release validation."""
+    components = _system_components()
+    statuses = {str(component["name"]): str(component["status"]) for component in components}
+    if statuses.get("chat_api") == "unavailable":
+        overall = "unavailable"
+    elif all(status == "ready" for status in statuses.values()):
+        overall = "ready"
+    else:
+        overall = "attention"
+    library = build_scenario_library()
+    return {
+        "overall": overall,
+        "checked_at": datetime.now(UTC).isoformat(),
+        "components": components,
+        "catalog": {
+            "report_count": library.report_count,
+            "scenario_count": len(library.scenarios),
+            "behavior_scenario_count": library.behavior_scenario_count,
+        },
+    }
 
 
 @app.get("/api/coverage/web")
@@ -945,7 +1302,7 @@ def start_catalog_campaign(body: StartCatalogCampaignRequest, background_tasks: 
             detail="The exploratory campaign requires GROQ_API_KEY in the Testing service environment.",
         )
     with _connection() as connection:
-        active = connection.execute("SELECT id FROM campaigns WHERE status IN ('pending', 'running') LIMIT 1").fetchone()
+        active = connection.execute("SELECT id FROM campaigns WHERE status IN ('pending', 'running', 'cancelling') LIMIT 1").fetchone()
         if active is not None:
             raise HTTPException(status_code=409, detail=f"Campaign {active['id']} is already running.")
         campaign_id = f"CAMPAIGN-{uuid4().hex[:12]}"
@@ -966,15 +1323,117 @@ def start_catalog_campaign(body: StartCatalogCampaignRequest, background_tasks: 
     return {"id": campaign_id, "status": "starting"}
 
 
+@app.post("/api/campaigns/{campaign_id}/stop", status_code=202)
+def stop_catalog_campaign(campaign_id: str) -> dict:
+    """Request a cooperative stop after the scenario currently in flight."""
+
+    campaign = _read_campaign(campaign_id)
+    if campaign["status"] == "cancelling":
+        return {"id": campaign_id, "status": "cancelling"}
+    if campaign["status"] not in {"pending", "running"}:
+        raise HTTPException(status_code=409, detail="Only an active validation can be stopped.")
+    with _connection() as connection:
+        connection.execute(
+            "UPDATE campaigns SET status=?, updated_at=? WHERE id=?",
+            ("cancelling", datetime.now(UTC).isoformat(), campaign_id),
+        )
+    _campaign_event(campaign_id, "campaign_stop_requested", {
+        "status": "cancelling",
+        "title": "Stop requested",
+        "reason": "The current scenario will finish before the validation stops.",
+    })
+    return {"id": campaign_id, "status": "cancelling"}
+
+
 @app.get("/api/campaigns")
 def list_campaigns() -> dict:
+    _recover_orphaned_cancellations()
     with _connection() as connection:
         rows = connection.execute("SELECT id FROM campaigns ORDER BY created_at DESC LIMIT 30").fetchall()
     return {"campaigns": [_read_campaign(row["id"]) for row in rows]}
 
 
+@app.delete("/api/campaigns/history")
+def clear_campaign_history() -> dict:
+    """Delete completed campaign history and only its generated report artifacts."""
+
+    with _connection() as connection:
+        active = connection.execute(
+            "SELECT id FROM campaigns WHERE status IN ('pending', 'running', 'cancelling') LIMIT 1"
+        ).fetchone()
+        if active is not None:
+            raise HTTPException(status_code=409, detail="Stop or finish the active validation before clearing history.")
+        count = connection.execute("SELECT COUNT(*) AS total FROM campaigns").fetchone()["total"]
+    _clear_campaign_artifacts()
+    with _connection() as connection:
+        connection.execute("DELETE FROM campaign_events")
+        connection.execute("DELETE FROM campaigns")
+    return {"deleted_campaigns": count, "status": "cleared"}
+
+
+@app.post("/api/campaigns/{campaign_id}/resume", status_code=202)
+def resume_catalog_campaign(campaign_id: str, background_tasks: BackgroundTasks) -> dict:
+    """Resume a stopped reproducible campaign from its first pending scenario."""
+
+    campaign = _read_campaign(campaign_id)
+    if campaign["status"] != "cancelled":
+        raise HTTPException(status_code=409, detail="Only a stopped campaign can be resumed.")
+    if campaign["configuration"].get("scenario_profile") == "exploration":
+        raise HTTPException(
+            status_code=409,
+            detail="AI exploration is intentionally not resumed. Start a new exploration to generate a fresh question set.",
+        )
+    with _connection() as connection:
+        active = connection.execute(
+            "SELECT id FROM campaigns WHERE id != ? AND status IN ('pending', 'running', 'cancelling') LIMIT 1",
+            (campaign_id,),
+        ).fetchone()
+    if active is not None:
+        raise HTTPException(status_code=409, detail=f"Campaign {active['id']} is already running.")
+    configuration = {**campaign["configuration"], "resume": True}
+    with _connection() as connection:
+        connection.execute(
+            "UPDATE campaigns SET status=?, updated_at=?, configuration=?, error=NULL WHERE id=?",
+            ("pending", datetime.now(UTC).isoformat(), json.dumps(configuration, ensure_ascii=False), campaign_id),
+        )
+    _campaign_event(campaign_id, "campaign_resumed", {
+        "status": "pending",
+        "title": "Validation resumed",
+        "already_completed": len(_completed_initial_scenario_ids(campaign_id)),
+    })
+    background_tasks.add_task(_run_catalog_campaign, campaign_id)
+    return {"id": campaign_id, "status": "starting"}
+
+
+@app.delete("/api/campaigns/{campaign_id}")
+def delete_campaign(campaign_id: str, response: Response) -> dict:
+    """Delete a finished campaign, or safely discard an active one after its current scenario."""
+
+    campaign = _read_campaign(campaign_id)
+    if campaign["status"] in {"pending", "running", "cancelling"}:
+        configuration = {**campaign["configuration"], "delete_after_stop": True}
+        with _connection() as connection:
+            connection.execute(
+                "UPDATE campaigns SET status=?, updated_at=?, configuration=? WHERE id=?",
+                ("cancelling", datetime.now(UTC).isoformat(), json.dumps(configuration, ensure_ascii=False), campaign_id),
+            )
+        _campaign_event(campaign_id, "campaign_delete_requested", {
+            "status": "cancelling",
+            "title": "Deletion requested",
+            "reason": "The current scenario will finish before this campaign and its reports are permanently deleted.",
+        })
+        response.status_code = 202
+        return {"id": campaign_id, "status": "cancelling", "deletion_pending": True}
+    _delete_campaign_artifacts(campaign)
+    with _connection() as connection:
+        connection.execute("DELETE FROM campaign_events WHERE campaign_id=?", (campaign_id,))
+        connection.execute("DELETE FROM campaigns WHERE id=?", (campaign_id,))
+    return {"id": campaign_id, "status": "deleted"}
+
+
 @app.get("/api/campaigns/{campaign_id}")
 def get_campaign(campaign_id: str) -> dict:
+    _recover_orphaned_cancellations()
     return _read_campaign(campaign_id)
 
 
@@ -1052,7 +1511,7 @@ def campaign_events(campaign_id: str):
                 data = {"id": row["id"], "created_at": row["created_at"], **json.loads(row["data"])}
                 yield f"event: {row['type']}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
             status = _read_campaign(campaign_id)["status"]
-            if status in {"completed", "technical_error"}:
+            if status in {"completed", "technical_error", "cancelled"}:
                 break
             time.sleep(0.5)
 

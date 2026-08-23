@@ -1,0 +1,53 @@
+{
+  "registry_version": "1.0",
+  "market": "Bourse de Tunis",
+  "verification_method": "Instrument identity must be checked against the official tunis-stockexchange.com Market Watch before ingestion. Earlier-source exchange identifiers are deliberately not retained.",
+  "instruments": [
+    {
+      "bank_id": "amen_bank",
+      "bank_name": "Amen Bank",
+      "listing_status": "listed",
+      "exchange": "BVMT",
+      "exchange_symbol": "AB",
+      "instrument_id": "BVMT:AB",
+      "identity_status": "verified",
+      "verification_url": "https://tunis-stockexchange.com/market-watch"
+    },
+    {
+      "bank_id": "attijari_bank",
+      "bank_name": "Attijari Bank",
+      "listing_status": "listed",
+      "exchange": "BVMT",
+      "exchange_symbol": "TJARI",
+      "instrument_id": "BVMT:TJARI",
+      "identity_status": "verified",
+      "verification_url": "https://tunis-stockexchange.com/market-watch"
+    },
+    {
+      "bank_id": "biat",
+      "bank_name": "BIAT",
+      "listing_status": "listed",
+      "exchange": "BVMT",
+      "exchange_symbol": "BIAT",
+      "instrument_id": "BVMT:BIAT",
+      "identity_status": "verified",
+      "verification_url": "https://tunis-stockexchange.com/market-watch"
+    },
+    {
+      "bank_id": "bt",
+      "bank_name": "Banque de Tunisie",
+      "listing_status": "listed",
+      "exchange": "BVMT",
+      "exchange_symbol": "BT",
+      "instrument_id": "BVMT:BT",
+      "identity_status": "verified",
+      "verification_url": "https://tunis-stockexchange.com/market-watch"
+    },
+    {
+      "bank_id": "zitouna",
+      "bank_name": "Banque Zitouna",
+      "listing_status": "not_mapped",
+      "identity_status": "pending_verification"
+    }
+  ]
+}

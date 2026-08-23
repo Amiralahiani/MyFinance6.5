@@ -217,6 +217,10 @@ def build_scenario_library() -> ScenarioLibrary:
                 cross_channel_scenario_id=cross_scenario_id,
             )
         )
+    # These are release contracts for capabilities added after the first
+    # financial-facts catalogue.  They deliberately accept a safe, explicit
+    # notice when a live official service is unavailable: a missing source is
+    # not an excuse to fabricate an answer.
     behavior_scenarios = [
         _behavior_scenario(
             "BEHAVIOR-MISSING-YEAR", "Précision d’année requise", "Quel est le PNB de BIAT ?",
@@ -236,6 +240,11 @@ def build_scenario_library() -> ScenarioLibrary:
             expected_properties=["response_type:document", "evidence_present"], bank_id="biat", year=2021,
         ),
         _behavior_scenario(
+            "BEHAVIOR-DOCUMENT-SEMANTIC", "Recherche documentaire par sujet", "Que dit le rapport BIAT 2021 sur les transactions avec les parties liées ?",
+            category=TestCategory.SOURCE, channels=[Channel.API],
+            expected_properties=["response_type:document", "evidence_present"], bank_id="biat", year=2021,
+        ),
+        _behavior_scenario(
             "BEHAVIOR-CONTEXT", "Relance avec contexte confirmé", "Et en 2024 ?",
             category=TestCategory.FINANCIAL_FACT, channels=[Channel.API],
             expected_properties=["numeric_value", "reporting_year", "unit", "source_document", "source_page", "source_excerpt"],
@@ -246,6 +255,34 @@ def build_scenario_library() -> ScenarioLibrary:
             "BEHAVIOR-WEB-GREETING", "Accueil dans l’interface Web", "Bonjour",
             category=TestCategory.CONVERSATION, channels=[Channel.WEB],
             expected_properties=["response_type:courtesy", "visible_contains:prêt à analyser"],
+        ),
+        _behavior_scenario(
+            "BEHAVIOR-MARKET-CURRENT", "Cours actuel : source officielle ou avis sûr", "Quel est le cours actuel de l’action BIAT ?",
+            category=TestCategory.TEMPORAL, channels=[Channel.API],
+            expected_properties=["response_type_any:market_quote|market_notice", "response_mode:market"], bank_id="biat",
+        ),
+        _behavior_scenario(
+            "BEHAVIOR-MARKET-HISTORICAL-GUARD", "Cours historique : limite explicitée", "Quel était le cours de l’action BIAT en 2023 ?",
+            category=TestCategory.TEMPORAL, channels=[Channel.API],
+            expected_properties=["response_type:market_notice", "response_mode:market", "message_contains:historical"], bank_id="biat", year=2023,
+        ),
+        _behavior_scenario(
+            "BEHAVIOR-GENERAL-OFFICIAL-SOURCES", "Question générale : source officielle ou refus vérifié", "Quel est l’indice boursier principal aux États-Unis ?",
+            category=TestCategory.SOURCE, channels=[Channel.API],
+            expected_properties=["response_type:general", "official_source_or_verified_refusal"],
+        ),
+        _behavior_scenario(
+            "BEHAVIOR-DOCUMENT-TO-METRIC", "Sortie documentaire vers une valeur validée", "Quel est le PNB de la BIAT en 2023 ?",
+            category=TestCategory.FINANCIAL_FACT, channels=[Channel.API],
+            expected_properties=["numeric_value", "reporting_year", "unit", "source_document", "source_page", "source_excerpt"],
+            bank_id="biat", year=2023, metric_id="net_banking_income",
+            context={"mode": "document", "bank_id": "biat", "bank_name": "BIAT", "reporting_year": 2023, "topic": "related parties"},
+        ),
+        _behavior_scenario(
+            "BEHAVIOR-DOCUMENT-TO-MARKET", "Sortie documentaire vers le marché actuel", "Quel est le cours actuel de l’action BIAT ?",
+            category=TestCategory.TEMPORAL, channels=[Channel.API],
+            expected_properties=["response_type_any:market_quote|market_notice", "response_mode:market"], bank_id="biat",
+            context={"mode": "document", "bank_id": "biat", "bank_name": "BIAT", "reporting_year": 2023, "topic": "related parties"},
         ),
     ]
     scenarios.extend(behavior_scenarios)

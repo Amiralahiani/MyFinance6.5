@@ -4,9 +4,9 @@
   "source_of_truth": "The official PDF remains the primary proof; only auto_validated facts are answerable values.",
   "total_reports": 25,
   "core_metric_slots": 175,
-  "extracted_fact_count": 174,
-  "missing_core_metric_count": 1,
-  "auto_validated_fact_count": 174,
+  "extracted_fact_count": 175,
+  "missing_core_metric_count": 0,
+  "auto_validated_fact_count": 175,
   "rejected_fact_count": 0,
   "reports_by_bank": {
     "amen_bank": 5,
@@ -16,8 +16,7 @@
     "zitouna": 5
   },
   "review_states": {
-    "auto_validated": 24,
-    "auto_validated_with_missing_core_metrics": 1
+    "auto_validated": 25
   },
   "items": [
     {
@@ -554,18 +553,17 @@
         "customer_deposits",
         "customer_loans_net",
         "net_banking_income",
+        "net_income",
         "total_assets",
         "total_equity",
         "total_liabilities"
       ],
-      "missing_core_metrics": [
-        "net_income"
-      ],
-      "auto_validated_fact_count": 6,
+      "missing_core_metrics": [],
+      "auto_validated_fact_count": 7,
       "rejected_fact_count": 0,
       "auto_validated_path": "data/normalized/facts/auto_validated/zitouna/2021/financial_facts.json",
       "validation_report_path": "data/validation-runs/zitouna/2021/report.json",
-      "review_status": "auto_validated_with_missing_core_metrics"
+      "review_status": "auto_validated"
     },
     {
       "bank_id": "zitouna",

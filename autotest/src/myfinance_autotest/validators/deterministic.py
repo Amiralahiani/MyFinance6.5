@@ -145,6 +145,18 @@ def validate_behavior_contract(
                 check_id=f"behavior.{expected_type}.response_type", name="response_type_matches_contract",
                 passed=response.get("type") == expected_type, expected=expected_type, actual=response.get("type"),
             ))
+        elif expected.startswith("response_type_any:"):
+            accepted_types = expected.split(":", 1)[1].split("|")
+            checks.append(DeterministicCheck(
+                check_id=f"behavior.{'.'.join(accepted_types)}.response_type", name="response_type_is_safely_accepted",
+                passed=response.get("type") in accepted_types, expected=accepted_types, actual=response.get("type"),
+            ))
+        elif expected.startswith("response_mode:"):
+            expected_mode = expected.split(":", 1)[1]
+            checks.append(DeterministicCheck(
+                check_id=f"behavior.{expected_mode}.response_mode", name="response_mode_matches_contract",
+                passed=response.get("mode") == expected_mode, expected=expected_mode, actual=response.get("mode"),
+            ))
         elif expected == "no_numeric_value":
             check = DeterministicCheck(
                 check_id="behavior.no_numeric_value", name="does_not_invent_numeric_value",
@@ -158,6 +170,18 @@ def validate_behavior_contract(
                 check_id="behavior.evidence_present", name="documentary_evidence_is_present",
                 passed=bool(response.get("evidence")), expected="at least one evidence item", actual=len(response.get("evidence", [])),
             ))
+        elif expected == "official_source_or_verified_refusal":
+            sources = response.get("sources")
+            source_status = response.get("source_status")
+            check = DeterministicCheck(
+                check_id="behavior.general_sources", name="general_answer_has_official_source_or_verified_refusal",
+                passed=bool(sources) or source_status == "official_source_required",
+                expected="official sources or official_source_required refusal",
+                actual={"source_count": len(sources) if isinstance(sources, list) else 0, "source_status": source_status},
+            )
+            checks.append(check)
+            if check.passed is False:
+                failure_categories.append(FailureCategory.INSUFFICIENT_EVIDENCE)
         elif expected.startswith("message_contains:"):
             fragment = expected.split(":", 1)[1].lower()
             checks.append(DeterministicCheck(

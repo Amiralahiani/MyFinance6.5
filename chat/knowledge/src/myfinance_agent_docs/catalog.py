@@ -11,6 +11,7 @@ from myfinance_contracts import SourceReference
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 REPORTS_ROOT = PROJECT_ROOT / "data" / "raw" / "official-reports" / "etat financier"
 METRICS_CATALOG_PATH = PROJECT_ROOT / "data" / "reference" / "financial_metrics.json"
+DOCUMENTARY_GLOSSARY_PATH = PROJECT_ROOT / "data" / "reference" / "documentary_glossary.json"
 
 _BANKS: dict[str, tuple[str, tuple[str, ...]]] = {
     "amen_bank": ("Amen Bank", ("amen bank", "amen")),
@@ -46,6 +47,12 @@ def assessment_metrics() -> dict[str, tuple[str, ...]]:
         if metric["lifecycle_status"] == "approved_for_design"
         and metric["metric_type"] == "reported"
     }
+
+
+def documentary_glossary() -> list[dict[str, object]]:
+    """Load user-language concepts mapped to official-report terminology."""
+    payload = json.loads(DOCUMENTARY_GLOSSARY_PATH.read_text(encoding="utf-8"))
+    return list(payload["concepts"])
 
 
 def _report_year(path: Path) -> int | None:

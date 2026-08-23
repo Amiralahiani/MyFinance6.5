@@ -18,4 +18,8 @@ sys.path[:0] = [
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("myfinance_testing_api.main:app", host="127.0.0.1", port=int(os.environ.get("TESTING_API_PORT", "8001")))
+    uvicorn.run(
+        "myfinance_testing_api.main:app",
+        host=os.environ.get("TESTING_API_HOST", "127.0.0.1"),
+        port=int(os.environ.get("TESTING_API_PORT", "8001")),
+    )

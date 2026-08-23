@@ -99,11 +99,11 @@ def test_grounding_detects_a_mismatched_reporting_year() -> None:
 def test_grounding_reports_missing_facts_without_fabricating_evidence() -> None:
     result = ground_financial_answer(
         _case(
-            test_id="TEST-GROUNDING-ZITOUNA-NET-INCOME-2021",
-            input="Quel est le résultat net de Zitouna en 2021 ?",
+            test_id="TEST-GROUNDING-ZITOUNA-CASH-2021",
+            input="Quel est le montant de caisse de Zitouna en 2021 ?",
             bank_id="zitouna",
             reporting_year=2021,
-            metric_id="net_income",
+            metric_id="cash_and_central_bank",
         ),
         _execution({"type": "numeric", "value": "123"}),
     )

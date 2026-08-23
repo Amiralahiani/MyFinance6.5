@@ -95,3 +95,30 @@ def test_api_prototype_reports_an_http_failure_without_hiding_it(tmp_path) -> No
 
     assert report.verdict is models.Verdict.FAIL
     assert report.errors == ["HTTP 503"]
+
+
+def test_api_executor_retries_one_transient_transport_failure() -> None:
+    attempts = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal attempts
+        attempts += 1
+        if attempts == 1:
+            raise httpx.ReadTimeout("temporary delay", request=request)
+        return httpx.Response(200, json={"type": "clarification", "message": "Recovered."})
+
+    action = models.PlannedAction(
+        action_id="ACTION-RETRY-001",
+        objective_id="OBJ-API-001",
+        kind=models.ActionKind.SEND_MESSAGE,
+        channel=models.Channel.API,
+        rationale="Confirm that one transient transport failure is retried.",
+        question="Please clarify the metric.",
+    )
+    client = httpx.Client(transport=httpx.MockTransport(handler), base_url="http://target")
+    result = ApiExecutor("http://target", client=client, max_retries=1).execute(action)
+
+    assert attempts == 2
+    assert result.http_status == 200
+    assert result.response == {"type": "clarification", "message": "Recovered."}
+    assert result.errors == []

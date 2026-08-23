@@ -1,7 +1,7 @@
 {
   "validation_engine": "deterministic-v2",
-  "input_fact_count": 6,
-  "auto_validated_fact_count": 6,
+  "input_fact_count": 7,
+  "auto_validated_fact_count": 7,
   "rejected_fact_count": 0,
   "report_level_checks": {
     "balance_equation": {
@@ -54,6 +54,26 @@
     {
       "fact_id": "zitouna-2021-362f934deb5c05f9:total_equity",
       "metric_id": "total_equity",
+      "page_number": 2,
+      "status": "auto_validated",
+      "checks": {
+        "unique_metric_per_document": true,
+        "metric_is_in_common_catalog": true,
+        "section_matches_metric": true,
+        "source_document_present": true,
+        "document_identity_matches": true,
+        "source_pdf_hash_matches": true,
+        "source_page_present": true,
+        "excerpt_found_on_source_page": true,
+        "unit_is_supported": true,
+        "scope_is_individual": true,
+        "value_is_numeric": true
+      },
+      "reasons": []
+    },
+    {
+      "fact_id": "zitouna-2021-362f934deb5c05f9:net_income",
+      "metric_id": "net_income",
       "page_number": 2,
       "status": "auto_validated",
       "checks": {

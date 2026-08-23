@@ -24,11 +24,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run the MyFinance orchestrator API.")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", default=int(os.environ.get("CHAT_API_PORT", "8000")), type=int)
+    parser.add_argument("--reload", action="store_true", help="Reload the API when source files change (development only).")
     args = parser.parse_args()
 
     import uvicorn
 
-    uvicorn.run("myfinance_orchestrator.main:app", host=args.host, port=args.port)
+    uvicorn.run(
+        "myfinance_orchestrator.main:app",
+        host=args.host,
+        port=args.port,
+        reload=args.reload,
+        reload_dirs=[str(ROOT / "chat"), str(ROOT / "shared"), str(ROOT / "data")] if args.reload else None,
+    )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,186 @@
+name: myfinance
+
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.18.2
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${QDRANT_HTTP_PORT:-6333}:6333"
+      - "127.0.0.1:${QDRANT_GRPC_PORT:-6334}:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  # Optional local embeddings provider. Start it with:
+  # docker compose --profile local-embeddings up -d ollama
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["local-embeddings"]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  chat-api:
+    build:
+      context: .
+      dockerfile: docker/python-service.Dockerfile
+    command: ["uv", "run", "--no-sync", "python", "chat/scripts/run_orchestrator.py", "--host", "0.0.0.0"]
+    environment:
+      CHAT_API_PORT: "8000"
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      MYFINANCE_LLM_PROVIDER: ${MYFINANCE_LLM_PROVIDER:-groq}
+      MYFINANCE_USE_LLM: ${MYFINANCE_USE_LLM:-0}
+      MYFINANCE_REQUIRE_GENERAL_SOURCES: ${MYFINANCE_REQUIRE_GENERAL_SOURCES:-1}
+      MYFINANCE_DEPLOYMENT_MODE: ${MYFINANCE_DEPLOYMENT_MODE:-local}
+      MYFINANCE_CORS_ORIGINS: ${MYFINANCE_CORS_ORIGINS:-}
+      MYFINANCE_ALLOWED_HOSTS: ${MYFINANCE_ALLOWED_HOSTS:-}
+      MYFINANCE_RATE_LIMIT_PER_MINUTE: ${MYFINANCE_RATE_LIMIT_PER_MINUTE:-0}
+      MYFINANCE_OLLAMA_URL: ${MYFINANCE_OLLAMA_URL:-http://ollama:11434/api/generate}
+      MYFINANCE_VECTOR_ENABLED: ${MYFINANCE_VECTOR_ENABLED:-1}
+      MYFINANCE_QDRANT_URL: http://qdrant:6333
+      MYFINANCE_QDRANT_COLLECTION: ${MYFINANCE_QDRANT_COLLECTION:-myfinance_evidence}
+      # Container-to-container address. Keep the host-facing localhost value
+      # from .env for non-Docker runs; override this only when Docker itself
+      # must use a different embeddings provider.
+      MYFINANCE_EMBEDDINGS_URL: ${MYFINANCE_DOCKER_EMBEDDINGS_URL:-http://ollama:11434/api/embed}
+      MYFINANCE_EMBEDDING_MODEL: ${MYFINANCE_EMBEDDING_MODEL:-nomic-embed-text}
+    depends_on:
+      - qdrant
+    ports:
+      - "127.0.0.1:${CHAT_API_PORT:-8000}:8000"
+    volumes:
+      - ./data/raw:/app/data/raw:ro
+      - ./data/normalized:/app/data/normalized:ro
+      - ./data/reference:/app/data/reference:ro
+      - ./data/market-snapshots:/app/data/market-snapshots:ro
+      - ./data/market-collection-runs:/app/data/market-collection-runs:ro
+
+  chat-web:
+    build:
+      context: .
+      dockerfile: docker/chat-web.Dockerfile
+      args:
+        VITE_API_URL: ${VITE_CHAT_API_URL:-http://localhost:8000}
+    depends_on:
+      - chat-api
+    ports:
+      - "127.0.0.1:${CHAT_WEB_PORT:-3000}:80"
+
+  # A local noVNC display for the headed Playwright browser.  It is exposed
+  # only on the developer machine so a visual test can be watched live.
+  testing-viewer:
+    build:
+      context: .
+      dockerfile: docker/playwright-viewer.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${PLAYWRIGHT_VIEWER_PORT:-6080}:6080"
+
+  testing-api:
+    build:
+      context: .
+      dockerfile: docker/python-service.Dockerfile
+    command:
+      ["uv", "run", "--no-sync", "python", "autotest/scripts/run_testing_api.py"]
+    environment:
+      TESTING_API_HOST: 0.0.0.0
+      TESTING_API_PORT: "8001"
+      CHAT_API_URL: http://chat-api:8000
+      # Inside Docker, localhost is the Testing container itself. The cross-channel
+      # executor must reach the Chat Web service through Docker's service network.
+      CHAT_WEB_URL: http://chat-web:80
+      MYFINANCE_QDRANT_URL: http://qdrant:6333
+      MYFINANCE_QDRANT_COLLECTION: ${MYFINANCE_QDRANT_COLLECTION:-myfinance_evidence}
+      MYFINANCE_OLLAMA_URL: http://ollama:11434
+      MYFINANCE_EMBEDDING_MODEL: ${MYFINANCE_EMBEDDING_MODEL:-nomic-embed-text}
+      MYFINANCE_PLAYWRIGHT_VISIBLE: "1"
+      MYFINANCE_PLAYWRIGHT_DISPLAY: testing-viewer:99
+      MYFINANCE_DEPLOYMENT_MODE: ${MYFINANCE_DEPLOYMENT_MODE:-local}
+      MYFINANCE_CORS_ORIGINS: ${MYFINANCE_CORS_ORIGINS:-}
+      MYFINANCE_ALLOWED_HOSTS: ${MYFINANCE_ALLOWED_HOSTS:-}
+      MYFINANCE_RATE_LIMIT_PER_MINUTE: ${MYFINANCE_RATE_LIMIT_PER_MINUTE:-0}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+    depends_on:
+      chat-api:
+        condition: service_started
+      testing-viewer:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${TESTING_API_PORT:-8001}:8001"
+    volumes:
+      - ./data/raw:/app/data/raw:ro
+      - ./data/normalized:/app/data/normalized:ro
+      - ./data/reference:/app/data/reference:ro
+      - ./data/autotest:/app/data/autotest
+      # Playwright writes its current JSON report here; the Testing dashboard
+      # reads that same report to display the real outcome.
+      - ./chat/web/test-results:/app/chat/web/test-results
+      # Development mounts keep the visual suite aligned with local Chat edits
+      # without rebuilding the Testing image after every UI or test change.
+      - ./chat/web/src:/app/chat/web/src:ro
+      - ./chat/web/tests:/app/chat/web/tests:ro
+      - ./chat/web/playwright.real.config.js:/app/chat/web/playwright.real.config.js:ro
+      - ./autotest/api:/app/autotest/api:ro
+      - ./autotest/src:/app/autotest/src:ro
+
+  testing-web:
+    build:
+      context: .
+      dockerfile: docker/testing-web.Dockerfile
+      args:
+        VITE_TESTING_API_URL: ${VITE_TESTING_API_URL:-http://localhost:8001}
+        VITE_CHAT_WEB_URL: ${VITE_CHAT_WEB_URL:-http://localhost:3000}
+        VITE_PLAYWRIGHT_VIEWER_URL: ${VITE_PLAYWRIGHT_VIEWER_URL:-http://localhost:6080/vnc.html?autoconnect=true&resize=scale}
+    depends_on:
+      - testing-api
+    ports:
+      - "127.0.0.1:${TESTING_WEB_PORT:-3001}:80"
+    # The development build is served directly so Testing UI changes do not
+    # require rebuilding this Nginx image.
+    volumes:
+      - ./autotest/web/dist:/usr/share/nginx/html:ro
+
+  # One-shot job, deliberately separate from normal startup.  It rebuilds
+  # semantic vectors from the evidence chunks without changing any source PDF.
+  vector-index:
+    build:
+      context: .
+      dockerfile: docker/python-service.Dockerfile
+    profiles: ["tools"]
+    command: ["uv", "run", "--no-sync", "python", "chat/scripts/build_vector_index.py", "--all"]
+    environment:
+      MYFINANCE_QDRANT_URL: http://qdrant:6333
+      MYFINANCE_QDRANT_COLLECTION: ${MYFINANCE_QDRANT_COLLECTION:-myfinance_evidence}
+      MYFINANCE_EMBEDDINGS_URL: ${MYFINANCE_DOCKER_EMBEDDINGS_URL:-http://ollama:11434/api/embed}
+      MYFINANCE_EMBEDDING_MODEL: ${MYFINANCE_EMBEDDING_MODEL:-nomic-embed-text}
+      # Indexing may embed thousands of chunks; let Ollama complete a slow
+      # local batch without making the interactive chat wait that long.
+      MYFINANCE_EMBEDDING_TIMEOUT_SECONDS: "120"
+    depends_on:
+      - qdrant
+    volumes:
+      - ./data/raw:/app/data/raw:ro
+      - ./data/normalized:/app/data/normalized:ro
+      - ./data/reference:/app/data/reference:ro
+
+  # Optional long-running job. It reads the official public Market Watch page
+  # every 30 minutes and stores dated immutable snapshots plus run health.
+  market-collector:
+    build:
+      context: .
+      dockerfile: docker/python-service.Dockerfile
+    profiles: ["market-collector"]
+    restart: unless-stopped
+    command:
+      ["uv", "run", "--no-sync", "python", "chat/scripts/collect_market_snapshots.py", "--interval-minutes", "30"]
+    environment:
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ./data/reference:/app/data/reference:ro
+      - ./data/market-snapshots:/app/data/market-snapshots
+      - ./data/market-collection-runs:/app/data/market-collection-runs
+
+volumes:
+  qdrant_data:
+  ollama_data:

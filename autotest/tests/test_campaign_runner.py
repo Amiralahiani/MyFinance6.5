@@ -38,7 +38,11 @@ def _case(origin: str, bank_id: str, year: int, metric_id: str) -> models.TestCa
     )
     return models.TestCase(
         test_id=f"TEST-{origin}", title=origin, category=models.TestCategory.FINANCIAL_FACT,
-        channels=[models.Channel.API], input=("Quel est le résultat net de Banque Zitouna en 2021 ?" if bank_id == "zitouna" else "Quel est le PNB de BIAT en 2025 ?"),
+        channels=[models.Channel.API], input=(
+            "Quel est le montant de caisse de Banque Zitouna en 2021 ?"
+            if metric_id == "cash_and_central_bank"
+            else "Quel est le PNB de BIAT en 2025 ?"
+        ),
         objective=objective, bank_id=bank_id, reporting_year=year, metric_id=metric_id,
         expected_properties=["source"], failure_criteria=["unsupported_value"], origin=origin,
     )
@@ -50,7 +54,7 @@ def test_campaign_runner_passes_a_fact_and_an_expected_absence(tmp_path) -> None
         missing_fact_scenario_count=1, coverage=[],
         scenarios=[
             _case("catalog_auto_validated_fact", "biat", 2025, "net_banking_income"),
-            _case("catalog_missing_auto_validated_fact", "zitouna", 2021, "net_income"),
+            _case("catalog_missing_auto_validated_fact", "zitouna", 2021, "cash_and_central_bank"),
         ],
     )
     report = run_scenario_batch(library, api_executor=_Api())
@@ -62,6 +66,25 @@ def test_campaign_runner_passes_a_fact_and_an_expected_absence(tmp_path) -> None
     audit_markdown = next(path for path in paths if path.name == "audit.md").read_text(encoding="utf-8")
     assert "## Quick decision" in summary_markdown
     assert "## TEST-catalog_auto_validated_fact" in audit_markdown
+    assert "AI quality scores: unavailable" not in audit_markdown
+
+
+def test_report_marks_fallback_scores_as_unavailable(tmp_path) -> None:
+    library = ScenarioLibrary(
+        report_count=1, auto_validated_fact_scenario_count=1, cross_channel_scenario_count=0,
+        missing_fact_scenario_count=0, coverage=[],
+        scenarios=[_case("catalog_auto_validated_fact", "biat", 2025, "net_banking_income")],
+    )
+    report = run_scenario_batch(library, api_executor=_Api())
+    report.tests[0].rationale = "Qualitative evaluation unavailable; deterministic verdict retained."
+
+    paths = write_campaign_report(report, tmp_path)
+    audit_markdown = next(path for path in paths if path.name == "audit.md").read_text(encoding="utf-8")
+    audit_html = next(path for path in paths if path.name == "audit.html").read_text(encoding="utf-8")
+
+    assert "AI quality scores: unavailable" in audit_markdown
+    assert "AI quality scores are unavailable" in audit_html
+    assert "<b>5</b><span>Relevance</span>" not in audit_html
 
 
 def test_runner_publishes_the_chat_response_before_quality_evaluation() -> None:
@@ -80,6 +103,28 @@ def test_runner_publishes_the_chat_response_before_quality_evaluation() -> None:
 
     assert executions == [(1, 1, "TEST-catalog_auto_validated_fact")]
     assert len(report.tests) == 1
+
+
+def test_runner_stops_before_starting_the_next_scenario() -> None:
+    library = ScenarioLibrary(
+        report_count=2, auto_validated_fact_scenario_count=2, cross_channel_scenario_count=0,
+        missing_fact_scenario_count=0, coverage=[],
+        scenarios=[
+            _case("catalog_auto_validated_fact", "biat", 2025, "net_banking_income"),
+            _case("catalog_auto_validated_fact_second", "biat", 2025, "net_banking_income"),
+        ],
+    )
+    completed: list[str] = []
+
+    report = run_scenario_batch(
+        library,
+        api_executor=_Api(),
+        on_scenario_complete=lambda _, __, scenario, ___, ____: completed.append(scenario.test_id),
+        should_stop=lambda: len(completed) >= 1,
+    )
+
+    assert [item.test_id for item in report.tests] == ["TEST-catalog_auto_validated_fact"]
+    assert completed == ["TEST-catalog_auto_validated_fact"]
 
 
 def test_exploration_contract_fails_when_chat_returns_a_number_instead_of_clarifying() -> None:

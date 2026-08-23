@@ -44,9 +44,9 @@ def test_every_catalogued_report_has_a_successful_automatic_validation_run() -> 
         assert all(fact["status"] == "auto_validated" for fact in report["facts"])
         missing.append((source.bank_id, source.year, expected_metrics - found))
 
-    # The 2021 Zitouna PDF merges the two result columns into a single stream of
-    # isolated digits. The first annual value cannot be selected safely, so the
-    # gate must leave it absent rather than manufacture a number.
+    # Banque Zitouna 2021 has an explicitly scoped source profile: its clean
+    # equity-statement line is used because the income-statement OCR spaces every
+    # digit. The PDF page, unit and individual scope still pass validation.
     assert missing == [
         ("amen_bank", 2021, set()),
         ("amen_bank", 2022, set()),
@@ -68,7 +68,7 @@ def test_every_catalogued_report_has_a_successful_automatic_validation_run() -> 
         ("bt", 2023, set()),
         ("bt", 2024, set()),
         ("bt", 2025, set()),
-        ("zitouna", 2021, {"net_income"}),
+        ("zitouna", 2021, set()),
         ("zitouna", 2022, set()),
         ("zitouna", 2023, set()),
         ("zitouna", 2024, set()),

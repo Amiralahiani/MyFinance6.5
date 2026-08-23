@@ -1,0 +1,40 @@
+{
+  "registry_version": "1.0",
+  "market": "Tunisia listed securities",
+  "policy": {
+    "require_dated_observation": true,
+    "require_source_url": true,
+    "require_retrieval_timestamp": true,
+    "allow_market_answer_only_with_verified_observation": true
+  },
+  "sources": [
+    {
+      "source_id": "tunis_stock_exchange_official",
+      "name": "Bourse des Valeurs Mobilières de Tunis",
+      "authority_kind": "exchange",
+      "base_url": "https://tunis-stockexchange.com",
+      "data_kinds": ["price", "market_summary", "volume", "disclosure", "corporate_action"],
+      "update_frequency": "exchange trading sessions",
+      "activation_status": "active",
+      "activation_requirements": [
+        "Use the official public Market Watch and its public issuer reference only.",
+        "Capture the displayed quote or market-summary field and its retrieval timestamp for every answer.",
+        "Persist every scheduled quote collection as an immutable source-labelled snapshot.",
+        "State the Market Watch delay; historical answers prefer stored snapshots and may use the separate official history reader to bootstrap coverage."
+      ]
+    },
+    {
+      "source_id": "cmf_official",
+      "name": "Conseil du Marché Financier",
+      "authority_kind": "regulator",
+      "base_url": "https://www.cmf.tn",
+      "data_kinds": ["disclosure", "corporate_action"],
+      "update_frequency": "as published",
+      "activation_status": "candidate",
+      "activation_requirements": [
+        "Define eligible disclosure categories and publication timestamps.",
+        "Validate issuer and instrument linkage before any user-facing answer."
+      ]
+    }
+  ]
+}

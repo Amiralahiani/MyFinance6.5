@@ -434,7 +434,11 @@
       "source_section": "balance_sheet",
       "query_aliases": [
         "capital social",
-        "capital"
+        "capital",
+        "nombre d'actions",
+        "nombre d’actions",
+        "actions en circulation",
+        "composition du capital"
       ],
       "accepted_statement_labels": [
         "capital"
@@ -787,6 +791,14 @@
         "résultat de l'exercice",
         "résultat net des modifications comptables"
       ],
+      "bank_year_source_profiles": {
+        "zitouna:2021": {
+          "source_section": "balance_sheet",
+          "accepted_statement_labels": [
+            "résultat de l'exercice"
+          ]
+        }
+      },
       "unit": {
         "currency": "TND",
         "unit_scale": "thousand"
@@ -1381,6 +1393,39 @@
       "accepted_statement_labels": [
         "dépôts à vue"
       ],
+      "bank_source_profiles": {
+        "amen_bank": {
+          "source_section": "notes",
+          "source_note_family": "Note 2-3",
+          "accepted_statement_labels": [
+            "dépôts à vue"
+          ]
+        },
+        "attijari_bank": {
+          "source_section": "notes",
+          "source_note_family": "2.3",
+          "accepted_statement_labels": [
+            "dépôts à vue"
+          ]
+        },
+        "bt": {
+          "source_section": "notes",
+          "source_note_family": "Note 3.2",
+          "accepted_statement_labels": [
+            "comptes à vue"
+          ]
+        },
+        "zitouna": {
+          "source_section": "notes",
+          "source_note_family": [
+            "5-2-2",
+            "6-2-2"
+          ],
+          "accepted_statement_labels": [
+            "comptes à vue"
+          ]
+        }
+      },
       "unit": {
         "currency": "TND",
         "unit_scale": "thousand"

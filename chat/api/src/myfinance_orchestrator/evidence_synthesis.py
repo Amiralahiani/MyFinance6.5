@@ -191,6 +191,36 @@ def _source_reading(question: str, evidence: list[EvidenceChunk]) -> str:
             f"[p. {page}]"
         )
 
+    investment_requested = any(term in question_text for term in (
+        "investment portfolio", "investment securities", "portefeuille d'investissement", "portefeuille investissement",
+    ))
+    commercial_requested = any(term in question_text for term in (
+        "commercial portfolio", "commercial securities", "trading portfolio", "portefeuille commercial",
+    ))
+    has_investment_portfolio = "portefeuille-titres d'investissement" in text or "portefeuille titres d'investissement" in text
+    has_commercial_portfolio = "portefeuille-titres commercial" in text or "portefeuille titres commercial" in text
+
+    if has_investment_portfolio and (investment_requested or not has_commercial_portfolio):
+        return (
+            f"The passage concerns {primary.bank_name}'s investment securities portfolio. It covers securities acquired to be held "
+            "to maturity and long-term holdings considered useful to the bank’s activity, which the report treats "
+            f"separately from the commercial securities portfolio. [p. {page}]"
+        )
+
+    if has_commercial_portfolio and (commercial_requested or not investment_requested):
+        if commercial_requested:
+            return (
+                f"{primary.bank_name}'s commercial securities portfolio is the portfolio you selected. The report separates it "
+                "into trading securities and placement securities, and presents their year-end composition. "
+                f"It is reported separately from the investment securities portfolio. [p. {page}]"
+            )
+        return (
+            f"In {primary.bank_name}'s report, “portfolio” is not one single balance. The passage found concerns the "
+            "commercial securities portfolio: it separates trading securities from placement securities. "
+            "This is distinct from the investment securities portfolio, so it should not be read as the bank’s "
+            f"total portfolio. [p. {page}] If you want the investment portfolio or a combined total, please specify it."
+        )
+
     if "portefeuille d'encaissement" in text or "portefeuille d'encaissement" in question_text:
         return (
             "The collection portfolio includes items received on behalf of third parties that are still "
@@ -226,12 +256,12 @@ def answer_from_evidence(question: str, evidence: list[EvidenceChunk]) -> str:
     # opt-in so either a local model or a cloud provider can be unavailable
     # without weakening the answer.
     if not USE_LLM:
-        return _extractive_answer(question, evidence)
+        return _source_reading(question, evidence)
     context = "\n\n".join(
         f"[PAGE {chunk.page_number}]\n{_shorten_for_model(chunk.text, question)}" for chunk in evidence
     )
-    prompt = f"""You are MyFinance’s documentary analyst. Produce a paraphrase
-that is strictly supported by the supplied official excerpt.
+    prompt = f"""You are MyFinance’s neutral documentary analyst. Produce a concise,
+strictly source-grounded synthesis of the supplied official excerpts.
 
 Respond only with a valid JSON object, without Markdown:
 {{"claims":[{{"summary":"short paraphrase without numbers", "evidence_quote":"an exact continuous quote of at least six words from the excerpt", "page":12}}]}}
@@ -239,7 +269,8 @@ Respond only with a valid JSON object, without Markdown:
 Mandatory rules:
 - Produce at most one or two claims.
 - `evidence_quote` must be an exact continuous copy from the excerpt on the stated page.
-- `summary` may paraphrase, but must not add any idea, figure, date, rate, assessment or external definition.
+- `summary` may paraphrase, but must not add any idea, figure, date, rate, assessment, recommendation, prediction, causal explanation or external definition.
+- Remain neutral: do not state that a situation is positive, negative, strong, weak, prudent, risky or material unless those exact terms occur in the cited quote.
 - Never cite a page absent from the supplied excerpt.
 - If the excerpt cannot support a safe paraphrase, respond exactly: {{"claims":[]}}.
 
@@ -250,4 +281,4 @@ Official excerpt:
 """
     model_response = complete(prompt, json_mode=True, max_tokens=320)
     synthesis = _validated_claim_synthesis(model_response, evidence) if model_response else ""
-    return synthesis or _extractive_answer(question, evidence)
+    return synthesis or _source_reading(question, evidence)

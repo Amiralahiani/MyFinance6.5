@@ -8,11 +8,10 @@ Tunisie et Banque Zitouna. Il ne contient aucun montant financier.
 Le catalogue v3.0 définit les sept métriques du profil commun qui sont extraites
 et validées automatiquement pour les cinq banques.
 
-La couverture mesurée est de 174 faits auto-validés sur 175 emplacements
-attendus. Le seul emplacement absent est le résultat net Banque Zitouna 2021 :
-le calque texte de ce PDF fusionne les deux colonnes en une suite de chiffres
-isolés, donc le premier montant annuel ne peut pas être choisi sans ambiguïté.
-Le validateur le laisse volontairement absent ; il ne crée pas de valeur estimée.
+La couverture mesurée est de 175 faits auto-validés sur 175 emplacements
+attendus. Le résultat net Banque Zitouna 2021 est validé depuis sa ligne nette
+dans le bilan (page PDF 2), car le compte de résultat de la page 4 espace chaque
+chiffre dans son calque texte tout en confirmant le même montant.
 
 Une métrique ayant `user_intent_status: supported` peut être comprise dans une
 question. Aucune valeur ne peut être renvoyée avant la création puis la validation

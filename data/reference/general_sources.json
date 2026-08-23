@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "sources": [
+    {
+      "source_id": "tunis_stock_exchange_tunindex",
+      "title": "Bourse de Tunis — Gamme d'indices",
+      "url": "https://tunis-stockexchange.com/gamme",
+      "match_terms": ["tunisie", "tunisia", "tunindex", "bourse de tunis", "tunis stock exchange"],
+      "supported_context": "The Tunis Stock Exchange identifies TUNINDEX as its benchmark index."
+    },
+    {
+      "source_id": "euronext_cac40",
+      "title": "Euronext — CAC 40 index",
+      "url": "https://live.euronext.com/en/product/indices/FR0003500008-XPAR",
+      "match_terms": ["france", "french", "paris", "cac 40", "cac40"],
+      "supported_context": "Euronext identifies CAC 40 as a flagship French national index on Euronext Paris."
+    },
+    {
+      "source_id": "sp_dow_jones_sp500",
+      "title": "S&P Dow Jones Indices — S&P 500",
+      "url": "https://www.spglobal.com/spdji/en/landing/investment-themes/us-core/",
+      "match_terms": ["united states", "united states of america", "u.s.", "america", "american", "états-unis", "etats-unis", "etats unis", "amérique", "amerique", "s&p 500", "sp500"],
+      "supported_context": "S&P Dow Jones Indices describes the S&P 500 as a leading gauge of the large-cap U.S. equity market."
+    },
+    {
+      "source_id": "ftse_russell_ftse100",
+      "title": "FTSE Russell — FTSE 100",
+      "url": "https://www.lseg.com/en/ftse-russell/indices/ftse100",
+      "match_terms": ["united kingdom", "britain", "british", "london", "royaume-uni", "royaume uni", "angleterre", "britannique", "ftse 100", "ftse100"],
+      "supported_context": "FTSE Russell describes FTSE 100 as the UK's best-known index and a widely used gauge of the UK stock market."
+    },
+    {
+      "source_id": "stoxx_dax",
+      "title": "STOXX — DAX factsheet",
+      "url": "https://www.stoxx.com/document/Indices/Factsheets/2023/December/DAX.pdf",
+      "match_terms": ["germany", "german", "frankfurt", "allemagne", "allemand", "dax"],
+      "supported_context": "The DAX factsheet identifies the German listing and eligibility criteria used for the DAX index."
+    },
+    {
+      "source_id": "nikkei_nikkei225",
+      "title": "Nikkei Indexes — Nikkei 225",
+      "url": "https://indexes.nikkei.co.jp/en/nkave/index/profile",
+      "match_terms": ["japan", "japanese", "tokyo", "japon", "japonais", "nikkei", "nikkei 225"],
+      "supported_context": "Nikkei identifies Nikkei 225 as its flagship Japanese equity index and describes its 225 Tokyo Stock Exchange constituents."
+    }
+  ]
+}

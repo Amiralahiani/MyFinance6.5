@@ -54,6 +54,24 @@
     "validation_status": "auto_validated"
   },
   {
+    "fact_id": "zitouna-2021-362f934deb5c05f9:net_income",
+    "metric_id": "net_income",
+    "raw_label": "Résultat de l'exercice",
+    "value": "60117",
+    "currency": "TND",
+    "unit_scale": "thousand",
+    "reporting_year": 2021,
+    "period_kind": "annual",
+    "scope": "individual",
+    "document_id": "zitouna-2021-362f934deb5c05f9",
+    "source_path": "data/raw/official-reports/etat financier/zitouna/banque_zitouna_efd311221.pdf",
+    "source_sha256": "362f934deb5c05f944eca205de9001312fc259747e785794dc167426637ac1b6",
+    "page_number": 2,
+    "section": "balance_sheet",
+    "source_excerpt": "Résultat de l'exercice  60 117  51 411",
+    "validation_status": "auto_validated"
+  },
+  {
     "fact_id": "zitouna-2021-362f934deb5c05f9:customer_loans_net",
     "metric_id": "customer_loans_net",
     "raw_label": "Créances sur la clientèle  5-1-3",

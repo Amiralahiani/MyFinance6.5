@@ -108,6 +108,7 @@ def run_scenario_batch(
     planned_actions: dict[str, PlannedAction] | None = None,
     on_execution_complete: Callable[[int, int, TestCase, dict], None] | None = None,
     on_scenario_complete: Callable[[int, int, TestCase, EvaluationResult, dict], None] | None = None,
+    should_stop: Callable[[], bool] | None = None,
 ) -> FinalReport:
     """Execute an intentionally bounded batch; the caller owns server lifecycle."""
 
@@ -123,6 +124,11 @@ def run_scenario_batch(
     regressions = []
     groq_call_count = 0
     for index, test_case in enumerate(selected, start=1):
+        # A campaign can be stopped from the Testing UI. Finish no new scenario
+        # after the request has been made; any scenario already in flight is left
+        # to complete so that its partial trace remains coherent.
+        if should_stop is not None and should_stop():
+            break
         api_action = (planned_actions or {}).get(test_case.test_id) or _api_action(test_case, Channel.API)
         api_execution = api_executor.execute(api_action) if Channel.API in test_case.channels else None
         web_execution = None
@@ -313,11 +319,16 @@ def write_campaign_report(report: FinalReport, root: Path) -> tuple[Path, Path, 
         "",
     ]
     for item in report.tests:
+        qualitative_score_unavailable = item.rationale == "Qualitative evaluation unavailable; deterministic verdict retained."
         audit_lines.extend(
             [
                 f"## {item.test_id} — {item.verdict.value.upper()}",
                 f"- Category: {item.failure_category.value if item.failure_category else '—'}",
-                f"- Scores: relevance {item.relevance}/5, factuality {item.factuality}/5, source fidelity {item.source_fidelity}/5, coherence {item.conversation_coherence}/5, clarity {item.clarity}/5",
+                (
+                    "- AI quality scores: unavailable; deterministic verdict, checks and evidence remain authoritative."
+                    if qualitative_score_unavailable
+                    else f"- AI quality scores: relevance {item.relevance}/5, factuality {item.factuality}/5, source fidelity {item.source_fidelity}/5, coherence {item.conversation_coherence}/5, clarity {item.clarity}/5"
+                ),
                 f"- Conclusion: {item.rationale}",
             ]
         )
@@ -395,6 +406,7 @@ def write_campaign_report(report: FinalReport, root: Path) -> tuple[Path, Path, 
     score_labels = (("Relevance", "relevance"), ("Factuality", "factuality"), ("Source fidelity", "source_fidelity"), ("Coherence", "conversation_coherence"), ("Year", "year_respect"), ("Unit", "unit_respect"), ("Clarity", "clarity"), ("Format", "format_respect"))
     audit_cases: list[str] = []
     for item in report.tests:
+        qualitative_score_unavailable = item.rationale == "Qualitative evaluation unavailable; deterministic verdict retained."
         checks = "".join(
             f'<div class="check {"pass" if check.passed else "fail"}"><span class="status">{"✓" if check.passed else "✗"}</span> <span class="check-name">{safe(check.name)}</span><br><span class="meta">Expected: {safe(check.expected)} · Actual: {safe(check.actual)}{f" · {safe(check.detail)}" if check.detail else ""}</span></div>'
             for check in item.deterministic_checks
@@ -403,9 +415,13 @@ def write_campaign_report(report: FinalReport, root: Path) -> tuple[Path, Path, 
             f'<div class="evidence"><strong>{safe(proof.source_path)} · page {safe(proof.page_number)}</strong><p>{safe(" ".join(proof.excerpt.split())[:500])}</p></div>'
             for proof in item.evidence
         ) or '<p class="empty">No source evidence is associated with this scenario.</p>'
-        scores = "".join(
-            f'<div class="score"><b>{safe(getattr(item, field))}/5</b><span>{label}</span></div>'
-            for label, field in score_labels
+        scores = (
+            '<p class="empty">AI quality scores are unavailable; deterministic verdict, checks and evidence remain authoritative.</p>'
+            if qualitative_score_unavailable
+            else "".join(
+                f'<div class="score"><b>{safe(getattr(item, field))}/5</b><span>{label}</span></div>'
+                for label, field in score_labels
+            )
         )
         category = item.failure_category.value if item.failure_category else None
         audit_cases.append(

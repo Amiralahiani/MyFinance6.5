@@ -1,0 +1,62 @@
+{
+  "glossary_version": "1.0",
+  "source_language": "fr",
+  "concepts": [
+    {
+      "concept_id": "securities_portfolios",
+      "priority": 1,
+      "aliases": {
+        "en": ["portfolio", "securities portfolio", "investment portfolio"],
+        "fr": ["portefeuille", "portefeuille titres"]
+      },
+      "search_terms": [
+        "portefeuille titres commercial",
+        "portefeuille titres investissement",
+        "titres de placement",
+        "titres d investissement"
+      ]
+    },
+    {
+      "concept_id": "commercial_securities_portfolio",
+      "priority": 10,
+      "aliases": {
+        "en": ["commercial portfolio", "commercial securities portfolio", "trading portfolio"],
+        "fr": ["portefeuille commercial", "portefeuille titres commercial"]
+      },
+      "search_terms": ["portefeuille titres commercial", "titres de transaction", "titres de placement"]
+    },
+    {
+      "concept_id": "investment_securities_portfolio",
+      "priority": 10,
+      "aliases": {
+        "en": ["investment portfolio", "investment securities portfolio"],
+        "fr": ["portefeuille d investissement", "portefeuille investissement", "portefeuille titres investissement"]
+      },
+      "search_terms": ["portefeuille titres investissement", "titres d investissement", "revenus du portefeuille titres d investissement"]
+    },
+    {
+      "concept_id": "customer_loans",
+      "aliases": {
+        "en": ["loans", "loan book", "lending", "credit portfolio"],
+        "fr": ["crédits", "creances", "créances", "encours de crédits"]
+      },
+      "search_terms": ["créances sur la clientèle", "prêts et avances à la clientèle", "crédits sur la clientèle"]
+    },
+    {
+      "concept_id": "customer_deposits",
+      "aliases": {
+        "en": ["deposits", "customer deposits", "deposit accounts"],
+        "fr": ["dépôts", "depots", "dépôts clientèle", "comptes à vue"]
+      },
+      "search_terms": ["dépôts et avoirs de la clientèle", "dépôts à vue", "comptes à vue"]
+    },
+    {
+      "concept_id": "credit_risk",
+      "aliases": {
+        "en": ["credit risk", "loan risk", "default risk"],
+        "fr": ["risque de crédit", "risque credit", "créances classées"]
+      },
+      "search_terms": ["risque de crédit", "créances classées", "provisions collectives"]
+    }
+  ]
+}

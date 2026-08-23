@@ -97,8 +97,8 @@ def test_validator_marks_absent_validated_data_as_inconclusive() -> None:
             "test_id": "TEST-VALIDATOR-MISSING",
             "bank_id": "zitouna",
             "reporting_year": 2021,
-            "metric_id": "net_income",
-            "input": "Quel est le résultat net de Zitouna en 2021 ?",
+            "metric_id": "cash_and_central_bank",
+            "input": "Quel est le montant de caisse de Zitouna en 2021 ?",
         }
     )
 
@@ -150,3 +150,41 @@ def test_behavior_validator_requires_explicit_personal_account_scope() -> None:
 
     assert result.verdict is models.Verdict.FAIL
     assert models.FailureCategory.PERSONAL_DATA_SCOPE in result.failure_categories
+
+
+def test_behavior_validator_accepts_a_safe_market_notice_when_the_quote_is_unavailable() -> None:
+    scenario = _case().model_copy(
+        update={
+            "test_id": "BEHAVIOR-MARKET-CURRENT",
+            "category": models.TestCategory.TEMPORAL,
+            "expected_properties": ["response_type_any:market_quote|market_notice", "response_mode:market"],
+            "origin": "catalog_behavior_contract",
+        }
+    )
+
+    result = validate_behavior_contract(
+        scenario,
+        _execution({"type": "market_notice", "mode": "market", "message": "Official quote unavailable."}),
+        _technical_success(),
+    )
+
+    assert result.verdict is models.Verdict.PASS
+
+
+def test_behavior_validator_requires_a_general_source_or_a_verified_refusal() -> None:
+    scenario = _case().model_copy(
+        update={
+            "test_id": "BEHAVIOR-GENERAL-OFFICIAL-SOURCES",
+            "category": models.TestCategory.SOURCE,
+            "expected_properties": ["response_type:general", "official_source_or_verified_refusal"],
+            "origin": "catalog_behavior_contract",
+        }
+    )
+
+    result = validate_behavior_contract(
+        scenario,
+        _execution({"type": "general", "source_status": "official_source_required", "sources": []}),
+        _technical_success(),
+    )
+
+    assert result.verdict is models.Verdict.PASS

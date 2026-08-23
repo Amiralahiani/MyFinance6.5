@@ -53,3 +53,33 @@ uv run pytest autotest/tests -q
 ```
 
 Le contrôle visuel Playwright reste séparé d’une campagne Groq : il teste l’interface Chat, pas la qualité d’un scénario financier.
+
+## Tableau de bord de validation
+
+L’interface sur `http://127.0.0.1:3001` présente deux campagnes distinctes :
+
+- **Validation de version** : le catalogue complet des valeurs PDF et les
+  contrôles API ↔ Web, sans Groq.
+- **Exploration IA** : des questions inédites générées par Groq, séparées des
+  contrôles reproductibles.
+
+Elle affiche aussi un état en lecture seule de l’API Chat, de Qdrant, du modèle
+`nomic-embed-text` et de la fraîcheur de la dernière collecte Market Watch.
+Un composant dégradé n’est pas masqué : le tableau de bord indique le repli sûr
+attendu (recherche lexicale ou avis Market Watch) plutôt qu’un faux « prêt ».
+
+Quand **Start check** lance Playwright dans Docker, un second onglet ouvre le
+navigateur de test en direct via `http://127.0.0.1:6080`. Les six parcours sont
+joués séquentiellement ; le tableau de bord conserve en parallèle le journal et
+le résultat final.
+
+Après une modification de cette interface en Docker :
+
+```powershell
+docker compose up -d --build testing-api testing-web
+```
+
+Le détail du flux de campagnes, des sources de vérité et des responsabilités de
+code est documenté dans [../docs/developer-guide.md](../docs/developer-guide.md).
+Les contraintes d’exposition et les contrôles runtime sont dans
+[../docs/security-and-deployment.md](../docs/security-and-deployment.md).

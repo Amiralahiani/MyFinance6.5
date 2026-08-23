@@ -16,6 +16,7 @@ web-build/
 .env
 .env.local
 data/raw/private/
+data/market-snapshots/
 
 # Generated QA evidence
 qa/runs/
@@ -24,3 +25,4 @@ data/autotest/
 test-results/
 playwright-report/
 *.tmp
+data/market-collection-runs/

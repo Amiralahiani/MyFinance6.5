@@ -11,7 +11,11 @@ from typing import Any
 from myfinance_contracts import FinancialFact
 from pydantic import ValidationError
 
-from myfinance_agent_docs.catalog import PROJECT_ROOT, load_common_extraction_profile
+from myfinance_agent_docs.catalog import (
+    PROJECT_ROOT,
+    load_common_extraction_profile,
+    load_metric_catalog,
+)
 
 AUTO_VALIDATED_ROOT = PROJECT_ROOT / "data" / "normalized" / "facts" / "auto_validated"
 VALIDATION_RUNS_ROOT = PROJECT_ROOT / "data" / "validation-runs"
@@ -25,6 +29,23 @@ _METRIC_SECTIONS = {
     "net_income": "income_statement",
     "net_banking_income": "income_statement",
 }
+
+
+def _expected_section(metric_id: str, bank_id: str, year: int) -> str | None:
+    """Resolve the explicitly versioned statement exception for one report."""
+    definition = next(
+        (item for item in load_metric_catalog() if item.get("metric_id") == metric_id),
+        None,
+    )
+    if definition is None:
+        return _METRIC_SECTIONS.get(metric_id)
+    profile = definition.get("bank_year_source_profiles")
+    if isinstance(profile, dict):
+        override = profile.get(f"{bank_id}:{year}")
+        if isinstance(override, dict) and isinstance(override.get("source_section"), str):
+            return override["source_section"]
+    source_section = definition.get("source_section")
+    return source_section if isinstance(source_section, str) else _METRIC_SECTIONS.get(metric_id)
 
 
 def _normalise(value: str) -> str:
@@ -96,7 +117,7 @@ def validate_facts(payload: list[dict[str, Any]]) -> tuple[list[FinancialFact], 
         if not checks["metric_is_in_common_catalog"]:
             reasons.append("Metric is not in the approved common extraction catalog.")
 
-        expected_section = _METRIC_SECTIONS.get(fact.metric_id)
+        expected_section = _expected_section(fact.metric_id, bank_id, year)
         checks["section_matches_metric"] = expected_section is not None and fact.section == expected_section
         if not checks["section_matches_metric"]:
             reasons.append("The fact is not extracted from its expected primary financial statement.")

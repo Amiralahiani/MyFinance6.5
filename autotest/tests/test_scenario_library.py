@@ -9,11 +9,11 @@ def test_library_covers_all_reports_with_fact_and_cross_channel_scenarios() -> N
     library = build_scenario_library()
 
     assert library.report_count == 25
-    assert library.auto_validated_fact_scenario_count == 174
+    assert library.auto_validated_fact_scenario_count == 175
     assert library.cross_channel_scenario_count == 25
-    assert library.missing_fact_scenario_count == 1
-    assert library.behavior_scenario_count == 5
-    assert len(library.scenarios) == 205
+    assert library.missing_fact_scenario_count == 0
+    assert library.behavior_scenario_count == 11
+    assert len(library.scenarios) == 211
     assert all(item.cross_channel_scenario_id for item in library.coverage)
     cross_scenarios = [item for item in library.scenarios if item.category is AutotestCategory.CROSS_CHANNEL]
     assert len(cross_scenarios) == 25
@@ -23,8 +23,14 @@ def test_library_covers_all_reports_with_fact_and_cross_channel_scenarios() -> N
         "BEHAVIOR-MISSING-YEAR",
         "BEHAVIOR-UNKNOWN-METRIC",
         "BEHAVIOR-DOCUMENT",
+        "BEHAVIOR-DOCUMENT-SEMANTIC",
         "BEHAVIOR-CONTEXT",
         "BEHAVIOR-WEB-GREETING",
+        "BEHAVIOR-MARKET-CURRENT",
+        "BEHAVIOR-MARKET-HISTORICAL-GUARD",
+        "BEHAVIOR-GENERAL-OFFICIAL-SOURCES",
+        "BEHAVIOR-DOCUMENT-TO-METRIC",
+        "BEHAVIOR-DOCUMENT-TO-MARKET",
     }
 
 

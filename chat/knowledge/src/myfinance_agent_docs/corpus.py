@@ -133,6 +133,11 @@ def _load_chunks(bank_id: str, year: int) -> list[EvidenceChunk]:
     ]
 
 
+def load_evidence_chunks(bank_id: str, year: int) -> list[EvidenceChunk]:
+    """Load source-preserving chunks for deterministic or vector indexing."""
+    return _load_chunks(bank_id, year)
+
+
 def _retrieve_lexical_evidence(
     bank_id: str,
     year: int,
@@ -208,6 +213,30 @@ def _retrieve_lexical_evidence(
     return primary + context
 
 
+def merge_hybrid_evidence(
+    lexical: list[EvidenceChunk], vector: list[EvidenceChunk], limit: int
+) -> list[EvidenceChunk]:
+    """Fuse lexical and semantic candidates without losing exact-match priority.
+
+    Lexical matches receive twice the rank weight of vector-only matches.  This
+    keeps note titles and explicit financial terms authoritative, while still
+    allowing a strong semantic result to replace a weak lexical tail.
+    """
+    scores: dict[str, float] = {}
+    chunks: dict[str, EvidenceChunk] = {}
+    order: dict[str, int] = {}
+    for rank, chunk in enumerate(lexical):
+        scores[chunk.chunk_id] = scores.get(chunk.chunk_id, 0.0) + 2.0 / (rank + 1)
+        chunks[chunk.chunk_id] = chunk
+        order.setdefault(chunk.chunk_id, rank)
+    for rank, chunk in enumerate(vector):
+        scores[chunk.chunk_id] = scores.get(chunk.chunk_id, 0.0) + 1.0 / (rank + 1)
+        chunks[chunk.chunk_id] = chunk
+        order.setdefault(chunk.chunk_id, len(lexical) + rank)
+    ranked_ids = sorted(scores, key=lambda chunk_id: (-scores[chunk_id], order[chunk_id]))
+    return [chunks[chunk_id] for chunk_id in ranked_ids[:limit]]
+
+
 def retrieve_evidence(
     bank_id: str,
     year: int,
@@ -216,8 +245,8 @@ def retrieve_evidence(
     include_related: bool = False,
     include_neighbour_pages: bool = False,
 ) -> list[EvidenceChunk]:
-    """Retrieve lexical evidence with explicit bank, year and page provenance."""
-    return _retrieve_lexical_evidence(
+    """Retrieve hybrid evidence, safely falling back to deterministic lexical search."""
+    lexical = _retrieve_lexical_evidence(
         bank_id,
         year,
         question,
@@ -225,6 +254,19 @@ def retrieve_evidence(
         include_related=include_related,
         include_neighbour_pages=include_neighbour_pages,
     )
+    try:
+        from myfinance_agent_docs.vector_store import (
+            VectorStoreUnavailable,
+            retrieve_vector_evidence,
+            vector_retrieval_enabled,
+        )
+
+        if not vector_retrieval_enabled():
+            return lexical
+        vector = retrieve_vector_evidence(bank_id, year, question, limit=max(limit, 3))
+    except VectorStoreUnavailable:
+        return lexical
+    return merge_hybrid_evidence(lexical, vector, limit)
 
 
 def retrieve_entity_evidence(bank_id: str, year: int, entity: str, limit: int = 3) -> list[EvidenceChunk]:
