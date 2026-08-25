@@ -1114,6 +1114,26 @@ def test_catalog_metric_outside_the_auto_validated_core_returns_an_exact_source_
     assert " ".join(response.json()["source_excerpt"].split()) == "Résultat d'exploitation 660 313 669 616"
 
 
+def test_financing_cash_flow_uses_the_primary_statement_row_not_a_documentary_cash_note() -> None:
+    response = client.post(
+        "/api/conversation/answer",
+        json={
+            "message": "c'est quoi le Flux de trésorerie net provenant des activités de financement de BIAT in 2023",
+            "context": {},
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["type"] == "source_value"
+    assert response.json()["metric_id"] == "financing_cash_flow"
+    assert response.json()["value"] == "-191045"
+    assert response.json()["unit_scale"] == "thousand"
+    assert response.json()["page_number"] == 5
+    assert " ".join(response.json()["source_excerpt"].split()) == (
+        "Flux de trésorerie net provenant des activités de financement (191 045) 52 504"
+    )
+
+
 def test_demand_deposits_use_the_declared_note_row_when_pdf_sections_are_unclassified() -> None:
     response = client.post(
         "/api/conversation/answer",

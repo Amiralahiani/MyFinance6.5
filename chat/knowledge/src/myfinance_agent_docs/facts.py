@@ -19,7 +19,9 @@ from myfinance_agent_docs.catalog import (
 )
 from myfinance_agent_docs.ingestion import ingest_report
 
-_AMOUNT = re.compile(r"(?<![\d.,-])-?(?:\d{1,3}(?:[ \t\u00a0]\d{3})+|\d{4,})(?![\d.,])")
+_AMOUNT = re.compile(
+    r"(?<![\d.,-])(?:-\s*)?(?:\(\s*)?(?:\d{1,3}(?:[ \t\u00a0]\d{3})+|\d{4,})(?:\s*\))?(?![\d.,])"
+)
 
 # These are statement sections, not bank-specific extraction rules.  The accepted
 # labels live in data/reference/financial_metrics.json so that business wording is
@@ -250,7 +252,9 @@ def _unit_from_text(text: str) -> tuple[str, str] | None:
 
 
 def _amount(raw: str) -> Decimal:
-    return Decimal(re.sub(r"\s+", "", raw))
+    compact = re.sub(r"[()\s]+", "", raw)
+    value = Decimal(compact)
+    return -abs(value) if raw.lstrip().startswith("(") else value
 
 
 def _compact(value: str) -> str:

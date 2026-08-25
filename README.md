@@ -187,6 +187,7 @@ Start here depending on your role:
 | Understand the product and answer types | [User guide](docs/user-guide.md) |
 | Present the project in a meeting or demo | [Demo guide](docs/demo.md) |
 | Understand the complete system | [Architecture](docs/architecture.md) |
+| Understand the documentary RAG pipeline | [RAG pipeline](docs/rag-pipeline.md) |
 | Run, maintain or troubleshoot Docker | [Operations guide](docs/operations-guide.md) |
 | Extend the code safely | [Developer guide](docs/developer-guide.md) |
 | Add a bank report, metric or vector index | [Data coverage and onboarding](docs/data-coverage.md) |

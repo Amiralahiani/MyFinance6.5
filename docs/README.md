@@ -9,7 +9,7 @@ The documentation is organised as reading routes, not as a flat list of technica
 | If you are… | Start here | Then read |
 | --- | --- | --- |
 | Discovering the product | [Project README](../README.md) | [User guide](user-guide.md) and [Demo guide](demo.md) |
-| Reviewing trust and evidence | [Architecture](architecture.md) | [Data model](data-model.md) and [Data coverage](data-coverage.md) |
+| Reviewing trust and evidence | [Architecture](architecture.md) | [RAG pipeline](rag-pipeline.md), [Data model](data-model.md) and [Data coverage](data-coverage.md) |
 | Running the local stack | [Operations guide](operations-guide.md) | [Security and deployment](security-and-deployment.md) |
 | Extending the project | [Developer guide](developer-guide.md) | [Contribution guide](../CONTRIBUTING.md) |
 | Validating a release | [Agentic Testing README](../autotest/README.md) | [Demo guide](demo.md) and [Operations guide](operations-guide.md) |
@@ -29,6 +29,7 @@ The documentation is organised as reading routes, not as a flat list of technica
 | Document | Purpose |
 | --- | --- |
 | [Architecture](architecture.md) | System boundaries, answer paths, RAG design, testing workflow and failure behaviour |
+| [RAG pipeline](rag-pipeline.md) | Step-by-step documentary retrieval, Qdrant indexing, provenance filters and safe fallback behaviour |
 | [Data model](data-model.md) | PDF, corpus, evidence chunk, financial fact, market snapshot and campaign artefacts |
 | [Data coverage](data-coverage.md) | Current coverage and the controlled procedure for adding reports or metrics |
 

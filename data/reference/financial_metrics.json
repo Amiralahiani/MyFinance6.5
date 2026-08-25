@@ -2207,10 +2207,14 @@
       "source_section": "cash_flow_statement",
       "source_note_family": null,
       "query_aliases": [
-        "flux net affectés aux activités de financement"
+        "flux net affectés aux activités de financement",
+        "flux de trésorerie net affecté aux activités de financement",
+        "flux net provenant des activités de financement",
+        "flux de trésorerie net provenant des activités de financement"
       ],
       "accepted_statement_labels": [
-        "flux net affectés aux activités de financement"
+        "flux net affectés aux activités de financement",
+        "flux de trésorerie net provenant des activités de financement"
       ],
       "unit": {
         "currency": "TND",
