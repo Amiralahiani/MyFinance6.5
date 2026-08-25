@@ -1,0 +1,61 @@
+<svg width="1200" height="620" viewBox="0 0 1200 620" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">MyFinance documentary RAG pipeline</title>
+  <desc id="desc">Official PDF pages become evidence chunks. Lexical and optional Qdrant retrieval are filtered by provenance before a cited documentary answer is returned.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="620" gradientUnits="userSpaceOnUse"><stop stop-color="#F8FBF8"/><stop offset="1" stop-color="#E8F1EC"/></linearGradient>
+    <linearGradient id="dark" x1="392" y1="204" x2="822" y2="435" gradientUnits="userSpaceOnUse"><stop stop-color="#164846"/><stop offset="1" stop-color="#0D302F"/></linearGradient>
+    <filter id="shadow" x="-20" y="-20" width="1240" height="660" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#153A35" flood-opacity="0.11"/></filter>
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" stroke="#164846" stroke-opacity="0.06"/></pattern>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L9 5L0 10" fill="none" stroke="#168261" stroke-width="2"/></marker>
+  </defs>
+
+  <rect width="1200" height="620" rx="18" fill="url(#bg)"/>
+  <rect width="1200" height="620" rx="18" fill="url(#grid)"/>
+  <text x="60" y="62" fill="#0F4541" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" letter-spacing="2.2">MYFINANCE / DOCUMENTARY RAG</text>
+  <text x="60" y="102" fill="#153836" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="700">Retrieve the right evidence. Keep its provenance.</text>
+  <text x="60" y="129" fill="#62817A" font-family="Arial, Helvetica, sans-serif" font-size="14">RAG retrieves official-report pages. It never validates or invents a financial value.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="60" y="194" width="190" height="132" rx="14" fill="white" stroke="#C6D8D0"/>
+    <rect x="82" y="217" width="35" height="43" rx="5" fill="#163F3D"/>
+    <path d="M108 217V227H117M90 236H108M90 244H107M90 252H102" stroke="#D7FF64" stroke-width="2"/>
+    <text x="135" y="233" fill="#168261" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" letter-spacing="1.2">PRIMARY SOURCE</text>
+    <text x="135" y="257" fill="#163F3D" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700">Official PDF</text>
+    <text x="82" y="296" fill="#64817A" font-family="Arial, Helvetica, sans-serif" font-size="11">bank report · immutable</text>
+
+    <rect x="306" y="194" width="210" height="132" rx="14" fill="white" stroke="#C6D8D0"/>
+    <circle cx="336" cy="238" r="18" fill="#E0F3E7"/>
+    <path d="M328 238H344M336 230V246" stroke="#168261" stroke-width="2.4"/>
+    <text x="371" y="233" fill="#168261" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" letter-spacing="1.2">INGESTION</text>
+    <text x="371" y="257" fill="#163F3D" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700">Evidence chunks</text>
+    <text x="328" y="296" fill="#64817A" font-family="Arial, Helvetica, sans-serif" font-size="11">page · bank · year · PDF hash</text>
+
+    <rect x="574" y="172" width="270" height="176" rx="16" fill="url(#dark)"/>
+    <rect x="595" y="193" width="115" height="25" rx="13" fill="#D7FF64"/>
+    <text x="608" y="210" fill="#143E3D" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" letter-spacing="1.1">HYBRID RETRIEVAL</text>
+    <text x="595" y="247" fill="#F4F9F4" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700">Lexical search</text>
+    <text x="595" y="269" fill="#BBD3CB" font-family="Arial, Helvetica, sans-serif" font-size="12">always available over page chunks</text>
+    <path d="M595 288H823" stroke="#557B70"/>
+    <text x="595" y="314" fill="#D7FF64" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700">QDRANT + OLLAMA</text>
+    <text x="595" y="334" fill="#BBD3CB" font-family="Arial, Helvetica, sans-serif" font-size="11">optional semantic enrichment</text>
+
+    <rect x="902" y="194" width="238" height="132" rx="14" fill="white" stroke="#C6D8D0"/>
+    <circle cx="931" cy="238" r="18" fill="#E0F3E7"/>
+    <path d="M922 239L928 245L941 231" stroke="#168261" stroke-width="2.5"/>
+    <text x="965" y="233" fill="#168261" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" letter-spacing="1.1">PROVENANCE FILTER</text>
+    <text x="965" y="257" fill="#163F3D" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700">Cited answer</text>
+    <text x="923" y="296" fill="#64817A" font-family="Arial, Helvetica, sans-serif" font-size="11">page-level excerpts retained</text>
+  </g>
+
+  <path d="M251 260H292M517 260H557M845 260H885" stroke="#168261" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="60" y="408" width="1080" height="136" rx="15" fill="#113C3A"/>
+    <rect x="82" y="430" width="128" height="26" rx="13" fill="#D7FF64"/>
+    <text x="96" y="448" fill="#143E3D" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" letter-spacing="1.1">NON-NEGOTIABLE</text>
+    <text x="82" y="486" fill="#F3F8F4" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700">The RAG path can retrieve a document passage. It cannot promote that passage into a financial fact.</text>
+    <text x="82" y="514" fill="#B7D1C8" font-family="Arial, Helvetica, sans-serif" font-size="12">If semantic retrieval is unavailable, MyFinance continues with lexical retrieval. If no relevant evidence is found, it asks for clarification instead of guessing.</text>
+  </g>
+
+  <text x="60" y="582" fill="#55776F" font-family="Arial, Helvetica, sans-serif" font-size="12">Numeric answers follow a separate controlled route: recognised metric → validated fact or authorised source line → value with evidence.</text>
+</svg>

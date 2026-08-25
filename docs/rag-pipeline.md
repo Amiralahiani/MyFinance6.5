@@ -6,19 +6,9 @@ Le RAG de MyFinance sert à retrouver des passages pertinents dans les rapports 
 
 Le système sépare donc deux parcours :
 
-```mermaid
-flowchart LR
-    Q[Question utilisateur] --> A{Type de demande ?}
-    A -->|Sujet de rapport| R[RAG documentaire]
-    A -->|Valeur ou comparaison| F[Parcours financier déterministe]
-
-    R --> E[Extraits PDF avec banque, année et page]
-    E --> D[Réponse documentaire avec citations]
-
-    F --> V{Fait ou ligne source autorisée ?}
-    V -->|Oui| N[Réponse chiffrée avec preuve]
-    V -->|Non| C[Clarification ou abstention]
-```
+<p align="center">
+  <img src="assets/rag-pipeline.svg" alt="Pipeline RAG documentaire MyFinance : PDF officiel, chunks de preuve, recherche lexicale et Qdrant, filtre de provenance, puis réponse citée" width="100%" />
+</p>
 
 ## 1. Préparer les sources
 
@@ -52,16 +42,31 @@ Qdrant ne stocke pas une nouvelle vérité financière. Il stocke des représent
 
 Lorsqu’une question porte sur le contenu d’un rapport — par exemple une politique de risque ou des transactions avec parties liées — le Chat suit ce parcours :
 
-```mermaid
-flowchart TD
-    Q[Question documentaire] --> S[Identification de la banque et de l'année]
-    S --> G[Expansion contrôlée des termes métier]
-    G --> L[Recherche lexicale par pages]
-    G --> V[Recherche vectorielle Qdrant si disponible]
-    L --> M[Regroupement et filtrage de provenance]
-    V --> M
-    M --> P[Pages et extraits retenus]
-    P --> R[Réponse explicative avec citations]
+```text
+Question documentaire
+        |
+        v
+Identification de la banque et de l'année
+        |
+        v
+Expansion contrôlée des termes métier
+        |
+        +-------------------------------+
+        |                               |
+        v                               v
+Recherche lexicale                 Recherche Qdrant
+par pages                          si disponible
+        |                               |
+        +---------------+---------------+
+                        |
+                        v
+      Regroupement et filtrage de provenance
+                        |
+                        v
+            Pages et extraits retenus
+                        |
+                        v
+      Réponse explicative avec citations
 ```
 
 Les garde-fous appliqués sont les suivants :
